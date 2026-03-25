@@ -2,30 +2,45 @@
 
 import { motion } from "framer-motion";
 
-function BlockRow({ colors, count = 60 }: { colors: string[]; count?: number }) {
+function RealisticBlockRow({ colors, count = 60 }: { colors: { bg: string; hl: string; sh: string }[]; count?: number }) {
   return (
     <div className="flex">
-      {Array.from({ length: count }).map((_, i) => (
-        <div
-          key={i}
-          className="w-8 h-8 flex-shrink-0"
-          style={{
-            backgroundColor: colors[i % colors.length],
-            boxShadow: "inset 2px 2px 0 rgba(255,255,255,0.1), inset -2px -2px 0 rgba(0,0,0,0.1)",
-          }}
-        />
-      ))}
+      {Array.from({ length: count }).map((_, i) => {
+        const c = colors[i % colors.length];
+        return (
+          <div
+            key={i}
+            className="w-8 h-8 flex-shrink-0"
+            style={{
+              backgroundColor: c.bg,
+              boxShadow: `inset 2px 2px 4px ${c.hl}, inset -2px -2px 4px ${c.sh}`,
+            }}
+          />
+        );
+      })}
     </div>
   );
 }
+
+const grassColors = [
+  { bg: "#6AAF35", hl: "rgba(255,255,255,0.2)", sh: "rgba(0,0,0,0.15)" },
+  { bg: "#5D9C30", hl: "rgba(255,255,255,0.18)", sh: "rgba(0,0,0,0.18)" },
+  { bg: "#78BF44", hl: "rgba(255,255,255,0.25)", sh: "rgba(0,0,0,0.12)" },
+];
+
+const dirtColors = [
+  { bg: "#8B6914", hl: "rgba(255,255,255,0.12)", sh: "rgba(0,0,0,0.25)" },
+  { bg: "#7A5C12", hl: "rgba(255,255,255,0.1)", sh: "rgba(0,0,0,0.28)" },
+  { bg: "#96741A", hl: "rgba(255,255,255,0.15)", sh: "rgba(0,0,0,0.2)" },
+];
 
 export default function Footer() {
   return (
     <footer id="contact" className="bg-coal text-cream">
       {/* Grass/dirt transition blocks */}
       <div className="overflow-hidden">
-        <BlockRow colors={["#7CB342", "#5D8C3E", "#6B8E23", "#7CB342", "#5D8C3E"]} />
-        <BlockRow colors={["#8B6914", "#6B4F0E", "#8B6914", "#A0522D", "#6B4F0E"]} />
+        <RealisticBlockRow colors={grassColors} />
+        <RealisticBlockRow colors={dirtColors} />
       </div>
 
       <div className="max-w-6xl mx-auto px-6 py-16">
@@ -49,7 +64,7 @@ export default function Footer() {
                 href="https://flickman.substack.com/subscribe"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-block bg-[#FF6719] text-white px-6 py-3 font-semibold block-border-sm block-hover"
+                className="inline-block bg-[#FF6719] text-white px-6 py-3 font-semibold rounded-sm shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200"
               >
                 Subscribe on Substack &rarr;
               </a>

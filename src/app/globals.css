@@ -6,8 +6,8 @@
 
   --color-dirt: #8B6914;
   --color-dirt-dark: #6B4F0E;
-  --color-grass: #5D8C3E;
-  --color-grass-light: #7CB342;
+  --color-grass: #5D9C30;
+  --color-grass-light: #6AAF35;
   --color-stone: #7F8C8D;
   --color-stone-light: #95A5A6;
   --color-sand: #F5DEB3;
@@ -25,41 +25,43 @@
   src: url("https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap");
 }
 
-/* Minecraft-style pixelated borders */
+/* Realistic Minecraft-style borders — chunky but with depth */
 .block-border {
-  border: 4px solid var(--color-coal);
+  border: 3px solid rgba(0, 0, 0, 0.12);
+  border-radius: 2px;
   box-shadow:
-    inset 2px 2px 0 rgba(255, 255, 255, 0.2),
-    inset -2px -2px 0 rgba(0, 0, 0, 0.2),
-    4px 4px 0 rgba(0, 0, 0, 0.15);
+    inset 3px 3px 6px rgba(255, 255, 255, 0.15),
+    inset -3px -3px 6px rgba(0, 0, 0, 0.12),
+    0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
 .block-border-sm {
-  border: 3px solid var(--color-coal);
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
   box-shadow:
-    inset 1px 1px 0 rgba(255, 255, 255, 0.2),
-    inset -1px -1px 0 rgba(0, 0, 0, 0.2),
-    3px 3px 0 rgba(0, 0, 0, 0.15);
+    inset 2px 2px 4px rgba(255, 255, 255, 0.15),
+    inset -2px -2px 4px rgba(0, 0, 0, 0.1),
+    0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-/* Pixel grid pattern */
+/* Subtle texture grid */
 .pixel-grid {
   background-image:
-    linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px);
-  background-size: 8px 8px;
+    linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px);
+  background-size: 16px 16px;
 }
 
-/* Block hover effect */
+/* Block hover effect — smooth lift */
 .block-hover {
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 .block-hover:hover {
-  transform: translate(-2px, -2px);
+  transform: translateY(-3px);
   box-shadow:
-    inset 2px 2px 0 rgba(255, 255, 255, 0.2),
-    inset -2px -2px 0 rgba(0, 0, 0, 0.2),
-    6px 6px 0 rgba(0, 0, 0, 0.2);
+    inset 3px 3px 6px rgba(255, 255, 255, 0.15),
+    inset -3px -3px 6px rgba(0, 0, 0, 0.12),
+    0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
 /* Grass block top texture */
@@ -97,12 +99,13 @@ body {
   pointer-events: none;
   animation: block-break-particle 0.6s ease-out forwards;
   z-index: 100;
+  border-radius: 1px;
 }
 
 /* Block crack overlay on click */
 @keyframes block-crack {
   0% { opacity: 0; }
-  50% { opacity: 0.4; }
+  50% { opacity: 0.3; }
   100% { opacity: 0; }
 }
 
@@ -111,8 +114,22 @@ body {
   inset: 0;
   pointer-events: none;
   background-image:
-    linear-gradient(45deg, transparent 30%, rgba(0,0,0,0.15) 30%, rgba(0,0,0,0.15) 32%, transparent 32%),
-    linear-gradient(-45deg, transparent 40%, rgba(0,0,0,0.15) 40%, rgba(0,0,0,0.15) 42%, transparent 42%),
-    linear-gradient(30deg, transparent 55%, rgba(0,0,0,0.1) 55%, rgba(0,0,0,0.1) 57%, transparent 57%);
+    linear-gradient(45deg, transparent 30%, rgba(0,0,0,0.12) 30%, rgba(0,0,0,0.12) 32%, transparent 32%),
+    linear-gradient(-45deg, transparent 40%, rgba(0,0,0,0.12) 40%, rgba(0,0,0,0.12) 42%, transparent 42%),
+    linear-gradient(30deg, transparent 55%, rgba(0,0,0,0.08) 55%, rgba(0,0,0,0.08) 57%, transparent 57%);
   animation: block-crack 0.5s ease-out forwards;
+}
+
+/* Noise texture overlay for realistic feel */
+.texture-noise {
+  position: relative;
+}
+.texture-noise::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 4 4' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='0' y='0' width='1' height='1' fill='%23000'/%3E%3Crect x='2' y='1' width='1' height='1' fill='%23000'/%3E%3Crect x='1' y='3' width='1' height='1' fill='%23000'/%3E%3Crect x='3' y='2' width='1' height='1' fill='%23000'/%3E%3C/svg%3E");
+  background-size: 4px 4px;
+  pointer-events: none;
 }
