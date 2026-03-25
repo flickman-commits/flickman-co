@@ -14,6 +14,7 @@ const items: InventoryItem[] = [
   { icon: "👤", label: "About", href: "#about", color: "#4FC3F7" },
   { icon: "🏢", label: "Companies", href: "#companies", color: "#FFD700" },
   { icon: "📝", label: "Letters", href: "#letters", color: "#A0522D" },
+  { icon: "🧰", label: "Tools", href: "#tools", color: "#4FC3F7" },
   { icon: "🛒", label: "Shop", href: "https://flickman.gumroad.com", color: "#E91E63" },
   { icon: "📸", label: "Instagram", href: "https://instagram.com/flickman", color: "#C13584" },
   { icon: "✉️", label: "Subscribe", href: "https://flickman.substack.com/subscribe", color: "#FF6719" },

@@ -2,6 +2,7 @@ import Hero from "@/components/Hero";
 import About from "@/components/About";
 import Companies from "@/components/Companies";
 import Blog from "@/components/Blog";
+import ToolsStack from "@/components/ToolsStack";
 import Footer from "@/components/Footer";
 import InventoryBar from "@/components/InventoryBar";
 import { getSubstackPosts } from "@/lib/substack";
@@ -19,6 +20,7 @@ export default async function Home() {
         <About />
         <Companies />
         <Blog posts={posts} />
+        <ToolsStack />
       </main>
       <Footer />
       <InventoryBar />
