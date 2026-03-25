@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Press_Start_2P } from "next/font/google";
+import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 
 const inter = Inter({
@@ -15,8 +16,8 @@ const pixelFont = Press_Start_2P({
 });
 
 export const metadata: Metadata = {
-  title: "Matt Flickinger | flickman.co",
-  description: "Builder, creator, and explorer. Home base for what I'm working on.",
+  title: "Flickman & Co. | Simple (+ profitable) ideas, taken seriously.",
+  description: "Matt Hickman — builder, creator, and explorer. Simple (+ profitable) ideas, taken seriously.",
 };
 
 export default function RootLayout({
@@ -28,6 +29,7 @@ export default function RootLayout({
     <html lang="en" className="scroll-smooth">
       <body className={`${inter.variable} ${pixelFont.variable} font-[family-name:var(--font-body)] bg-cream text-coal antialiased`}>
         {children}
+        <Analytics />
       </body>
     </html>
   );

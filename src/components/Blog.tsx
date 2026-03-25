@@ -8,32 +8,36 @@ interface Post {
   date: string;
   tag: string;
   tagColor: string;
+  url: string;
 }
 
 const posts: Post[] = [
   {
-    title: "Why I'm Building in Public",
+    title: "Flickman Media Is Dead",
     excerpt:
-      "Sharing the journey — the wins, the losses, and everything in between. Here's why I think building in public is the way to go.",
-    date: "Coming Soon",
-    tag: "THOUGHTS",
+      "Why I shut down my freelance videography business and what comes next.",
+    date: "2024",
+    tag: "LIFE",
     tagColor: "#4FC3F7",
+    url: "https://flickman.substack.com/p/flickman-media-is-dead",
   },
   {
-    title: "AI-Powered Web Development",
+    title: "10 Ways to Unf*ck Your Life in Your 20s",
     excerpt:
-      "This entire site was built with Claude Code. Here's what I learned about the future of coding with AI.",
-    date: "Coming Soon",
-    tag: "TECH",
+      "Practical, no-BS advice for getting your life together when everything feels chaotic.",
+    date: "2024",
+    tag: "ADVICE",
     tagColor: "#7CB342",
+    url: "https://flickman.substack.com/p/10-ways-to-unfck-your-life-in-your",
   },
   {
-    title: "Lessons from Trackstar",
+    title: "How to Win Without Luck",
     excerpt:
-      "Key lessons from building a company in the endurance sports space — from cold starts to real traction.",
-    date: "Coming Soon",
-    tag: "BUSINESS",
+      "Luck is a skill. Here's how to stack the deck in your favor.",
+    date: "2024",
+    tag: "MINDSET",
     tagColor: "#FFD700",
+    url: "https://flickman.substack.com/p/how-to-win-without-luck",
   },
 ];
 
@@ -53,23 +57,38 @@ export default function Blog() {
             </span>
           </div>
 
-          <h2 className="text-3xl sm:text-4xl font-bold text-coal mb-4">
-            Latest thoughts
-          </h2>
-          <p className="text-coal/60 mb-12 max-w-2xl">
-            Writing about building, tech, and whatever else I find interesting.
-          </p>
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-12 gap-4">
+            <div>
+              <h2 className="text-3xl sm:text-4xl font-bold text-coal mb-4">
+                Latest thoughts
+              </h2>
+              <p className="text-coal/60 max-w-2xl">
+                Writing about building, life, and whatever else I find interesting.
+              </p>
+            </div>
+            <a
+              href="https://flickman.substack.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block bg-[#FF6719] text-white px-5 py-2.5 text-sm font-semibold block-border-sm block-hover whitespace-nowrap"
+            >
+              Read all on Substack &rarr;
+            </a>
+          </div>
         </motion.div>
 
         <div className="grid md:grid-cols-3 gap-6">
           {posts.map((post, i) => (
-            <motion.article
+            <motion.a
               key={post.title}
+              href={post.url}
+              target="_blank"
+              rel="noopener noreferrer"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: i * 0.1 }}
-              className="bg-white block-border block-hover p-6 flex flex-col"
+              className="bg-white block-border block-hover p-6 flex flex-col cursor-pointer group"
             >
               <div
                 className="inline-block self-start px-2 py-1 mb-4 border-2 border-coal"
@@ -79,14 +98,16 @@ export default function Blog() {
                   {post.tag}
                 </span>
               </div>
-              <h3 className="font-bold text-lg text-coal mb-2">{post.title}</h3>
+              <h3 className="font-bold text-lg text-coal mb-2 group-hover:text-grass transition-colors">
+                {post.title}
+              </h3>
               <p className="text-coal/60 text-sm leading-relaxed flex-1">
                 {post.excerpt}
               </p>
               <span className="text-coal/40 text-xs mt-4 font-medium">
                 {post.date}
               </span>
-            </motion.article>
+            </motion.a>
           ))}
         </div>
       </div>

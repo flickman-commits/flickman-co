@@ -18,7 +18,7 @@ export default function Nav() {
       <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
         {/* Logo */}
         <a href="#" className="font-[family-name:var(--font-pixel)] text-sm text-coal hover:text-grass transition-colors">
-          flickman.co
+          Flickman &amp; Co.
         </a>
 
         {/* Desktop links */}

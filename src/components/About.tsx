@@ -33,7 +33,7 @@ export default function About() {
               </h2>
               <div className="space-y-4 text-coal/70 leading-relaxed">
                 <p>
-                  I&apos;m Matt Flickinger — a builder, creator, and explorer based in the world of
+                  I&apos;m Matt Hickman (Flickman) — a builder, creator, and explorer based in the world of
                   startups, e-commerce, and AI. I love making things that people actually use.
                 </p>
                 <p>

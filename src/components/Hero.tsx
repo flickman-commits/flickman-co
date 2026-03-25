@@ -34,6 +34,11 @@ export default function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
         >
+          {/* Slogan */}
+          <p className="text-sm sm:text-base text-coal/50 tracking-wide uppercase mb-8 font-medium">
+            Simple (+ profitable) ideas, taken seriously.
+          </p>
+
           {/* Pixel-style greeting */}
           <div className="inline-block bg-grass text-white px-4 py-2 mb-8 block-border-sm">
             <span className="font-[family-name:var(--font-pixel)] text-xs">

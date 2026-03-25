@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useBlockBreak } from "./BlockBreaker";
 
 interface Company {
   name: string;
@@ -19,7 +20,16 @@ const companies: Company[] = [
       "Building the future of race-day experiences for endurance athletes. Trackstar helps race organizers and brands connect with runners through live tracking and real-time engagement.",
     color: "#7CB342",
     textColor: "#fff",
-    url: "https://trackstar.com",
+    url: "https://www.trackstar.art",
+  },
+  {
+    name: "Gumroad Shop",
+    role: "Digital Products",
+    description:
+      "Templates, guides, and digital products I've built. Practical tools for builders and creators.",
+    color: "#E91E63",
+    textColor: "#fff",
+    url: "https://flickman.gumroad.com",
   },
   {
     name: "Your Next Company",
@@ -32,6 +42,8 @@ const companies: Company[] = [
 ];
 
 export default function Companies() {
+  const spawnParticles = useBlockBreak();
+
   return (
     <section id="companies" className="py-24 bg-white">
       <div className="max-w-6xl mx-auto px-6">
@@ -55,7 +67,7 @@ export default function Companies() {
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-3 gap-6">
           {companies.map((company, i) => (
             <motion.div
               key={company.name}
@@ -63,8 +75,9 @@ export default function Companies() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: i * 0.15 }}
+              onClick={spawnParticles}
             >
-              <div className="block-border block-hover h-full bg-cream overflow-hidden">
+              <div className="block-border block-hover h-full bg-cream overflow-hidden relative">
                 {/* Block-style header bar */}
                 <div
                   className="p-6 border-b-4 border-coal"

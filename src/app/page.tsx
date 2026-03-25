@@ -4,6 +4,7 @@ import About from "@/components/About";
 import Companies from "@/components/Companies";
 import Blog from "@/components/Blog";
 import Footer from "@/components/Footer";
+import InventoryBar from "@/components/InventoryBar";
 
 export default function Home() {
   return (
@@ -16,6 +17,7 @@ export default function Home() {
         <Blog />
       </main>
       <Footer />
+      <InventoryBar />
     </>
   );
 }
