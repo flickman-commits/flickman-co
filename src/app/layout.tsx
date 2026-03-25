@@ -16,8 +16,8 @@ const pixelFont = Press_Start_2P({
 });
 
 export const metadata: Metadata = {
-  title: "Flickman & Co. | Simple (+ profitable) ideas, taken seriously.",
-  description: "Matt Hickman — builder, creator, and explorer. Simple (+ profitable) ideas, taken seriously.",
+  title: "Flickman | Simple ideas, taken seriously.",
+  description: "Matt Hickman — builder, creator, and explorer. Simple ideas, taken seriously.",
 };
 
 export default function RootLayout({
