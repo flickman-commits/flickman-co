@@ -36,14 +36,13 @@ export default function Footer() {
           transition={{ duration: 0.5 }}
         >
           <div className="grid md:grid-cols-2 gap-12">
-            {/* CTA / Newsletter via Substack */}
+            {/* Left: CTA */}
             <div>
               <h2 className="font-[family-name:var(--font-pixel)] text-lg mb-4 text-grass-light">
                 Let&apos;s connect
               </h2>
               <p className="text-cream/60 mb-6 leading-relaxed max-w-md">
-                I write about life lessons, ideas, and whatever I&apos;m exploring.
-                Subscribe on Substack to stay in the loop.
+                Subscribe for more letters on business &amp; life.
               </p>
 
               <a
@@ -56,40 +55,29 @@ export default function Footer() {
               </a>
             </div>
 
-            {/* Links */}
-            <div className="flex flex-col items-start md:items-end gap-6">
-              <div className="flex flex-col gap-3">
-                <a
-                  href="https://instagram.com/flickman"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-cream/60 hover:text-grass-light transition-colors text-sm"
-                >
-                  Instagram &rarr;
-                </a>
-                <a
-                  href="https://flickman.substack.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-cream/60 hover:text-grass-light transition-colors text-sm"
-                >
-                  Substack &rarr;
-                </a>
-                <a
-                  href="https://flickman.gumroad.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-cream/60 hover:text-grass-light transition-colors text-sm"
-                >
-                  Gumroad &rarr;
-                </a>
-              </div>
-
+            {/* Right: Links */}
+            <div className="flex flex-col items-start md:items-end gap-4">
               <a
-                href="mailto:matt@flickman.co"
+                href="https://instagram.com/flickman"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-cream/60 hover:text-grass-light transition-colors text-sm"
               >
-                matt@flickman.co
+                Instagram &rarr;
+              </a>
+              <a
+                href="https://flickman.substack.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-cream/60 hover:text-grass-light transition-colors text-sm"
+              >
+                Substack &rarr;
+              </a>
+              <a
+                href="mailto:matt@flickmanmedia.com"
+                className="text-cream/60 hover:text-grass-light transition-colors text-sm"
+              >
+                Email me &rarr;
               </a>
             </div>
           </div>
@@ -100,7 +88,7 @@ export default function Footer() {
               Flickman &amp; Co.
             </span>
             <span className="text-cream/30 text-xs">
-              &copy; {new Date().getFullYear()} Matt Hickman. Built with Claude Code.
+              &copy;2026 Flickman LLC. All rights reserved.
             </span>
           </div>
         </motion.div>
