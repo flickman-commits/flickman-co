@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 function BlockRow({ colors, count = 12 }: { colors: string[]; count?: number }) {
   return (
@@ -34,22 +35,45 @@ export default function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
         >
-          {/* Pixel-style greeting */}
-          <div className="inline-block bg-grass text-white px-4 py-2 mb-8 block-border-sm">
-            <span className="font-[family-name:var(--font-pixel)] text-xs">
-              Hey, I&apos;m Matt
-            </span>
+          <div className="flex flex-col sm:flex-row items-start gap-8 mb-8">
+            {/* Profile photo with Minecraft block border */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="flex-shrink-0"
+            >
+              <div className="block-border overflow-hidden w-28 h-28 sm:w-36 sm:h-36">
+                <Image
+                  src="/matt.png"
+                  alt="Matt Hickman"
+                  width={144}
+                  height={144}
+                  className="w-full h-full object-cover object-top"
+                  priority
+                />
+              </div>
+            </motion.div>
+
+            <div>
+              {/* Pixel-style greeting */}
+              <div className="inline-block bg-grass text-white px-4 py-2 mb-4 block-border-sm">
+                <span className="font-[family-name:var(--font-pixel)] text-xs">
+                  Hey, I&apos;m Matt
+                </span>
+              </div>
+
+              <h1 className="text-5xl sm:text-7xl font-bold tracking-tight text-coal mb-6 leading-[1.1]">
+                Simple ideas,
+                <br />
+                <span className="text-grass">taken seriously.</span>
+              </h1>
+            </div>
           </div>
 
-          <h1 className="text-5xl sm:text-7xl font-bold tracking-tight text-coal mb-6 leading-[1.1]">
-            Simple ideas,
-            <br />
-            <span className="text-grass">taken seriously.</span>
-          </h1>
-
           <p className="text-lg sm:text-xl text-coal/60 max-w-2xl mb-10 leading-relaxed">
-            Founder, builder, and creator. I&apos;m exploring what&apos;s possible at the
-            intersection of AI, e-commerce, and community. This is my home base.
+            Founder, creator, and explorer. Working on businesses, writing letters,
+            and trying new things. This is my home base.
           </p>
         </motion.div>
 

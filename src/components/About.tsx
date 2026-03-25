@@ -33,17 +33,13 @@ export default function About() {
               </h2>
               <div className="space-y-4 text-coal/70 leading-relaxed">
                 <p>
-                  I&apos;m Matt Hickman (Flickman) — a builder, creator, and explorer based in the world of
-                  startups, e-commerce, and AI. I love making things that people actually use.
+                  I&apos;m Matt — I love working on businesses and projects, reading, running &amp; exploring
+                  NYC with my girlfriend, and trying to do new things I haven&apos;t done in the past.
                 </p>
                 <p>
-                  I&apos;m currently focused on growing <strong className="text-coal">Trackstar</strong>,
-                  and always tinkering with new ideas on the side. I believe the best way to learn
+                  Right now I&apos;m focused on growing <strong className="text-coal">Trackstar</strong> and
+                  always tinkering with new ideas on the side. I believe the best way to learn
                   is by shipping and iterating in public.
-                </p>
-                <p>
-                  When I&apos;m not working, you&apos;ll probably find me playing Minecraft,
-                  exploring new places, or going down a rabbit hole on some random topic.
                 </p>
               </div>
             </div>
