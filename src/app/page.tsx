@@ -5,6 +5,7 @@ import Blog from "@/components/Blog";
 import ToolsStack from "@/components/ToolsStack";
 import Footer from "@/components/Footer";
 import InventoryBar from "@/components/InventoryBar";
+import Jukebox from "@/components/Jukebox";
 import { getSubstackPosts } from "@/lib/substack";
 
 // Revalidate every hour so new posts show up
@@ -24,6 +25,7 @@ export default async function Home() {
       </main>
       <Footer />
       <InventoryBar />
+      <Jukebox />
     </>
   );
 }
