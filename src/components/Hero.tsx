@@ -30,116 +30,67 @@ export default function Hero() {
       </div>
 
       <div className="max-w-6xl mx-auto px-6 py-20 relative z-10">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-        >
-          <div className="flex flex-col sm:flex-row items-start gap-8 mb-8">
-            {/* Profile photo with Minecraft block border */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="flex-shrink-0"
-            >
-              <div className="block-border overflow-hidden w-28 h-28 sm:w-36 sm:h-36">
-                <Image
-                  src="/matt.png"
-                  alt="Matt Hickman"
-                  width={144}
-                  height={144}
-                  className="w-full h-full object-cover object-top"
-                  priority
-                />
-              </div>
-            </motion.div>
-
-            <div>
-              {/* Pixel-style greeting */}
-              <div className="inline-block bg-grass text-white px-4 py-2 mb-4 block-border-sm">
-                <span className="font-[family-name:var(--font-pixel)] text-xs">
-                  Hey, I&apos;m Matt
-                </span>
-              </div>
-
-              <h1 className="text-5xl sm:text-7xl font-bold tracking-tight text-coal mb-6 leading-[1.1]">
-                Simple ideas,
-                <br />
-                <span className="text-grass">taken seriously.</span>
-              </h1>
+        <div className="flex flex-col md:flex-row items-center gap-12 md:gap-16">
+          {/* Left: text content */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="flex-1"
+          >
+            {/* Pixel-style greeting */}
+            <div className="inline-block bg-grass text-white px-4 py-2 mb-6 block-border-sm">
+              <span className="font-[family-name:var(--font-pixel)] text-xs">
+                Hey, I&apos;m Matt
+              </span>
             </div>
-          </div>
 
-          <p className="text-lg sm:text-xl text-coal/60 max-w-2xl mb-10 leading-relaxed">
-            Founder, creator, and explorer. Working on businesses, writing letters,
-            and trying new things. This is my home base.
-          </p>
-        </motion.div>
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-coal mb-6 leading-[1.1]">
+              Simple ideas,
+              <br />
+              <span className="text-grass">taken seriously.</span>
+            </h1>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="flex flex-wrap gap-4"
-        >
-          <a
-            href="#companies"
-            className="inline-block bg-coal text-cream px-6 py-3 font-semibold block-border-sm block-hover"
+            <p className="text-lg sm:text-xl text-coal/60 max-w-lg mb-10 leading-relaxed">
+              I&apos;m Matt Hickman — I work on businesses and projects, write letters,
+              and try to do new things I haven&apos;t done before. Welcome to my corner of the internet.
+            </p>
+
+            <div className="flex flex-wrap gap-4">
+              <a
+                href="#companies"
+                className="inline-block bg-coal text-cream px-6 py-3 font-semibold block-border-sm block-hover"
+              >
+                See what I&apos;m working on &darr;
+              </a>
+              <a
+                href="#contact"
+                className="inline-block bg-cream text-coal px-6 py-3 font-semibold block-border-sm block-hover"
+              >
+                Get in touch
+              </a>
+            </div>
+          </motion.div>
+
+          {/* Right: profile photo */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.85 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="flex-shrink-0"
           >
-            See what I&apos;m working on &darr;
-          </a>
-          <a
-            href="#contact"
-            className="inline-block bg-cream text-coal px-6 py-3 font-semibold block-border-sm block-hover"
-          >
-            Get in touch
-          </a>
-        </motion.div>
-
-        {/* Floating blocks decoration — pushed further right to avoid text overlap */}
-        <motion.div
-          className="absolute -right-4 top-1/4 hidden xl:block opacity-60"
-          animate={{ y: [0, -12, 0] }}
-          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-        >
-          <div className="grid grid-cols-3 gap-0">
-            {[
-              "#7CB342", "#5D8C3E", "#7CB342",
-              "#8B6914", "#6B4F0E", "#8B6914",
-              "#8B6914", "#8B6914", "#6B4F0E",
-            ].map((color, i) => (
-              <div
-                key={i}
-                className="w-14 h-14 border border-black/10"
-                style={{
-                  backgroundColor: color,
-                  boxShadow: "inset 3px 3px 0 rgba(255,255,255,0.15), inset -3px -3px 0 rgba(0,0,0,0.15)",
-                }}
+            <div className="block-border overflow-hidden w-48 h-48 sm:w-56 sm:h-56 lg:w-64 lg:h-64">
+              <Image
+                src="/matt.png"
+                alt="Matt Hickman"
+                width={256}
+                height={256}
+                className="w-full h-full object-cover object-top"
+                priority
               />
-            ))}
-          </div>
-        </motion.div>
-
-        {/* Second floating block cluster */}
-        <motion.div
-          className="absolute -right-8 bottom-32 hidden xl:block opacity-50"
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-        >
-          <div className="grid grid-cols-2 gap-0">
-            {["#7F8C8D", "#95A5A6", "#95A5A6", "#7F8C8D"].map((color, i) => (
-              <div
-                key={i}
-                className="w-12 h-12 border border-black/10"
-                style={{
-                  backgroundColor: color,
-                  boxShadow: "inset 2px 2px 0 rgba(255,255,255,0.15), inset -2px -2px 0 rgba(0,0,0,0.15)",
-                }}
-              />
-            ))}
-          </div>
-        </motion.div>
+            </div>
+          </motion.div>
+        </div>
       </div>
 
       {/* Bottom block strip */}

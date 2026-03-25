@@ -2,10 +2,20 @@
 
 import { motion } from "framer-motion";
 
-const stats = [
-  { label: "Companies Built", value: "3+" },
-  { label: "Years Creating", value: "10+" },
-  { label: "Cups of Coffee", value: "∞" },
+interface Venture {
+  name: string;
+  year: string;
+  description: string;
+  color: string;
+}
+
+const ventures: Venture[] = [
+  { name: "Venture 1", year: "20XX", description: "Description coming soon.", color: "#7CB342" },
+  { name: "Venture 2", year: "20XX", description: "Description coming soon.", color: "#4FC3F7" },
+  { name: "Venture 3", year: "20XX", description: "Description coming soon.", color: "#FFD700" },
+  { name: "Venture 4", year: "20XX", description: "Description coming soon.", color: "#E91E63" },
+  { name: "Venture 5", year: "20XX", description: "Description coming soon.", color: "#A0522D" },
+  { name: "Venture 6", year: "20XX", description: "Description coming soon.", color: "#9C27B0" },
 ];
 
 export default function About() {
@@ -25,43 +35,55 @@ export default function About() {
             </span>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-12 items-start">
-            {/* Bio */}
-            <div>
-              <h2 className="text-3xl sm:text-4xl font-bold text-coal mb-6">
-                A little about me
-              </h2>
-              <div className="space-y-4 text-coal/70 leading-relaxed">
-                <p>
-                  I&apos;m Matt — I love working on businesses and projects, reading, running &amp; exploring
-                  NYC with my girlfriend, and trying to do new things I haven&apos;t done in the past.
-                </p>
-                <p>
-                  Right now I&apos;m focused on growing <strong className="text-coal">Trackstar</strong> and
-                  always tinkering with new ideas on the side. I believe the best way to learn
-                  is by shipping and iterating in public.
-                </p>
-              </div>
-            </div>
+          <h2 className="text-3xl sm:text-4xl font-bold text-coal mb-6">
+            A little about me
+          </h2>
+          <div className="space-y-4 text-coal/70 leading-relaxed max-w-2xl mb-16">
+            <p>
+              I&apos;m Matt — I love working on businesses and projects, reading, running &amp; exploring
+              NYC with my girlfriend, and trying to do new things I haven&apos;t done in the past.
+            </p>
+            <p>
+              Right now I&apos;m focused on growing <strong className="text-coal">Trackstar</strong> and
+              always tinkering with new ideas on the side. I believe the best way to learn
+              is by shipping and iterating in public.
+            </p>
+          </div>
 
-            {/* Stats blocks */}
-            <div className="grid grid-cols-1 gap-4">
-              {stats.map((stat, i) => (
-                <motion.div
-                  key={stat.label}
-                  initial={{ opacity: 0, x: 20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.4, delay: i * 0.1 }}
-                  className="bg-white p-6 block-border block-hover flex items-center gap-6"
+          {/* A history of ventures */}
+          <h3 className="text-2xl sm:text-3xl font-bold text-coal mb-8">
+            A history of ventures
+          </h3>
+
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {ventures.map((venture, i) => (
+              <motion.div
+                key={venture.name}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: i * 0.08 }}
+                className="bg-white block-border block-hover overflow-hidden"
+              >
+                {/* Color bar header */}
+                <div
+                  className="px-4 py-3 border-b-3 border-coal flex items-center justify-between"
+                  style={{ backgroundColor: venture.color }}
                 >
-                  <span className="font-[family-name:var(--font-pixel)] text-2xl text-grass">
-                    {stat.value}
+                  <span className="font-[family-name:var(--font-pixel)] text-[10px] text-white">
+                    {venture.name}
                   </span>
-                  <span className="text-coal/60 font-medium">{stat.label}</span>
-                </motion.div>
-              ))}
-            </div>
+                  <span className="font-[family-name:var(--font-pixel)] text-[8px] text-white/60">
+                    {venture.year}
+                  </span>
+                </div>
+                <div className="p-4">
+                  <p className="text-coal/50 text-sm leading-relaxed">
+                    {venture.description}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
           </div>
         </motion.div>
       </div>

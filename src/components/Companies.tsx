@@ -5,7 +5,7 @@ import { useBlockBreak } from "./BlockBreaker";
 
 interface Company {
   name: string;
-  role: string;
+  tags: string[];
   description: string;
   color: string;
   textColor: string;
@@ -15,7 +15,7 @@ interface Company {
 const companies: Company[] = [
   {
     name: "Trackstar",
-    role: "Founder & CEO",
+    tags: ["E-Commerce", "Running"],
     description:
       "The future of race-day experiences for endurance athletes. Trackstar helps race organizers and brands connect with runners through live tracking and real-time engagement.",
     color: "#7CB342",
@@ -24,16 +24,16 @@ const companies: Company[] = [
   },
   {
     name: "Digital Products",
-    role: "Templates & Guides",
+    tags: ["Templates", "Guides"],
     description:
-      "Templates, guides, and digital products I've built. Practical tools for builders and creators.",
+      "Templates, guides, and digital products I've built. Practical tools for creators and operators.",
     color: "#E91E63",
     textColor: "#fff",
     url: "https://flickman.gumroad.com",
   },
   {
     name: "Your Next Company",
-    role: "Coming Soon",
+    tags: ["Coming Soon"],
     description:
       "Always exploring new ideas and opportunities. If you're working on something cool, let's chat.",
     color: "#7F8C8D",
@@ -47,24 +47,35 @@ export default function Companies() {
   return (
     <section id="companies" className="py-24 bg-white">
       <div className="max-w-6xl mx-auto px-6">
+        {/* Flickman & Co. holdco intro */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.5 }}
+          className="mb-16"
         >
           <div className="inline-block bg-gold text-coal px-3 py-1.5 mb-6 block-border-sm">
             <span className="font-[family-name:var(--font-pixel)] text-[10px]">
-              COMPANIES
+              FLICKMAN &amp; CO.
             </span>
           </div>
 
           <h2 className="text-3xl sm:text-4xl font-bold text-coal mb-4">
             What I&apos;m working on
           </h2>
-          <p className="text-coal/60 mb-12 max-w-2xl">
-            The companies and projects I&apos;m currently working on or involved with.
-          </p>
+
+          <div className="max-w-3xl space-y-4 text-coal/70 leading-relaxed mb-8">
+            <p>
+              <strong className="text-coal">Flickman &amp; Co.</strong> is the umbrella for everything I work on.
+              The philosophy is simple: find ideas that are simple and profitable, take them seriously,
+              and see how far they can go.
+            </p>
+            <p>
+              I like businesses that solve real problems, don&apos;t require a hundred-person team,
+              and can be run by a small crew of people who care. Here&apos;s what&apos;s active right now.
+            </p>
+          </div>
         </motion.div>
 
         <div className="grid md:grid-cols-3 gap-6">
@@ -84,17 +95,22 @@ export default function Companies() {
                   style={{ backgroundColor: company.color }}
                 >
                   <h3
-                    className="font-[family-name:var(--font-pixel)] text-sm mb-1"
+                    className="font-[family-name:var(--font-pixel)] text-sm mb-2"
                     style={{ color: company.textColor }}
                   >
                     {company.name}
                   </h3>
-                  <span
-                    className="text-xs opacity-80"
-                    style={{ color: company.textColor }}
-                  >
-                    {company.role}
-                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {company.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="text-[10px] font-semibold px-2 py-0.5 bg-black/20 rounded-sm"
+                        style={{ color: company.textColor }}
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Body */}

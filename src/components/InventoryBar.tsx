@@ -69,7 +69,7 @@ export default function InventoryBar() {
             onClick={() => handleClick(item, i)}
             onMouseEnter={() => setTooltip(item.label)}
             onMouseLeave={() => setTooltip(null)}
-            className="relative w-11 h-11 sm:w-12 sm:h-12 flex items-center justify-center transition-all duration-100"
+            className="relative w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center transition-all duration-100"
             style={{
               background: activeSlot === i
                 ? "rgba(255,255,255,0.2)"
