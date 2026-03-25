@@ -42,7 +42,7 @@ export default function Footer() {
                 Let&apos;s connect
               </h2>
               <p className="text-cream/60 mb-6 leading-relaxed max-w-md">
-                I write about building, life lessons, and whatever I&apos;m exploring.
+                I write about life lessons, ideas, and whatever I&apos;m exploring.
                 Subscribe on Substack to stay in the loop.
               </p>
 

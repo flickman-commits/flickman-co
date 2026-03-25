@@ -5,8 +5,14 @@ import Companies from "@/components/Companies";
 import Blog from "@/components/Blog";
 import Footer from "@/components/Footer";
 import InventoryBar from "@/components/InventoryBar";
+import { getSubstackPosts } from "@/lib/substack";
 
-export default function Home() {
+// Revalidate every hour so new posts show up
+export const revalidate = 3600;
+
+export default async function Home() {
+  const posts = await getSubstackPosts(6);
+
   return (
     <>
       <Nav />
@@ -14,7 +20,7 @@ export default function Home() {
         <Hero />
         <About />
         <Companies />
-        <Blog />
+        <Blog posts={posts} />
       </main>
       <Footer />
       <InventoryBar />

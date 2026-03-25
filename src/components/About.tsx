@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 
 const stats = [
   { label: "Companies Built", value: "3+" },
-  { label: "Years Building", value: "10+" },
+  { label: "Years Creating", value: "10+" },
   { label: "Cups of Coffee", value: "∞" },
 ];
 
@@ -39,7 +39,7 @@ export default function About() {
                 <p>
                   I&apos;m currently focused on growing <strong className="text-coal">Trackstar</strong>,
                   and always tinkering with new ideas on the side. I believe the best way to learn
-                  is by building, shipping, and iterating in public.
+                  is by shipping and iterating in public.
                 </p>
                 <p>
                   When I&apos;m not working, you&apos;ll probably find me playing Minecraft,

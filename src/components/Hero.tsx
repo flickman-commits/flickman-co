@@ -34,11 +34,6 @@ export default function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
         >
-          {/* Slogan */}
-          <p className="text-sm sm:text-base text-coal/50 tracking-wide uppercase mb-8 font-medium">
-            Simple (+ profitable) ideas, taken seriously.
-          </p>
-
           {/* Pixel-style greeting */}
           <div className="inline-block bg-grass text-white px-4 py-2 mb-8 block-border-sm">
             <span className="font-[family-name:var(--font-pixel)] text-xs">
@@ -47,9 +42,9 @@ export default function Hero() {
           </div>
 
           <h1 className="text-5xl sm:text-7xl font-bold tracking-tight text-coal mb-6 leading-[1.1]">
-            I build things
+            Simple ideas,
             <br />
-            <span className="text-grass">on the internet.</span>
+            <span className="text-grass">taken seriously.</span>
           </h1>
 
           <p className="text-lg sm:text-xl text-coal/60 max-w-2xl mb-10 leading-relaxed">
@@ -68,7 +63,7 @@ export default function Hero() {
             href="#companies"
             className="inline-block bg-coal text-cream px-6 py-3 font-semibold block-border-sm block-hover"
           >
-            See what I&apos;m building &darr;
+            See what I&apos;m working on &darr;
           </a>
           <a
             href="#contact"
@@ -78,9 +73,9 @@ export default function Hero() {
           </a>
         </motion.div>
 
-        {/* Floating blocks decoration */}
+        {/* Floating blocks decoration — pushed further right to avoid text overlap */}
         <motion.div
-          className="absolute right-8 top-1/3 hidden lg:block"
+          className="absolute -right-4 top-1/4 hidden xl:block opacity-60"
           animate={{ y: [0, -12, 0] }}
           transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
         >
@@ -92,7 +87,7 @@ export default function Hero() {
             ].map((color, i) => (
               <div
                 key={i}
-                className="w-16 h-16 border border-black/10"
+                className="w-14 h-14 border border-black/10"
                 style={{
                   backgroundColor: color,
                   boxShadow: "inset 3px 3px 0 rgba(255,255,255,0.15), inset -3px -3px 0 rgba(0,0,0,0.15)",
@@ -104,7 +99,7 @@ export default function Hero() {
 
         {/* Second floating block cluster */}
         <motion.div
-          className="absolute right-32 bottom-20 hidden lg:block"
+          className="absolute -right-8 bottom-32 hidden xl:block opacity-50"
           animate={{ y: [0, 8, 0] }}
           transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1 }}
         >

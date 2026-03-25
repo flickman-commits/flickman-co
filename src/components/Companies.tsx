@@ -17,14 +17,14 @@ const companies: Company[] = [
     name: "Trackstar",
     role: "Founder & CEO",
     description:
-      "Building the future of race-day experiences for endurance athletes. Trackstar helps race organizers and brands connect with runners through live tracking and real-time engagement.",
+      "The future of race-day experiences for endurance athletes. Trackstar helps race organizers and brands connect with runners through live tracking and real-time engagement.",
     color: "#7CB342",
     textColor: "#fff",
     url: "https://www.trackstar.art",
   },
   {
-    name: "Gumroad Shop",
-    role: "Digital Products",
+    name: "Digital Products",
+    role: "Templates & Guides",
     description:
       "Templates, guides, and digital products I've built. Practical tools for builders and creators.",
     color: "#E91E63",
@@ -35,7 +35,7 @@ const companies: Company[] = [
     name: "Your Next Company",
     role: "Coming Soon",
     description:
-      "Always exploring new ideas and opportunities. If you're building something cool, let's chat.",
+      "Always exploring new ideas and opportunities. If you're working on something cool, let's chat.",
     color: "#7F8C8D",
     textColor: "#fff",
   },
@@ -60,7 +60,7 @@ export default function Companies() {
           </div>
 
           <h2 className="text-3xl sm:text-4xl font-bold text-coal mb-4">
-            What I&apos;m building
+            What I&apos;m working on
           </h2>
           <p className="text-coal/60 mb-12 max-w-2xl">
             The companies and projects I&apos;m currently working on or involved with.
