@@ -205,7 +205,7 @@ export default function Hero() {
               }}
             >
               <Image
-                src="/matt.png"
+                src="/matt.jpg"
                 alt="Matt Hickman"
                 width={256}
                 height={256}

@@ -8,8 +8,8 @@ import InventoryBar from "@/components/InventoryBar";
 import Jukebox from "@/components/Jukebox";
 import { getSubstackPosts } from "@/lib/substack";
 
-// Revalidate every hour so new posts show up
-export const revalidate = 3600;
+// Revalidate every 24 hours — Substack posts don't change frequently
+export const revalidate = 86400;
 
 export default async function Home() {
   const posts = await getSubstackPosts(6);

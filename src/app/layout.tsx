@@ -27,6 +27,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="scroll-smooth">
+      <head>
+        <link rel="preconnect" href="https://www.youtube.com" />
+        <link rel="preconnect" href="https://i.ytimg.com" />
+      </head>
       <body className={`${inter.variable} ${pixelFont.variable} font-[family-name:var(--font-body)] bg-cream text-coal antialiased`}>
         {children}
         <Analytics />

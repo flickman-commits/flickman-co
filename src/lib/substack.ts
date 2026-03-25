@@ -8,13 +8,13 @@ export interface SubstackPost {
 }
 
 const parser = new Parser({
-  timeout: 5000,
+  timeout: 3000,
 });
 
 export async function getSubstackPosts(limit = 6): Promise<SubstackPost[]> {
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
 
     const feed = await parser.parseURL("https://flickman.substack.com/feed");
     clearTimeout(timeoutId);
