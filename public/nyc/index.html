@@ -1396,9 +1396,10 @@ function showApp() {
 function initMap() {
   if (map) return;
   map = L.map("map", { zoomControl: false, attributionControl: true }).setView([40.7580, -73.9855], 15);
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/voyager/{z}/{x}/{y}{r}.png", {
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png", {
     attribution: "\u00A9 OpenStreetMap \u00A9 CARTO",
-    maxZoom: 19
+    maxZoom: 19,
+    subdomains: "abcd"
   }).addTo(map);
   addFactMarkers();
 }
