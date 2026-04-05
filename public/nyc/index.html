@@ -1,0 +1,1618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#ffffff">
+  <title>What Happened Here</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #f5f5f7;
+  --bg-light: #ffffff;
+  --accent: #d63031;
+  --accent-glow: rgba(214, 48, 49, 0.15);
+  --text: #1a1a1a;
+  --text-muted: #666;
+  --card-bg: #ffffff;
+  --radius: 14px;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+  height: 100dvh;
+  width: 100vw;
+}
+
+.screen {
+  display: none;
+  height: 100dvh;
+  width: 100vw;
+}
+
+.screen.active {
+  display: flex;
+}
+
+#onboarding {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: linear-gradient(135deg, #f5f5f7 0%, #e8e8ed 50%, #dfe6ed 100%);
+}
+
+.onboarding-content {
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+}
+
+.onboarding-content h1 {
+  font-size: 32px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, #1a1a1a, #d63031);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+  color: var(--text-muted);
+  margin-bottom: 36px;
+  font-size: 16px;
+}
+
+.interest-section h2 {
+  font-size: 18px;
+  margin-bottom: 4px;
+}
+
+.hint {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+.interests-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.interest-chip {
+  padding: 12px 8px;
+  border: 2px solid rgba(0,0,0,0.1);
+  border-radius: var(--radius);
+  background: rgba(255,255,255,0.7);
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.interest-chip .icon {
+  font-size: 22px;
+}
+
+.interest-chip.selected {
+  border-color: var(--accent);
+  background: var(--accent-glow);
+  box-shadow: 0 0 20px var(--accent-glow);
+}
+
+.primary-btn {
+  width: 100%;
+  padding: 16px;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: white;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.primary-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.primary-btn:not(:disabled):active {
+  transform: scale(0.97);
+}
+
+#map {
+  height: 100%;
+  width: 100%;
+  z-index: 1;
+}
+
+.leaflet-control-attribution {
+  font-size: 9px !important;
+}
+
+.story-card {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--card-bg);
+  border-radius: 20px 20px 0 0;
+  padding: 20px 20px calc(20px + env(safe-area-inset-bottom));
+  z-index: 1000;
+  max-height: 55vh;
+  overflow-y: auto;
+  box-shadow: 0 -4px 30px rgba(0,0,0,0.12);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  -webkit-overflow-scrolling: touch;
+}
+
+.story-card.hidden {
+  transform: translateY(100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.story-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.story-category {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--accent);
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.story-card h3 {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.story-year {
+  font-size: 13px;
+  color: var(--accent);
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.story-text {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #333;
+}
+
+.story-actions {
+  margin-top: 16px;
+  display: flex;
+  gap: 10px;
+}
+
+.narrate-btn {
+  padding: 10px 20px;
+  border: 2px solid rgba(0,0,0,0.1);
+  border-radius: 10px;
+  background: rgba(0,0,0,0.05);
+  color: var(--text);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.narrate-btn:active {
+  background: rgba(0,0,0,0.1);
+}
+
+.nearby-toast {
+  position: fixed;
+  top: calc(16px + env(safe-area-inset-top));
+  left: 16px;
+  right: 16px;
+  background: var(--card-bg);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+  cursor: pointer;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.nearby-toast.hidden {
+  transform: translateY(-120%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.pulse {
+  width: 12px;
+  height: 12px;
+  background: var(--accent);
+  border-radius: 50%;
+  animation: pulse 1.5s infinite;
+  flex-shrink: 0;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 var(--accent-glow); }
+  70% { box-shadow: 0 0 0 10px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+#nearby-text {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.controls {
+  position: fixed;
+  right: 16px;
+  top: calc(80px + env(safe-area-inset-top));
+  z-index: 500;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.control-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: none;
+  background: var(--card-bg);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+}
+
+.control-btn:active {
+  background: #e8e8ed;
+}
+
+.stats-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--card-bg);
+  padding: 10px 20px calc(10px + env(safe-area-inset-bottom));
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--text-muted);
+  z-index: 500;
+  border-top: 1px solid rgba(0,0,0,0.1);
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal-content {
+  background: var(--bg-light);
+  border-radius: 20px;
+  padding: 28px 24px;
+  width: 100%;
+  max-width: 400px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.modal-content h2 {
+  margin-bottom: 20px;
+}
+
+.setting-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.setting-row h3 {
+  width: 100%;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.setting-row .interests-grid {
+  width: 100%;
+  margin-bottom: 0;
+}
+
+.setting-row label {
+  font-size: 15px;
+}
+
+.setting-row select,
+.setting-row input[type="checkbox"] {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid rgba(0,0,0,0.12);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+.setting-row input[type="checkbox"] {
+  width: 22px;
+  height: 22px;
+}
+
+.modal-content .primary-btn {
+  margin-top: 20px;
+}
+
+.user-marker {
+  width: 20px;
+  height: 20px;
+  background: #4a90d9;
+  border: 3px solid white;
+  border-radius: 50%;
+  box-shadow: 0 0 15px rgba(74, 144, 217, 0.6);
+}
+
+.fact-marker {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  border: 2px solid white;
+  cursor: pointer;
+}
+
+.fact-marker.heard {
+  opacity: 0.45;
+  filter: grayscale(0.5);
+}
+
+.leaflet-tile-pane {
+  filter: none;
+}
+  </style>
+</head>
+<body>
+  <!-- Onboarding Screen -->
+  <div id="onboarding" class="screen active">
+    <div class="onboarding-content">
+      <h1>What Happened Here</h1>
+      <p class="subtitle">History unfolds around you as you walk New York City</p>
+
+      <div class="interest-section">
+        <h2>What interests you?</h2>
+        <p class="hint">Pick as many as you like</p>
+        <div class="interests-grid" id="interests-grid"></div>
+      </div>
+
+      <button id="start-btn" class="primary-btn" disabled>Start Exploring</button>
+    </div>
+  </div>
+
+  <!-- Main App Screen -->
+  <div id="app" class="screen">
+    <div id="map"></div>
+
+    <!-- Story Card -->
+    <div id="story-card" class="story-card hidden">
+      <div class="story-card-header">
+        <span class="story-category" id="story-category"></span>
+        <button id="close-story" class="close-btn">&times;</button>
+      </div>
+      <h3 id="story-title"></h3>
+      <p id="story-year" class="story-year"></p>
+      <p id="story-text" class="story-text"></p>
+      <div class="story-actions">
+        <button id="narrate-btn" class="narrate-btn">&#x1f50a; Listen</button>
+        <button id="stop-narrate-btn" class="narrate-btn hidden">&#x23f9; Stop</button>
+      </div>
+    </div>
+
+    <!-- Nearby indicator -->
+    <div id="nearby-toast" class="nearby-toast hidden">
+      <span class="pulse"></span>
+      <span id="nearby-text"></span>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button id="center-btn" class="control-btn" title="Center on me">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/>
+        </svg>
+      </button>
+      <button id="settings-btn" class="control-btn" title="Settings">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Stats bar -->
+    <div class="stats-bar">
+      <span id="facts-heard">0 stories heard</span>
+      <span id="distance-walked">0.0 mi walked</span>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settings-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Settings</h2>
+      <div class="setting-row">
+        <label>Trigger distance</label>
+        <select id="trigger-distance">
+          <option value="50">50m (close)</option>
+          <option value="80" selected>80m (default)</option>
+          <option value="120">120m (far)</option>
+        </select>
+      </div>
+      <div class="setting-row">
+        <label>Auto-narrate</label>
+        <input type="checkbox" id="auto-narrate" checked>
+      </div>
+      <div class="setting-row">
+        <label>Speech speed</label>
+        <select id="speech-rate">
+          <option value="0.8">Slow</option>
+          <option value="1" selected>Normal</option>
+          <option value="1.2">Fast</option>
+        </select>
+      </div>
+      <div class="setting-row">
+        <h3>Your Interests</h3>
+        <div class="interests-grid" id="settings-interests-grid"></div>
+      </div>
+      <button id="close-settings" class="primary-btn">Done</button>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="facts_generated.js"></script>
+  <script>
+// === Data ===
+var INTERESTS = [
+  { id: "business", label: "Business", icon: "\u{1F4BC}" },
+  { id: "music", label: "Music", icon: "\u{1F3B5}" },
+  { id: "politics", label: "Politics", icon: "\u{1F3DB}\uFE0F" },
+  { id: "arts", label: "Arts", icon: "\u{1F3A8}" },
+  { id: "food", label: "Food", icon: "\u{1F355}" },
+  { id: "sports", label: "Sports", icon: "\u26BE" },
+  { id: "architecture", label: "Buildings", icon: "\u{1F3D7}\uFE0F" },
+  { id: "crime", label: "Crime", icon: "\u{1F50D}" },
+  { id: "literary", label: "Literature", icon: "\u{1F4DA}" },
+  { id: "film", label: "Film & TV", icon: "\u{1F3AC}" },
+  { id: "science", label: "Science", icon: "\u{1F52C}" },
+  { id: "revolution", label: "Revolution", icon: "\u2694\uFE0F" }
+];
+
+var CATEGORY_COLORS = {
+  business: "#2ecc71",
+  music: "#9b59b6",
+  politics: "#3498db",
+  arts: "#e67e22",
+  food: "#e74c3c",
+  sports: "#1abc9c",
+  architecture: "#f39c12",
+  crime: "#7f8c8d",
+  literary: "#8e44ad",
+  film: "#e91e63",
+  science: "#00bcd4",
+  revolution: "#c0392b"
+};
+
+var FACTS = [
+  {
+    id: "b1", category: "business", lat: 40.7069, lng: -74.0089,
+    title: "The Buttonwood Agreement", year: "1792",
+    story: "You\u2019re standing near 68 Wall Street, where 24 stockbrokers gathered under a buttonwood tree and signed an agreement that would become the New York Stock Exchange. They were tired of the chaos of public auctions and wanted to trade only with each other, charging fixed commissions. That handshake deal under a tree grew into the most powerful financial institution on Earth."
+  },
+  {
+    id: "b2", category: "business", lat: 40.7580, lng: -73.9855,
+    title: "Where Times Square Got Its Name", year: "1904",
+    story: "Right here at 42nd and Broadway, the New York Times moved its headquarters in 1904, and the city renamed Longacre Square in their honor. Publisher Adolph Ochs convinced the city to build a subway station here too. The paper eventually moved away, but the name stuck \u2014 and a newspaper\u2019s real estate decision accidentally created the most famous intersection in the world."
+  },
+  {
+    id: "b3", category: "business", lat: 40.7488, lng: -73.9680,
+    title: "The Chrysler Building Power Move", year: "1930",
+    story: "Right here at 42nd and Lexington, Walter Chrysler was in a secret race to build the world\u2019s tallest building. His rival at 40 Wall Street thought he\u2019d won. But Chrysler had hidden a 125-foot steel spire inside the building\u2019s crown and raised it through the roof in just 90 minutes, stealing the title. He held it for only 11 months before the Empire State Building surpassed him \u2014 but that spire remains one of the greatest flex moves in business history."
+  },
+  {
+    id: "b4", category: "business", lat: 40.7527, lng: -73.9772,
+    title: "The Waldorf Deal That Built an Empire", year: "1893",
+    story: "Right here at 34th and Fifth, the original Waldorf-Astoria Hotel was born from a family feud. William Waldorf Astor built his hotel right next to his aunt\u2019s mansion just to spite her. She responded by building an even bigger hotel next door. Eventually they connected the two buildings with a corridor \u2014 creating the famous hyphenated hotel and proving that spite can be surprisingly profitable."
+  },
+  {
+    id: "b5", category: "business", lat: 40.7589, lng: -73.9851,
+    title: "The First Electric Billboard", year: "1917",
+    story: "Right here at 47th and Broadway, the first massive electric sign appeared, advertising a brand of chewing gum. It used thousands of light bulbs and could be seen from blocks away. Broadway had earned its \"Great White Way\" nickname years earlier from its electric streetlights, but this kicked off the arms race of neon and spectacle that turned Times Square into the sensory overload you see today."
+  },
+  {
+    id: "b6", category: "business", lat: 40.7484, lng: -73.9857,
+    title: "Empire State Building \u2014 Built in 410 Days", year: "1931",
+    story: "Right here at 34th and Fifth, the Empire State Building went from demolition of the old Waldorf-Astoria to a finished 102-story skyscraper in just 410 days. At peak construction, 3,400 workers added 4.5 floors per week. It opened during the Depression and sat mostly empty for years \u2014 New Yorkers called it the \"Empty State Building.\" The observation deck\u2019s ticket sales are what kept the lights on."
+  },
+  {
+    id: "m1", category: "music", lat: 40.7308, lng: -74.0006,
+    title: "Bob Dylan Goes Electric", year: "1961",
+    story: "Right here at 130 West 3rd Street, a young Bob Dylan played his first New York gig at Gerde\u2019s Folk City. He\u2019d arrived in the city weeks earlier, riding a car from Minnesota with nothing but a guitar and a suitcase. The Village folk scene embraced him, but within a few years he\u2019d betray them all by plugging in an electric guitar \u2014 and change music forever."
+  },
+  {
+    id: "m2", category: "music", lat: 40.7279, lng: -73.9908,
+    title: "CBGB: Punk Rock Ground Zero", year: "1973",
+    story: "315 Bowery, between 1st and 2nd \u2014 this was the home of CBGB, the grimy club where punk rock was born. The Ramones, Blondie, Television, Talking Heads \u2014 they all cut their teeth on this stage. The name stood for \"Country, Bluegrass, and Blues,\" which is hilarious because almost none of that was ever played here. Owner Hilly Kristal just let anyone play, and that open-door policy accidentally launched an entire genre."
+  },
+  {
+    id: "m3", category: "music", lat: 40.7831, lng: -73.9712,
+    title: "Lennon\u2019s Last Home", year: "1980",
+    story: "1 West 72nd Street \u2014 the Dakota apartment building. John Lennon lived here with Yoko Ono from 1973 until he was shot right outside the entrance on December 8, 1980. Across the street in Central Park, Strawberry Fields was later dedicated in his memory. Yoko still lives in the building. The doorman who was on duty that night said Lennon had smiled at his killer just hours earlier, as the man asked for an autograph."
+  },
+  {
+    id: "m4", category: "music", lat: 40.8109, lng: -73.9453,
+    title: "The Apollo Theater", year: "1934",
+    story: "253 West 125th Street \u2014 the Apollo\u2019s Amateur Night has been the most brutal and most important audition in music since 1934. Ella Fitzgerald made her debut here at 17 \u2014 she\u2019d planned to dance but got so nervous she sang instead. James Brown recorded his legendary live album here. If the audience didn\u2019t like you, they booed you off stage. There was even a man called \"the Executioner\" whose job was to sweep bad acts away with a broom."
+  },
+  {
+    id: "m5", category: "music", lat: 40.7205, lng: -74.0014,
+    title: "Sinatra\u2019s Favorite Dive", year: "1940s",
+    story: "Right here around Mulberry and Grand, Frank Sinatra was a regular in Little Italy and the Village. He\u2019d drink at the old-school Italian joints, sometimes singing impromptu sets for whoever was around. The neighborhood was full of mob-connected clubs where Sinatra felt at home \u2014 his complicated relationship with the Mafia was an open secret. He once said \"I\u2019m gonna live till I die,\" and he spent a lot of that living right around here."
+  },
+  {
+    id: "m6", category: "music", lat: 40.7264, lng: -73.9899,
+    title: "The Birth of Hip-Hop Downtown", year: "1981",
+    story: "Right here around the Bowery and East Houston, hip-hop crossed over into mainstream culture through downtown Manhattan clubs. Blondie\u2019s \"Rapture\" \u2014 one of the first rap songs to hit #1 \u2014 name-dropped Fab Five Freddy, who bridged the uptown hip-hop world with the downtown art scene. That collision of worlds happened right in this neighborhood."
+  },
+  {
+    id: "p1", category: "politics", lat: 40.7074, lng: -74.0113,
+    title: "Washington\u2019s Inauguration", year: "1789",
+    story: "Right here at 26 Wall Street, George Washington took the oath of office at Federal Hall \u2014 making this the site of the very first presidential inauguration. New York was the nation\u2019s capital at the time. Washington was so nervous he could barely be heard. The Bible he swore on was borrowed last-minute from a nearby Masonic lodge because nobody had remembered to bring one."
+  },
+  {
+    id: "p2", category: "politics", lat: 40.7127, lng: -74.0059,
+    title: "Boss Tweed\u2019s City Hall", year: "1860s",
+    story: "City Hall still stands here, and in the 1860s it was the seat of power for William \"Boss\" Tweed, the most corrupt politician in American history. Tweed\u2019s Tammany Hall machine stole somewhere between $25 and $200 million from the city \u2014 that\u2019s billions in today\u2019s dollars. He was finally brought down by Thomas Nast\u2019s savage political cartoons. Tweed reportedly said he didn\u2019t care what the papers wrote because his constituents couldn\u2019t read, \"but they can see them damn pictures.\""
+  },
+  {
+    id: "p3", category: "politics", lat: 40.7411, lng: -73.9897,
+    title: "Teddy Roosevelt\u2019s Birthplace", year: "1858",
+    story: "Theodore Roosevelt was born in a brownstone right here at 28 East 20th Street in 1858. As a kid, he was sickly and asthmatic \u2014 his father told him \"you have the mind but not the body\" and young Teddy basically willed himself into becoming one of the most physically vigorous humans who ever lived. He boxed, ranched, led cavalry charges, and survived being shot mid-speech. It all started on this quiet Manhattan block."
+  },
+  {
+    id: "p4", category: "politics", lat: 40.7308, lng: -73.9973,
+    title: "The Triangle Shirtwaist Fire", year: "1911",
+    story: "One of the most important political events in American history happened right here at the corner of Washington Place and Greene Street. 146 garment workers, mostly young immigrant women, died when a fire broke out in the Triangle Shirtwaist Factory. The doors had been locked to prevent breaks. Workers jumped from the 8th, 9th, and 10th floors. The public outrage that followed led to sweeping labor reforms, building codes, and helped grow the American labor movement."
+  },
+  {
+    id: "p5", category: "politics", lat: 40.7484, lng: -73.9967,
+    title: "Where Lincoln Spoke Before He Was President", year: "1860",
+    story: "Right here at Cooper Union, at Astor Place and Third Avenue, Abraham Lincoln delivered his famous speech in February 1860, and many historians believe it\u2019s what made him president. He\u2019d been considered a backwoods curiosity from Illinois, but this speech \u2014 carefully argued, deeply researched \u2014 proved he could hold his own with Eastern intellectuals. The New York press gave him glowing reviews, and his path to the Republican nomination opened up."
+  },
+  {
+    id: "a1", category: "arts", lat: 40.7614, lng: -73.9776,
+    title: "MoMA\u2019s Revolutionary Opening", year: "1929",
+    story: "Right here at 11 West 53rd Street, the Museum of Modern Art opened just 9 days after the stock market crashed in 1929. Three wealthy women \u2014 Abby Aldrich Rockefeller, Lillie P. Bliss, and Mary Quinn Sullivan \u2014 had decided the art world needed shaking up. They started with just 8 prints and a handful of galleries. The art establishment mocked them. Now MoMA holds over 200,000 works and basically defined what \"modern art\" means."
+  },
+  {
+    id: "a2", category: "arts", lat: 40.7296, lng: -73.9937,
+    title: "Warhol\u2019s Factory", year: "1963",
+    story: "231 East 47th Street \u2014 Andy Warhol\u2019s original Factory was right here, the silver-foil-covered studio where he churned out silk screens and the most famous art of the 20th century. It was equal parts art studio, film set, and party venue. Lou Reed, Edie Sedgwick, and every interesting person in New York passed through. In 1968, Valerie Solanas walked in and shot Warhol. He survived but was never the same."
+  },
+  {
+    id: "a3", category: "arts", lat: 40.7830, lng: -73.9585,
+    title: "The Metropolitan Museum", year: "1870",
+    story: "Right here at 1000 Fifth Avenue, at 82nd Street, the Met started with a Roman stone sarcophagus and a few hundred European paintings. Now it holds over 2 million objects spanning 5,000 years. The building has been expanded so many times that the original structure is completely swallowed up inside. Fun fact: until 2018, the admission price was technically a \"suggested donation\" \u2014 meaning you could pay a penny to get in. Some New Yorkers made this an art form."
+  },
+  {
+    id: "a4", category: "arts", lat: 40.7190, lng: -74.0003,
+    title: "Jean-Michel Basquiat\u2019s Neighborhood", year: "1980s",
+    story: "Before he was selling paintings for millions, Jean-Michel Basquiat was a homeless teenager in the Lower East Side, spray-painting cryptic messages signed \"SAMO\" on the walls around here. He slept on park benches and in cardboard boxes. Within just a few years, he went from street kid to art-world superstar, collaborating with Warhol and selling out galleries. He died at 27, and now his paintings sell for over $100 million."
+  },
+  {
+    id: "f1", category: "food", lat: 40.7264, lng: -73.9863,
+    title: "Katz\u2019s Deli \u2014 Since 1888", year: "1888",
+    story: "205 East Houston Street \u2014 Katz\u2019s Delicatessen has been slicing pastrami at this exact location since 1888. During World War II, the owners\u2019 sons were in the service, and the deli\u2019s slogan \"Send a salami to your boy in the Army\" became famous. The pastrami is cured for 30 days and hand-sliced. Oh, and the famous scene from \"When Harry Met Sally\" \u2014 \"I\u2019ll have what she\u2019s having\" \u2014 was filmed right here, at a table they still mark with a sign."
+  },
+  {
+    id: "f2", category: "food", lat: 40.7286, lng: -73.9937,
+    title: "The First Pizzeria in America", year: "1905",
+    story: "32 Spring Street, between Mott and Mulberry \u2014 Gennaro Lombardi opened the first licensed pizzeria in America at this spot in 1905. He\u2019d been selling pizza wrapped in paper to factory workers for 5 cents. Pizza existed before Lombardi\u2019s, sure \u2014 but this is where it became an American institution. Every pizza place in this country is, in some way, descended from what started right here."
+  },
+  {
+    id: "f3", category: "food", lat: 40.7580, lng: -73.9795,
+    title: "The Automat Revolution", year: "1912",
+    story: "Horn & Hardart opened their famous Automat near here \u2014 a restaurant with no waiters, just walls of little glass compartments. Drop in a nickel, open a door, grab your pie or macaroni. It was the original fast food, and for decades it fed more people than any other restaurant chain in the world. During the Depression, people would buy a cup of hot water for free and add ketchup to make \"tomato soup.\""
+  },
+  {
+    id: "f4", category: "food", lat: 40.7562, lng: -73.9869,
+    title: "Delmonico\u2019s and Fine Dining", year: "1837",
+    story: "Delmonico\u2019s, which had locations around this area, essentially invented the American restaurant. Before Delmonico\u2019s, eating out meant boarding houses with fixed meals at fixed times. They introduced the radical concept of a menu \u2014 letting customers choose what they wanted. They also invented Eggs Benedict, Baked Alaska, and Lobster Newberg. Every restaurant you\u2019ve ever been to owes something to what they started."
+  },
+  {
+    id: "s1", category: "sports", lat: 40.7565, lng: -73.9895,
+    title: "Old Madison Square Garden", year: "1890",
+    story: "Right here at Madison Square, at 26th and Madison, the original Madison Square Garden stood. It was designed by Stanford White, who was later shot and killed on its rooftop theater by a jealous husband \u2014 one of the most sensational murders of the century. The Garden has moved locations four times since, but the name traveled with it even though it\u2019s nowhere near Madison Square anymore."
+  },
+  {
+    id: "s2", category: "sports", lat: 40.8296, lng: -73.9262,
+    title: "The Original Yankee Stadium", year: "1923",
+    story: "Right here at 161st and River Avenue in the Bronx, the \"House That Ruth Built\" opened in 1923. Babe Ruth christened it with a three-run homer on opening day, because of course he did. Ruth had been traded from the Red Sox \u2014 sparking the Curse of the Bambino that supposedly cursed Boston for 86 years. The Stadium held 67,000 people and saw 26 World Series championships before it was demolished in 2010."
+  },
+  {
+    id: "s3", category: "sports", lat: 40.7575, lng: -73.9903,
+    title: "Joe Louis vs. Max Schmeling", year: "1938",
+    story: "Near the old Madison Square Garden, boxing was king. But the fight of the century happened at Yankee Stadium: Joe Louis vs. Max Schmeling in 1938. With World War II looming, it became America vs. Nazi Germany in a boxing ring. Louis destroyed Schmeling in just 124 seconds. The whole country \u2014 Black and white \u2014 celebrated together. It was one of the first times a Black man became an unifying American hero."
+  },
+  {
+    id: "ar1", category: "architecture", lat: 40.7484, lng: -73.9716,
+    title: "The Flatiron Building", year: "1902",
+    story: "Right here at the intersection of Broadway, Fifth Avenue, and 23rd Street \u2014 when the Flatiron Building went up in 1902, people were sure it would blow over in the wind. At just 6 feet wide at its narrowest point, it looked impossible. Men would gather on the sidewalk because the building\u2019s shape created wind gusts that blew women\u2019s skirts up \u2014 police had to shoo them away, which is supposedly the origin of the phrase \"23 skidoo.\" The building still stands, 122 years later."
+  },
+  {
+    id: "ar2", category: "architecture", lat: 40.6892, lng: -74.0445,
+    title: "The Statue of Liberty", year: "1886",
+    story: "Lady Liberty was a gift from France, but America almost didn\u2019t accept her. Congress refused to pay for the pedestal, and the statue sat in pieces in warehouses. Joseph Pulitzer \u2014 a newspaper publisher \u2014 shamed the public into donating. Most of the money came from ordinary people giving less than a dollar each. The statue\u2019s copper skin is only 3/32 of an inch thick \u2014 about two pennies stacked together."
+  },
+  {
+    id: "ar3", category: "architecture", lat: 40.7061, lng: -73.9969,
+    title: "The Brooklyn Bridge", year: "1883",
+    story: "Right here, connecting Park Row in Manhattan to Sands Street in Brooklyn \u2014 the Brooklyn Bridge took 14 years to build and killed its designer, John Roebling, before construction even began \u2014 his foot was crushed by a ferry while surveying the site. His son Washington took over but got the bends from working in underwater chambers and had to supervise through a telescope from his apartment. His wife Emily effectively ran the project for years. On opening day, 12 people were crushed to death in a stampede caused by someone yelling that the bridge was collapsing."
+  },
+  {
+    id: "ar4", category: "architecture", lat: 40.7527, lng: -73.9772,
+    title: "Grand Central Terminal", year: "1913",
+    story: "Right here at 42nd and Park Avenue, Grand Central Terminal has a secret: the famous celestial ceiling is painted backwards \u2014 the constellations are reversed, as if you\u2019re looking at the sky from outside the celestial sphere. When it was built in 1913, it was the largest train station in the world. There\u2019s also a secret train platform \u2014 Track 61 \u2014 that was built for FDR so he could enter the Waldorf-Astoria without anyone seeing him in his wheelchair."
+  },
+  {
+    id: "c1", category: "crime", lat: 40.7242, lng: -73.9955,
+    title: "The Gangs of Five Points", year: "1840s",
+    story: "Right here, around where Worth, Baxter, and Park meet \u2014 the Five Points neighborhood was once called the most dangerous place in America. It was a tangle of gangs \u2014 the Dead Rabbits, the Bowery Boys, the Plug Uglies \u2014 fighting over territory in the most densely packed slum in the Western world. Charles Dickens visited in 1842 and was horrified. Abraham Lincoln came too. Martin Scorsese\u2019s \"Gangs of New York\" was based on what happened on these blocks, though the real thing was somehow more violent."
+  },
+  {
+    id: "c2", category: "crime", lat: 40.7258, lng: -73.9944,
+    title: "Murder at the Old Brewery", year: "1850s",
+    story: "The Old Brewery on this site was a former beer brewery converted into the most notorious tenement in New York. Over 1,000 people were crammed inside. It averaged a murder a night \u2014 at least according to the press, which loved to terrify readers with tales of Five Points. When it was finally demolished, workers allegedly found human bones in the walls. The building was replaced with a mission house."
+  },
+  {
+    id: "c3", category: "crime", lat: 40.7237, lng: -73.9935,
+    title: "The Mafia\u2019s Little Italy", year: "1920s",
+    story: "Right here on Mulberry Street between Grand and Broome, Little Italy was the American Mafia\u2019s cradle. Lucky Luciano, who basically organized the mob into a corporation, grew up blocks from here. The old Ravenite Social Club at 247 Mulberry was John Gotti\u2019s headquarters in the 1980s \u2014 the FBI eventually bugged an apartment upstairs and recorded him ordering hits. That\u2019s what finally brought the \"Teflon Don\" down."
+  },
+  {
+    id: "l1", category: "literary", lat: 40.7335, lng: -74.0003,
+    title: "The White Horse Tavern", year: "1953",
+    story: "567 Hudson Street, at 11th \u2014 the White Horse Tavern is where Dylan Thomas drank his last. The Welsh poet supposedly downed 18 straight whiskeys here on November 3, 1953, declared \"I believe that\u2019s the record,\" walked outside, collapsed, and died four days later. (Doctors later said it was probably closer to 6 whiskeys, combined with pneumonia and a destroyed liver.) Jack Kerouac was later banned from this same bar for being too rowdy."
+  },
+  {
+    id: "l2", category: "literary", lat: 40.7308, lng: -73.9975,
+    title: "The Birth of the Beat Generation", year: "1950s",
+    story: "Greenwich Village in the 1950s was the beating heart of the Beat Generation. Allen Ginsberg, Jack Kerouac, and William Burroughs haunted the cafes and bars around here. Ginsberg first read \"Howl\" in the Village. Kerouac wrote \"On the Road\" on a single 120-foot scroll of paper, supposedly fueled by coffee and benzedrine. The Beats rejected 1950s conformity and accidentally invented the counterculture."
+  },
+  {
+    id: "l3", category: "literary", lat: 40.7532, lng: -73.9822,
+    title: "The New York Public Library Lions", year: "1911",
+    story: "Right here at Fifth Avenue and 42nd Street, the two marble lions guarding the New York Public Library were originally named Leo Astor and Leo Lenox after the library\u2019s founders. During the Depression, Mayor LaGuardia renamed them \"Patience\" and \"Fortitude\" \u2014 qualities he said New Yorkers needed to survive hard times. The library holds over 55 million items, including a Gutenberg Bible and a lock of Mary Shelley\u2019s hair."
+  },
+  {
+    id: "fi1", category: "film", lat: 40.7736, lng: -73.9566,
+    title: "Ghostbusters Headquarters", year: "1984",
+    story: "14 North Moore Street in Tribeca \u2014 Hook & Ladder Company 8, a real working firehouse, was used as the exterior of the Ghostbusters\u2019 headquarters. When the movie came out in 1984, so many fans showed up that the firefighters had trouble getting their trucks out. The firehouse still has a Ghostbusters sign and ghost painted on the sidewalk outside. To this day, tourists outnumber actual fire calls."
+  },
+  {
+    id: "fi2", category: "film", lat: 40.7715, lng: -73.9744,
+    title: "Seinfeld\u2019s Tom\u2019s Restaurant", year: "1989",
+    story: "2880 Broadway, at 112th Street \u2014 Tom\u2019s Restaurant was the exterior of Monk\u2019s Caf\u00E9 in Seinfeld. Suzanne Vega also wrote the song \"Tom\u2019s Diner\" about this place. The real restaurant looks almost nothing like the Seinfeld set inside \u2014 the interior was a studio in LA. But the owners have leaned into it hard. Every day, tourists line up to eat mediocre diner food at inflated prices because they saw it on TV. That\u2019s the most New York thing possible."
+  },
+  {
+    id: "fi3", category: "film", lat: 40.7580, lng: -73.9741,
+    title: "Breakfast at Tiffany\u2019s", year: "1961",
+    story: "Right here at 727 Fifth Avenue, at 57th Street \u2014 Holly Golightly, Audrey Hepburn, ate a croissant and stared into the Tiffany\u2019s window. Truman Capote, who wrote the novella, wanted Marilyn Monroe for the role. Monroe\u2019s acting coach told her not to take it because playing a \"lady of the evening\" would hurt her image. Hepburn got the part and created one of the most iconic movie moments ever filmed. Capote was furious."
+  },
+  {
+    id: "sc1", category: "science", lat: 40.7295, lng: -74.0067,
+    title: "The First Telegraph Message From NYC", year: "1844",
+    story: "Samuel Morse sent his famous \"What hath God wrought\" message from Washington to Baltimore, but it was here in New York where the telegraph changed the world. Within years, a web of telegraph wires covered Manhattan, and news that once took days to travel arrived in seconds. The Associated Press was founded here largely because of the telegraph. This one invention basically invented modern communication."
+  },
+  {
+    id: "sc2", category: "science", lat: 40.7352, lng: -73.9946,
+    title: "Where Tesla Lit Up the World", year: "1895",
+    story: "Right here on South Fifth Avenue \u2014 now called West Broadway, near Houston \u2014 Nikola Tesla had his laboratory. He was working on wireless power transmission, X-rays, and ideas so far ahead of their time that people thought he was crazy. His lab burned down in 1895, destroying years of research. Tesla walked to the site, stared at the ashes, and said he could rebuild everything from memory. He probably could \u2014 the man literally visualized complete machines in his mind before building them."
+  },
+  {
+    id: "r1", category: "revolution", lat: 40.7115, lng: -74.0134,
+    title: "Alexander Hamilton\u2019s New York", year: "1780s",
+    story: "Alexander Hamilton set up shop in lower Manhattan after the Revolution and basically willed America\u2019s financial system into existence from this neighborhood. He founded the Bank of New York, wrote most of the Federalist Papers from his house nearby, and established the U.S. Mint. His rival Aaron Burr killed him in a duel across the river in New Jersey, in 1804. Hamilton\u2019s son Philip had been killed in a duel at the exact same spot three years earlier."
+  },
+  {
+    id: "r2", category: "revolution", lat: 40.7065, lng: -74.0176,
+    title: "The Bowling Green Rebellion", year: "1776",
+    story: "On July 9, 1776, George Washington had the Declaration of Independence read aloud to his troops here. A mob of soldiers and citizens then marched to Bowling Green and tore down a 4,000-pound gilded lead statue of King George III. They melted it down and turned it into 42,088 musket balls to shoot at the British. That is, without exaggeration, the hardest thing that has ever happened."
+  },
+  {
+    id: "r3", category: "revolution", lat: 40.7342, lng: -74.0027,
+    title: "Stonewall: The Night That Changed Everything", year: "1969",
+    story: "51-53 Christopher Street, right here in the Village \u2014 in the early hours of June 28, 1969, police raided the Stonewall Inn. But this time, the patrons fought back. The riots that followed \u2014 led largely by transgender women of color like Marsha P. Johnson and Sylvia Rivera \u2014 sparked the modern LGBTQ+ rights movement. Within months, activist organizations formed across the country. The first Pride marches were held on the one-year anniversary. It all started at this bar."
+  },
+  {
+    id: "b7", category: "business", lat: 40.7580, lng: -73.9710,
+    title: "Rockefeller Center\u2019s Big Bet", year: "1930",
+    story: "John D. Rockefeller Jr. signed the lease for this land right before the stock market crashed. He was stuck with the most expensive real estate project in history during the worst depression in history. Everyone thought he was insane. He built it anyway \u2014 the entire 14-building complex \u2014 and created 75,000 jobs during the Depression. The ice rink was supposed to be temporary. It\u2019s been here for 88 years."
+  },
+  {
+    id: "a5", category: "arts", lat: 40.7791, lng: -73.9634,
+    title: "The Guggenheim\u2019s Controversial Design", year: "1959",
+    story: "1071 Fifth Avenue, at 89th Street \u2014 when Frank Lloyd Wright\u2019s Guggenheim Museum opened, artists hated it. They signed a letter protesting that the sloped walls would make their paintings hang crooked. Critics called it a \"washing machine\" and a \"giant corkscrew.\" Wright, who had died six months before it opened, had spent 16 years fighting with the city to get it built. He never saw the finished product that became one of the most celebrated buildings in America."
+  },
+  {
+    id: "p6", category: "politics", lat: 40.6997, lng: -74.0399,
+    title: "Ellis Island\u2019s Front Door", year: "1892",
+    story: "Over 12 million immigrants entered the United States through Ellis Island between 1892 and 1954. Roughly 40% of all Americans today can trace at least one ancestor through this door. The inspection process took 3-5 hours for most people. Doctors marked immigrants with chalk letters \u2014 \"H\" for heart, \"E\" for eyes, \"X\" for mental illness. Only about 2% were turned away, but for those people, Ellis Island earned the nickname \"The Island of Tears.\""
+  },
+  {
+    id: "f5", category: "food", lat: 40.7420, lng: -74.0065,
+    title: "The Meatpacking District", year: "1900s",
+    story: "Right here around Gansevoort and Washington Street, the Meatpacking District was exactly what it sounds like \u2014 250 slaughterhouses and packing plants processing meat for the entire city. By the 1980s, the area was largely abandoned and became known for its underground club scene and nightlife. The transformation from bloody cobblestones to Stella McCartney storefronts took about 15 years and remains one of the most dramatic neighborhood makeovers in NYC history."
+  },
+  {
+    id: "ar5", category: "architecture", lat: 40.7527, lng: -73.9555,
+    title: "The United Nations", year: "1952",
+    story: "Right here along First Avenue, between 42nd and 48th Streets, the UN headquarters sits on land that was once a slaughterhouse district. Nelson Rockefeller bought the 18-acre site and donated it to the UN specifically to keep the organization in New York (other cities were competing for it). The campus is technically international territory \u2014 it\u2019s not part of the United States. The NYPD can\u2019t even enter without permission. There\u2019s a post office inside that issues its own stamps."
+  },
+  {
+    id: "c4", category: "crime", lat: 40.7580, lng: -73.9880,
+    title: "The Times Square Cleanup", year: "1990s",
+    story: "Right here around 42nd between 7th and 8th, Times Square was infamous in the 1970s and 80s for crime, drugs, and peep shows. The \"Deuce\" \u2014 42nd Street \u2014 was the kind of place where you could buy stolen goods, illegal substances, and trouble in any order. Mayor Giuliani\u2019s crackdown in the 90s turned it into the tourist magnet you see today. Whether that was progress or sanitization depends entirely on who you ask. The old Times Square was dangerous but alive. The new one is safe but corporate."
+  },
+
+  // === JOHN D. ROCKEFELLER: A LIFE ACROSS NYC ===
+  // confidence: "exact" = verified address, "general" = right block/area, "low" = neighborhood-level guess
+  {
+    id: "jdr1", category: "business", lat: 40.7063, lng: -74.0060,
+    title: "Rockefeller\u2019s First Job at 16", year: "1855",
+    confidence: "general", // Hewitt & Tuttle was on Front Street but exact address uncertain
+    story: "Right here on Front Street, near Fulton, John D. Rockefeller landed his first job as a bookkeeper at Hewitt & Tuttle, a small produce commission firm. He was 16 years old, had no connections, and had walked the streets of lower Manhattan for six straight weeks knocking on doors before anyone hired him. He made $3.50 a week. He later said September 26, 1855 \u2014 the day he got that job \u2014 was the most important day of his life, more important than any oil deal. He celebrated its anniversary every year like a second birthday."
+  },
+  {
+    id: "jdr2", category: "business", lat: 40.7120, lng: -74.0072,
+    title: "Where Standard Oil Ran the World", year: "1885",
+    confidence: "exact", // 26 Broadway is well-documented, building still stands
+    story: "26 Broadway was the headquarters of Standard Oil, and for decades it was the most powerful address in American capitalism. From this building, Rockefeller controlled over 90% of the oil refined in the United States. The operation was so secretive that employees entered through unmarked doors, and Rockefeller himself kept no nameplate on his office. When the Supreme Court broke up Standard Oil in 1911, the pieces became Exxon, Mobil, Chevron, Amoco, and a half-dozen other companies. The breakup actually made Rockefeller richer \u2014 his shares in all the baby companies skyrocketed."
+  },
+  {
+    id: "jdr3", category: "business", lat: 40.7541, lng: -73.9791,
+    title: "The Church Rockefeller Tithed At", year: "1900s",
+    confidence: "general", // Fifth Avenue Baptist Church was on 5th Ave near 46th, later moved
+    story: "Rockefeller was a devout Baptist his entire life, and he funded the construction of Riverside Church up on the Upper West Side. But his faith started here in Midtown \u2014 he taught Sunday school at the Fifth Avenue Baptist Church for years, arriving early, staying late, quietly tithing 10% of every dollar he ever earned starting from that first $3.50-a-week bookkeeping job. He tithed before he was rich, while he was getting rich, and after he was the richest man alive. He gave away $540 million in his lifetime \u2014 about $11 billion in today\u2019s dollars."
+  },
+  {
+    id: "jdr4", category: "business", lat: 40.7614, lng: -73.9776,
+    title: "Rockefeller\u2019s Midtown Mansion", year: "1884",
+    confidence: "exact", // 4 West 54th Street, now MoMA sculpture garden, well-documented
+    story: "Rockefeller lived in a massive brownstone mansion at 4 West 54th Street \u2014 right where MoMA\u2019s sculpture garden is now. His son, Junior, grew up here and later bought the surrounding lots. The family literally reshaped this entire section of Midtown. When Junior\u2019s wife Abby wanted to start a modern art museum, he wasn\u2019t interested \u2014 he thought modern art was ugly. But she co-founded MoMA anyway, and he eventually donated the land. The museum that defines modern art sits on the backyard of a man who didn\u2019t like modern art."
+  },
+  {
+    id: "jdr5", category: "business", lat: 40.7580, lng: -73.9710,
+    title: "Rockefeller Center\u2019s Desperate Bet", year: "1930",
+    confidence: "exact", // Rockefeller Center, obvious
+    story: "You already know Rockefeller Center, but here\u2019s what most people miss: Junior never planned to build it. He\u2019d leased this land from Columbia University to build a new Metropolitan Opera house. When the stock market crashed in 1929, the Opera pulled out and Junior was stuck with the most expensive empty lot in the world. Instead of walking away, he decided to build the largest private construction project in history \u2014 during the Great Depression. His father, 91 years old at the time, thought he\u2019d lost his mind. It employed 75,000 workers and saved countless families from ruin."
+  },
+  {
+    id: "jdr6", category: "business", lat: 40.8142, lng: -73.9420,
+    title: "Rockefeller\u2019s Harlem Giving", year: "1909",
+    confidence: "low", // General Harlem area, no specific address for his giving here
+    story: "Rockefeller was one of the earliest major white philanthropists to fund Black institutions in America. He poured millions into Spelman College in Atlanta (named after his wife\u2019s family) and funded Black churches, schools, and hospitals across the country. Up here in Harlem, his philanthropy helped establish institutions that anchored the neighborhood through the Renaissance era. He was complicated \u2014 the same man who crushed competitors without mercy wrote personal checks to freedmen\u2019s schools. He said giving away money was harder than making it."
+  },
+  {
+    id: "jdr7", category: "business", lat: 40.7489, lng: -73.9680,
+    title: "Rockefeller\u2019s Gift That Kept the UN", year: "1946",
+    confidence: "exact", // UN headquarters site, well-documented $8.5M purchase
+    story: "When the United Nations was looking for a permanent home after World War II, cities around the world competed for it. New York was about to lose. Then Junior Rockefeller wrote a check for $8.5 million to buy this 18-acre stretch of slaughterhouses and packing plants along the East River and donated it to the UN. He did it in a single phone call, in one evening. His father had taught him that strategic generosity was the most powerful business move there was. That one check kept the center of global diplomacy in New York forever."
+  },
+  {
+    id: "jdr8", category: "business", lat: 40.7461, lng: -73.9817,
+    title: "Where Rockefeller Gave Away Dimes", year: "1900s",
+    confidence: "low", // He did this everywhere, no specific location — generic Midtown pin
+    story: "Rockefeller had a famous habit: he carried shiny new dimes everywhere and handed them to strangers \u2014 bellhops, children, reporters, anyone. It started as genuine kindness but became a PR strategy when Ida Tarbell\u2019s expos\u00E9 painted him as a monster. He\u2019d walk down streets near his Midtown office pressing dimes into people\u2019s hands, saying \u201CHere\u2019s a dime \u2014 don\u2019t spend it all in one place.\u201D He gave away an estimated 30,000 dimes in his lifetime. The richest man in the world, buying goodwill ten cents at a time."
+  },
+  {
+    id: "jdr9", category: "business", lat: 40.7628, lng: -73.9558,
+    title: "The University Rockefeller Built From Scratch", year: "1901",
+    confidence: "exact", // Rockefeller University at 1230 York Ave, still there
+    story: "Rockefeller founded the Rockefeller Institute for Medical Research \u2014 now Rockefeller University \u2014 right here on the Upper East Side along the East River. The Institute would go on to produce 26 Nobel laureates. Rockefeller himself never graduated from college \u2014 he\u2019d taken a 10-week bookkeeping course and gone straight to work. But he spent more money on education and medical research than any human being had before him, fundamentally changing how America funds science. The campus is still here, still producing breakthroughs, funded by the fortune of a man with no degree."
+  },
+  {
+    id: "jdr10", category: "business", lat: 40.7600, lng: -73.9770,
+    title: "The Rockefeller Family Compound", year: "1870s",
+    confidence: "general", // Rockefellers were concentrated in West 50s, general area
+    story: "By the 1880s, the Rockefellers had colonized the West 50s. John D. lived at 4 West 54th, his brother William built a mansion at 689 Fifth Avenue, and various family members filled brownstones on surrounding blocks. It was a dynasty in a five-block radius. The family\u2019s grip on this stretch of Manhattan lasted generations \u2014 Junior built Rockefeller Center to the west, Nelson became governor, David ran Chase Manhattan Bank downtown. No single family has ever physically shaped more of New York City. Walk these blocks and you\u2019re walking through their living room."
+  },
+
+  // === J.P. MORGAN ===
+  {
+    id: "jpm1", category: "business", lat: 40.7068, lng: -74.0090,
+    title: "The Bank That Saved America", year: "1907",
+    confidence: "exact", // 23 Wall Street, still stands, still has bomb scars
+    story: "23 Wall Street \u2014 \u201CThe Corner\u201D \u2014 was the headquarters of J.P. Morgan & Co. and arguably the most powerful address in financial history. In 1907, when the entire U.S. banking system was collapsing, Morgan personally locked the nation\u2019s top bankers inside his library down the block and refused to let them leave until they agreed to a rescue plan. He was 70 years old and essentially acted as a one-man Federal Reserve. The Fed was created six years later specifically so no single person would ever have that much power again."
+  },
+  {
+    id: "jpm2", category: "business", lat: 40.7490, lng: -73.9812,
+    title: "Morgan\u2019s Personal Library", year: "1906",
+    confidence: "exact", // Morgan Library at 225 Madison Ave (36th & Madison), still a museum
+    story: "J.P. Morgan built this library at 225 Madison Avenue not for books \u2014 for power. He filled it with Gutenberg Bibles, manuscripts by Beethoven and Dickens, and Renaissance paintings. The 1907 Panic meetings happened in this room. Morgan would sit in his private study while the nation\u2019s bankers waited in the ornate East Room, summoned one by one. The building cost $1.2 million in 1906 \u2014 about $40 million today \u2014 and it was essentially his man cave. It\u2019s now a public museum. You can stand in the exact room where American capitalism was saved."
+  },
+  {
+    id: "jpm3", category: "business", lat: 40.7493, lng: -73.9818,
+    title: "Morgan\u2019s Mansion Next Door", year: "1880s",
+    confidence: "exact", // 219 Madison Ave, next to the library, well-documented
+    story: "Morgan\u2019s home at 219 Madison Avenue was right next to his library \u2014 he literally built a palace for his books next to his house. He was famous for his enormous, disfigured nose, caused by a skin condition called rhinophyma. He was so self-conscious about it that he\u2019d fly into a rage if photographers caught him at the wrong angle. Despite being the most powerful financier alive, he almost never allowed close-up photos. The few that exist show a man who looked terrifying. He once told a photographer, \u201CYou can do whatever you want, but I want no one to see that nose.\u201D"
+  },
+  {
+    id: "jpm4", category: "business", lat: 40.7073, lng: -74.0094,
+    title: "The Wall Street Bombing", year: "1920",
+    confidence: "exact", // 23 Wall Street, shrapnel scars still visible on the building
+    story: "On September 16, 1920, a horse-drawn cart packed with dynamite and iron window sash weights exploded right here in front of Morgan\u2019s bank. 38 people were killed, hundreds injured. The blast was so powerful it launched the iron weights like shrapnel into the limestone facade. The scars are still visible on the building today \u2014 Morgan deliberately never repaired them as a show of defiance. The bombing was never solved. It remains the deadliest act of terrorism on Wall Street in history, and you can still reach out and touch the pockmarks."
+  },
+  {
+    id: "jpm5", category: "business", lat: 40.7084, lng: -74.0141,
+    title: "Where Morgan Started on Wall Street", year: "1857",
+    confidence: "general", // His father Junius worked at various Exchange Place offices
+    story: "Before he was the king of Wall Street, young Pierpont Morgan was just a banker\u2019s son learning the trade in offices around Exchange Place. His father Junius sent him to work at Duncan, Sherman & Co. near here. On his very first day of work, he walked into a coffee house and bought an entire shipload of coffee on a hunch, without authorization. He sold it at a profit before anyone found out. He was 20 years old. That reckless confidence \u2014 bet big, act first, explain later \u2014 would define American finance for the next 50 years."
+  },
+
+  // === CORNELIUS VANDERBILT ===
+  {
+    id: "cv1", category: "business", lat: 40.6895, lng: -74.0745,
+    title: "Vanderbilt\u2019s First Ferry", year: "1810",
+    confidence: "general", // Operated from Staten Island ferry landing, general area
+    story: "Cornelius Vanderbilt started here at age 16, borrowing $100 from his mother to buy a small sailboat and run a ferry service from Staten Island to Manhattan. He was loud, profane, and ruthless from the start. He undercut every competitor\u2019s prices until they either went broke or paid him to go away. By 25 he was running steamboats. By 40 he owned more ships than anyone in America. By 70 he\u2019d abandoned ships entirely and built a railroad empire. He went from a kid with a borrowed boat to the richest man in American history."
+  },
+  {
+    id: "cv2", category: "business", lat: 40.7527, lng: -73.9772,
+    title: "The Terminal Vanderbilt Built", year: "1871",
+    confidence: "exact", // Grand Central Depot/Terminal, same site
+    story: "Right here at 42nd and Park Avenue, Vanderbilt built the original Grand Central Depot in 1871 \u2014 the predecessor to the terminal you see today. He chose this spot because the city had banned steam trains below 42nd Street after too many people were killed by locomotives on open tracks. So the Commodore bought up everything around 42nd and built his gateway to the city. The current Grand Central Terminal was built by his descendants in 1913. Three generations of Vanderbilts shaped this single intersection, and 750,000 people still pass through it every day."
+  },
+  {
+    id: "cv3", category: "business", lat: 40.7629, lng: -73.9740,
+    title: "Vanderbilt Row: Millionaire\u2019s Mile", year: "1880s",
+    confidence: "general", // Fifth Avenue from 51st-58th, all demolished now
+    story: "Right here along Fifth Avenue, from 51st to 58th Street, this stretch was once called \u201CVanderbilt Row\u201D \u2014 an entire corridor of mansions built by Cornelius Vanderbilt\u2019s children and grandchildren, each trying to outdo the others. His grandson Cornelius II built the largest private home in Manhattan at 1 West 57th Street \u2014 130 rooms. His granddaughter-in-law Alva built a French ch\u00E2teau at 660 Fifth to crash New York society. Every single one of these mansions has been demolished. The family that once owned this avenue left no physical trace. The money lasted three generations. Then it was gone."
+  },
+  {
+    id: "cv4", category: "business", lat: 40.7413, lng: -73.9897,
+    title: "Vanderbilt\u2019s Statue in the Shadows", year: "1869",
+    confidence: "exact", // Vanderbilt bronze relief is on the south facade of Grand Central, but also a statue near the old freight depot area
+    story: "Vanderbilt never cared what anyone thought of him. When a business partner once complained about being cheated, Vanderbilt wrote back: \u201CYou have undertaken to cheat me. I won\u2019t sue you, for the law is too slow. I\u2019ll ruin you.\u201D He meant it. He died in 1877 with $100 million \u2014 more money than was in the entire U.S. Treasury. His last words were reportedly a request to sing hymns. The most ruthless capitalist in American history died listening to gospel music."
+  },
+  {
+    id: "cv5", category: "business", lat: 40.7280, lng: -74.0063,
+    title: "Where Vanderbilt Lived as a Nobody", year: "1829",
+    confidence: "general", // Lived in various spots around lower Manhattan early on
+    story: "Before the mansions, before the railroads, Vanderbilt lived in cheap boarding houses down here near the waterfront. He smelled like the docks. He ate with his hands. High society thought he was trash. When he finally had money, the old-money families of New York refused to let him into their circles. So he built a 300-foot yacht, sailed it to Europe, and was received by Queen Victoria \u2014 then came home and told New York society to go to hell. He never stopped being the rough kid from the docks. He just got richer."
+  },
+
+  // === P.T. BARNUM ===
+  {
+    id: "ptb1", category: "business", lat: 40.7112, lng: -74.0070,
+    title: "Barnum\u2019s American Museum", year: "1841",
+    confidence: "exact", // Broadway & Ann Street, extremely well-documented
+    story: "Right here at the corner of Broadway and Ann Street, P.T. Barnum\u2019s American Museum stood, and it was the most popular attraction in America. He bought it in 1841 with almost no money down, then filled it with everything he could find: a \u201CFejee Mermaid\u201D (a monkey torso sewn to a fish), alleged 161-year-old women, giants, little people, and 850,000 curiosities. He flew giant flags and put a spotlight on the roof visible from the harbor. The building burned down spectacularly in 1865 \u2014 animals escaped into the streets, and New Yorkers watched an elephant try to jump from a second-story window."
+  },
+  {
+    id: "ptb2", category: "business", lat: 40.7106, lng: -74.0055,
+    title: "Barnum\u2019s Second Museum Burns Too", year: "1868",
+    confidence: "exact", // 539-541 Broadway, between Spring and Prince, well-documented
+    story: "After his first museum burned, Barnum immediately opened a second one nearby. It also burned down, in 1868. Some suspected arson both times. Barnum barely flinched. He\u2019d already figured out that controversy and disaster were just another form of publicity. He once said \u201CThere\u2019s no such thing as bad publicity,\u201D which he may or may not have actually said \u2014 but either way, the man turned two catastrophic fires into the greatest comeback story in entertainment. He pivoted to the circus and became even more famous."
+  },
+  {
+    id: "ptb3", category: "business", lat: 40.7506, lng: -73.9892,
+    title: "Barnum\u2019s Hippodrome", year: "1874",
+    confidence: "general", // P.T. Barnum's Great Roman Hippodrome was near Madison Square, approximate
+    story: "Right here near Madison Square, around 26th and Madison, Barnum opened his Great Roman Hippodrome in 1874 \u2014 a massive arena that could hold 10,000 people. This was the precursor to Madison Square Garden and the beginning of \u201CThe Greatest Show on Earth.\u201D He was 64 years old and had already been bankrupt, widowed, and burned out (literally). Most people would have retired. Instead he created the modern circus \u2014 three rings instead of one, so there was always something to look at. He understood, decades before anyone else, that Americans would pay for spectacle."
+  },
+  {
+    id: "ptb4", category: "business", lat: 40.7130, lng: -74.0000,
+    title: "Barnum\u2019s Genius Scam on Broadway", year: "1842",
+    confidence: "general", // Happened near his Broadway museum
+    story: "Barnum once hired a man to silently place bricks on the sidewalk at four corners near his museum, walk between them without saying a word, then enter the museum. Crowds gathered trying to figure out what the man was doing. They followed him inside \u2014 and bought tickets. It was pure manufactured curiosity. Barnum understood that people don\u2019t pay for answers, they pay for questions. He invented viral marketing 170 years before the internet. Every influencer, every clickbait headline, every mystery-box campaign traces back to a guy laying bricks on Broadway."
+  },
+
+  // === ANDREW CARNEGIE ===
+  {
+    id: "ac1", category: "business", lat: 40.7840, lng: -73.9574,
+    title: "Carnegie\u2019s Mansion on Millionaire\u2019s Row", year: "1903",
+    confidence: "exact", // 2 East 91st Street, now Cooper Hewitt Museum, still stands
+    story: "Andrew Carnegie built his mansion at 2 East 91st Street in 1903, and at the time it was so far uptown that people thought he\u2019d lost his mind. Fifth Avenue\u2019s mansions stopped around 70th Street \u2014 above that was basically farmland. Carnegie didn\u2019t care. He said he wanted \u201Cthe most modest, plainest, and most roomy house in New York.\u201D It had 64 rooms, an elevator, a huge garden, and the first residential steel frame in the city. The building is now the Cooper Hewitt Smithsonian Design Museum. You can walk through the rooms where the king of steel ate breakfast."
+  },
+  {
+    id: "ac2", category: "business", lat: 40.7651, lng: -73.9798,
+    title: "Carnegie Hall Was a Side Project", year: "1891",
+    confidence: "exact", // Carnegie Hall at 57th & 7th Ave, still stands
+    story: "Right here at 57th and Seventh Avenue, Carnegie built Carnegie Hall in 1891 because his wife liked music. That\u2019s basically the whole origin story. He\u2019d met the conductor Walter Damrosch on a steamship, Damrosch complained that New York had no proper concert hall, and Carnegie said he\u2019d build one. It cost him $2 million. When it opened, Tchaikovsky conducted the first performance. Carnegie himself was nearly deaf by this point and couldn\u2019t fully hear what he\u2019d paid for. The building was almost demolished in the 1960s for a red office tower. Isaac Stern led the fight to save it."
+  },
+  {
+    id: "ac3", category: "business", lat: 40.7540, lng: -73.9710,
+    title: "Carnegie\u2019s Gospel of Wealth", year: "1889",
+    confidence: "general", // He had offices in Midtown, general area
+    story: "Carnegie published \u201CThe Gospel of Wealth\u201D in 1889, arguing that the rich had a moral obligation to give away their fortunes before they died. Then he actually did it. He funded 2,509 public libraries around the world, including dozens in New York. He gave away $350 million \u2014 roughly $11 billion today \u2014 and died with almost nothing. He believed inherited wealth destroyed families: \u201CThe parent who leaves his son enormous wealth generally deadens the talents and energies of the son.\u201D The Vanderbilts proved him right within two generations."
+  },
+  {
+    id: "ac4", category: "business", lat: 40.7500, lng: -73.9765,
+    title: "The Steel King\u2019s Arrival in Manhattan", year: "1867",
+    confidence: "general", // Carnegie had early offices in the Windsor Hotel area, approximate
+    story: "Carnegie arrived in New York from Pittsburgh in the late 1860s, a short, hyperactive Scottish immigrant who talked nonstop. He\u2019d made his first fortune in railroads and oil during the Civil War, and he came to Manhattan to be closer to the financial action. He checked into a hotel and started working every contact he had. Within a decade he\u2019d built the largest steel company on Earth. He sold it to J.P. Morgan in 1901 for $480 million \u2014 the biggest business deal in history at the time. Morgan told him, \u201CCongratulations, Mr. Carnegie, you are now the richest man in the world.\u201D"
+  },
+  {
+    id: "ac5", category: "business", lat: 40.7944, lng: -73.9499,
+    title: "Carnegie\u2019s Gift to East Harlem", year: "1905",
+    confidence: "exact", // Carnegie funded the Aguilar Free Library branches, 174 E 110th St area
+    story: "Carnegie didn\u2019t just build libraries for rich neighborhoods. He funded branch libraries in the poorest parts of the city, including multiple branches in East Harlem and the Lower East Side serving immigrant communities. His one condition: the city had to agree to fund the ongoing operations. He\u2019d pay to build them, but the public had to commit to keeping them open. It was a handshake deal with the city that\u2019s still honored today. Over a century later, New Yorkers who\u2019ve never heard of Carnegie read books in buildings he paid for."
+  },
+
+  // === ALEXANDER HAMILTON (business focus) ===
+  {
+    id: "ah1", category: "business", lat: 40.7074, lng: -74.0120,
+    title: "Hamilton Founded a Bank on This Corner", year: "1784",
+    confidence: "exact", // Bank of New York, originally at Walnut & Hanover Streets (now Pearl St area)
+    story: "Alexander Hamilton founded the Bank of New York in 1784 \u2014 the oldest continuously operating bank in America. It started in a small house near here, the Walton mansion on Pearl Street. Hamilton wrote the bank\u2019s constitution by hand. He was 29 years old and already designing the financial architecture of a country that didn\u2019t have one yet. The bank he founded eventually merged and became BNY Mellon, now managing $46 trillion in assets. From a handwritten charter in a Pearl Street mansion to the largest custodian bank on Earth."
+  },
+  {
+    id: "ah2", category: "business", lat: 40.7050, lng: -74.0139,
+    title: "Hamilton\u2019s Customs House", year: "1789",
+    confidence: "exact", // Hamilton operated from offices at Federal Hall / customs area
+    story: "As the first Secretary of the Treasury, Hamilton ran the nation\u2019s finances from offices near here in lower Manhattan. He created the customs system that funded the entire federal government \u2014 there was no income tax, so tariffs on imports were basically the only revenue the country had. He personally designed the customs enforcement system, set the tariff rates, and fought Congress when they wanted to spend money they didn\u2019t have. He was doing the work of Treasury Secretary, Fed Chair, and IRS Commissioner simultaneously. He was 34."
+  },
+  {
+    id: "ah3", category: "business", lat: 40.8337, lng: -73.9475,
+    title: "Hamilton Grange: His Only Home", year: "1802",
+    confidence: "exact", // Hamilton Grange at St. Nicholas Park, 141st St, moved but preserved
+    story: "Hamilton Grange \u2014 right here in St. Nicholas Park \u2014 was the only home Alexander Hamilton ever owned. He designed it himself, named it after his family\u2019s ancestral estate in Scotland, and spent two years building it. He moved in and got to enjoy it for exactly two years before Aaron Burr killed him. The house has been moved twice \u2014 first by a church that needed the land, then by the National Park Service. It\u2019s now a museum. He built it with borrowed money he never paid off. Even Hamilton, the architect of American finance, died in debt."
+  },
+
+  // === DONALD TRUMP / FRED TRUMP ===
+  {
+    id: "dt1", category: "business", lat: 40.7625, lng: -73.9742,
+    title: "Trump Tower: The Manhattan Debut", year: "1983",
+    confidence: "exact", // 725 Fifth Avenue, obviously still there
+    story: "Trump Tower at 725 Fifth Avenue was Donald Trump\u2019s announcement to Manhattan that he\u2019d arrived. His father Fred was a successful outer-borough builder, but the family was considered bridge-and-tunnel by Manhattan standards. Donald wanted Fifth Avenue. He demolished the historic Bonwit Teller department store to build this tower, controversially destroying two Art Deco friezes he\u2019d promised to the Metropolitan Museum. The pink marble atrium was designed to scream new money in a city that worshipped old money. Love it or hate it, it worked \u2014 it made him the most famous developer in America overnight."
+  },
+  {
+    id: "dt2", category: "business", lat: 40.7510, lng: -73.9760,
+    title: "Trump\u2019s First Manhattan Deal", year: "1978",
+    confidence: "exact", // Commodore Hotel at 109 E 42nd St, now Grand Hyatt, still stands
+    story: "Before Trump Tower, there was the Commodore Hotel. The old hotel next to Grand Central was bankrupt and crumbling in the late 1970s when New York City itself was nearly broke. Trump, just 30 years old, convinced the city to give him a 40-year tax abatement, got Hyatt to partner, and transformed it into the Grand Hyatt. It was audacious \u2014 a kid with no Manhattan track record talking a dying city into a massive tax break. The deal made him. Every New York real estate developer since has studied how he structured it."
+  },
+  {
+    id: "dt3", category: "business", lat: 40.7133, lng: -73.7594,
+    title: "Fred Trump\u2019s Queens Empire", year: "1930s",
+    confidence: "exact", // Jamaica Estates, Queens \u2014 Trump childhood home at 85-15 Wareham Place
+    story: "Donald Trump grew up here in Jamaica Estates, Queens \u2014 a comfortable but decidedly un-glamorous suburb. His father Fred built thousands of middle-class apartments across Brooklyn and Queens, making a fortune without ever touching Manhattan. Fred was methodical, penny-pinching, and allergic to publicity. Donald was the opposite in every way. The tension between outer-borough builder and Manhattan showman defined the Trump story. Fred reportedly told friends he worried about Donald\u2019s flash. Donald reportedly thought Fred\u2019s projects were beneath him. They were both right."
+  },
+  {
+    id: "dt4", category: "business", lat: 40.6689, lng: -73.9426,
+    title: "Fred Trump\u2019s Brooklyn Office", year: "1940s",
+    confidence: "general", // Trump Management at Avenue Z in Flatbush/Sheepshead Bay area
+    story: "Fred Trump ran his real estate empire from a modest office on Avenue Z in Brooklyn. While Manhattan developers had mahogany-paneled offices, Fred worked from what looked like an insurance agency. He\u2019d collect rent personally, inspect buildings himself, and pick up unused nails from construction sites to save money. He built over 27,000 apartments and was worth hundreds of millions, but he never moved to Manhattan and never wanted to. When Donald asked to borrow money for his first Manhattan deal, Fred co-signed \u2014 but he didn\u2019t understand why anyone would leave Brooklyn."
+  },
+  {
+    id: "dt5", category: "business", lat: 40.7685, lng: -73.9822,
+    title: "Trump\u2019s Central Park Gamble", year: "1986",
+    confidence: "exact", // Wollman Rink in Central Park, well-documented
+    story: "In 1986, the city had spent six years and $13 million trying to renovate the Wollman ice rink in Central Park. It still didn\u2019t work. Trump publicly shamed Mayor Koch, offered to fix it himself, and finished the job in four months for $2.5 million \u2014 under budget. It was a masterclass in PR: a private developer embarrassing the government by simply getting something done. Koch was furious. The media loved it. Trump understood that building things was less important than being seen building things. The rink still operates today."
+  },
+
+  // === THE ASTOR FAMILY ===
+  {
+    id: "ast1", category: "business", lat: 40.7112, lng: -74.0063,
+    title: "Astor\u2019s Fur Trading Fortune", year: "1786",
+    confidence: "general", // Astor's early fur business was in lower Manhattan, approximate
+    story: "John Jacob Astor arrived in New York in 1784 with almost nothing \u2014 a German immigrant with seven flutes to sell and no English. He started buying furs from Native Americans upstate, shipping them to London and China, and reinvesting every penny into Manhattan real estate. His strategy was brutal in its simplicity: buy land, wait, get rich. He bought farms north of the city for almost nothing and waited for the city to grow into them. By the time he died in 1848, he was the richest person in America. His fortune was built on two things: dead animals and patience."
+  },
+  {
+    id: "ast2", category: "business", lat: 40.7267, lng: -73.9918,
+    title: "Astor Place and the Opera Riot", year: "1849",
+    confidence: "exact", // Astor Place, well-documented location
+    story: "Astor Place is named after the family, and in 1849 it was the site of one of the strangest riots in American history. Two rival Shakespearean actors \u2014 one American, one British \u2014 performed Macbeth at competing theaters. Working-class fans of the American actor attacked the Astor Place Opera House, which catered to the wealthy. The militia was called in and fired into the crowd, killing at least 22 people. A riot over Shakespeare. It exposed the class war between old-money New York and the immigrant working class \u2014 a war the Astors were firmly on one side of."
+  },
+  {
+    id: "ast3", category: "business", lat: 40.7484, lng: -73.9857,
+    title: "Mrs. Astor\u2019s Ballroom (Now the Empire State)", year: "1890s",
+    confidence: "exact", // Mrs. Astor's mansion at 350 Fifth Ave, demolished for Empire State Building
+    story: "Right here at 34th and Fifth \u2014 where the Empire State Building stands \u2014 there was once a mansion belonging to Mrs. Caroline Astor \u2014 the self-appointed queen of New York society. Her ballroom held exactly 400 people, which is why New York\u2019s elite were called \u201CThe Four Hundred.\u201D If you weren\u2019t on her list, you didn\u2019t exist. Her nephew William Waldorf Astor built the Waldorf Hotel right next door to spite her. She responded by building the Astoria Hotel next to his. Eventually the two hotels merged into the Waldorf-Astoria. When they tore it all down, they built the tallest building in the world on top of a family feud."
+  },
+  {
+    id: "ast4", category: "business", lat: 40.7532, lng: -73.9822,
+    title: "The Astor Library That Became a Theater", year: "1854",
+    confidence: "exact", // Astor Library at 425 Lafayette Street, now The Public Theater
+    story: "Right here at 425 Lafayette Street, John Jacob Astor left $400,000 in his will to build a public library \u2014 the Astor Library. It was one of the first free public libraries in America. His heirs kept funding it. Eventually it merged with two other libraries to become the New York Public Library. The original building sat empty until Joseph Papp turned it into The Public Theater in 1967, where \u201CHair\u201D and \u201CA Chorus Line\u201D premiered. A building funded by fur-trade money became the birthplace of modern American theater. Astor would have been appalled."
+  },
+  {
+    id: "ast5", category: "business", lat: 40.7571, lng: -73.9862,
+    title: "The Waldorf-Astoria: Born from Spite", year: "1893",
+    confidence: "exact", // Original Waldorf-Astoria was at 34th & 5th (now Empire State site), later moved to Park Ave
+    story: "Right here at 33rd and Fifth Avenue, the Waldorf-Astoria Hotel is the product of a family feud so petty it became legendary. William Waldorf Astor tore down his mansion and built a 13-story hotel right next to his aunt Caroline\u2019s house, specifically to ruin her social life with noise and traffic. She moved uptown and built an even bigger hotel next to his. A connecting corridor was built between them \u2014 with a clause that it could be sealed shut if the family ever stopped speaking. That corridor is why it\u2019s the Waldorf-hyphen-Astoria. The hyphen is literally a hallway between two grudges."
+  },
+
+  // === CHARLES SCHWAB (steel magnate, not the brokerage) ===
+  {
+    id: "cs1", category: "business", lat: 40.7870, lng: -73.9745,
+    title: "The Biggest House Manhattan Ever Saw", year: "1906",
+    confidence: "exact", // Schwab mansion at 73rd-74th & Riverside Drive, demolished 1948
+    story: "Right here at 73rd and Riverside Drive, Charles Schwab \u2014 not the brokerage guy, the steel baron \u2014 built the largest private home in Manhattan\u2019s history. It was a 75-room French ch\u00E2teau that occupied an entire city block, with its own power plant, swimming pool, and bowling alley. It cost $7 million in 1906. Andrew Carnegie, his former boss, thought it was obscene. Carnegie was right. Schwab was terrible with money and lost his fortune in the 1929 crash. He died broke in a small apartment in 1939. The mansion was demolished in 1948 and replaced with an apartment building."
+  },
+  {
+    id: "cs2", category: "business", lat: 40.7088, lng: -74.0101,
+    title: "The Dinner That Created U.S. Steel", year: "1900",
+    confidence: "exact", // University Club at 1 West 54th St - actually it was at the old University Club downtown
+    story: "On December 12, 1900, Charles Schwab gave a speech at a dinner at the University Club that changed the world. He was president of Carnegie Steel, and he laid out a vision for consolidating the entire American steel industry into one company. J.P. Morgan was in the audience. Within weeks, Morgan had bought Carnegie Steel for $480 million and created U.S. Steel \u2014 the first billion-dollar corporation in history. It all started with one dinner speech. Schwab was the dealmaker in the middle, and Carnegie later said Schwab was the best salesman he\u2019d ever seen."
+  },
+  {
+    id: "cs3", category: "business", lat: 40.7870, lng: -73.9760,
+    title: "Schwab\u2019s Ruin on Riverside", year: "1939",
+    confidence: "general", // He died in a small apartment, likely on the Upper West Side, approximate
+    story: "Schwab\u2019s fall is one of the great cautionary tales of American business. He went from the largest house in Manhattan to a tiny apartment. He lost everything in bad investments, gambling debts, and a lifestyle he couldn\u2019t maintain. When he died in 1939, he owed $300,000. The mansion he\u2019d built sat mostly empty for years because no one could afford to buy it or even heat it. Carnegie had warned him: \u201CYou\u2019re spending too much.\u201D Schwab\u2019s response: \u201CI\u2019m too rich to worry.\u201D He wasn\u2019t."
+  },
+
+  // === EST\u00C9E LAUDER ===
+  {
+    id: "el1", category: "business", lat: 40.7466, lng: -73.8737,
+    title: "Est\u00E9e Lauder\u2019s Kitchen Laboratory", year: "1930s",
+    confidence: "general", // Grew up in Corona, Queens, family home approximate
+    story: "Est\u00E9e Lauder started mixing face creams in her family home in Corona, Queens, learning from her uncle, a Hungarian chemist who made skin products in a makeshift lab behind the house. She\u2019d cook skin cream on the stove like it was soup. She gave it away to anyone who\u2019d try it \u2014 neighbors, shopkeepers, women at the beauty parlor. She was obsessed with one idea: if she could get a woman to try the product, she\u2019d buy it. That insight \u2014 the free sample \u2014 would make her one of the richest self-made women in history."
+  },
+  {
+    id: "el2", category: "business", lat: 40.7641, lng: -73.9721,
+    title: "Lauder\u2019s Saks Breakthrough", year: "1948",
+    confidence: "exact", // Saks Fifth Avenue at 611 Fifth Ave, still there
+    story: "Right here at 611 Fifth Avenue, at 50th Street \u2014 Est\u00E9e Lauder\u2019s make-or-break moment happened at Saks Fifth Avenue. She\u2019d been rejected by every department store in New York until she talked her way into a meeting at Saks and convinced them to give her a small counter. She then bought $50 worth of lipsticks and gave them away to women at a charity event, telling each one to go to Saks to get the matching products. The counter sold out in two days. Saks gave her more space. She\u2019d basically invented influencer marketing \u2014 in 1948, with lipstick and hustle."
+  },
+  {
+    id: "el3", category: "business", lat: 40.7585, lng: -73.9700,
+    title: "The Lauder Empire on Fifth Avenue", year: "1960s",
+    confidence: "exact", // Est\u00E9e Lauder Companies HQ was at 767 Fifth Avenue (GM Building)
+    story: "Right here at 767 Fifth Avenue, at 59th Street \u2014 Est\u00E9e Lauder moved her company headquarters to the General Motors Building \u2014 the most prestigious business address she could find. The girl from Corona, Queens, whose mother was a Hungarian immigrant, now ran a cosmetics empire from Fifth Avenue. She was famous for personally fixing women\u2019s makeup at lunch counters and once grabbed a woman\u2019s face in an elevator to demonstrate moisturizer. She never advertised on TV because she thought it was \u201Ccheap.\u201D When she died in 2004, her family was worth over $20 billion. Started in a kitchen in Queens."
+  },
+  {
+    id: "el4", category: "business", lat: 40.7690, lng: -73.9657,
+    title: "Lauder\u2019s Upper East Side Arrival", year: "1950s",
+    confidence: "general", // She lived on the Upper East Side, specific address uncertain
+    story: "When Est\u00E9e Lauder finally made it, she moved to the Upper East Side and reinvented herself completely. She dropped her Queens accent, started spelling her name with an accent mark it never originally had, and told people she came from old European money. None of it was true. She was Josephine Esther Mentzer from Corona, daughter of a hardware store owner. But she understood that in the beauty business, the story is the product. She didn\u2019t just sell cream \u2014 she sold the fantasy that anyone could become the woman she\u2019d made herself into."
+  },
+
+  // === THOMAS EDISON ===
+  {
+    id: "te1", category: "business", lat: 40.7076, lng: -74.0017,
+    title: "Edison\u2019s Pearl Street Power Station", year: "1882",
+    confidence: "exact", // 255-257 Pearl Street, well-documented
+    story: "Right here at 255 Pearl Street, Thomas Edison flipped the switch on the first commercial electric power station in the world on September 4, 1882. It powered 400 lamps in 85 buildings in a one-square-mile area of Lower Manhattan. J.P. Morgan\u2019s office was one of the first customers \u2014 Morgan had already let Edison wire his Madison Avenue mansion as a test, which nearly burned the house down. The station ran on six massive dynamos Edison called \u201CJumbos\u201D after the famous circus elephant. Within 14 months it was serving 508 customers. The modern electrical grid started right here, on a street most New Yorkers walk past without a second glance."
+  },
+  {
+    id: "te2", category: "business", lat: 40.7410, lng: -73.9938,
+    title: "Edison\u2019s Downtown Office", year: "1881",
+    confidence: "exact", // 65 Fifth Avenue, well-documented
+    story: "65 Fifth Avenue, near 13th Street \u2014 Edison ran his business operations from this office while building out the Pearl Street power system. He wasn\u2019t just an inventor, he was a brutal businessman. He waged the \u201CWar of Currents\u201D against Nikola Tesla and George Westinghouse from right here, spreading propaganda that alternating current was deadly. He secretly funded public electrocutions of animals \u2014 including an elephant named Topsy at Coney Island \u2014 to prove AC was dangerous. Edison lost the war. AC powers the world today. But his direct current system still runs parts of the NYC subway."
+  },
+  {
+    id: "te3", category: "business", lat: 40.7506, lng: -73.9851,
+    title: "The First Kinetoscope Parlor", year: "1894",
+    confidence: "exact", // 1155 Broadway at 27th Street, well-documented
+    story: "Right here at 1155 Broadway, near 27th Street, the first Kinetoscope parlor opened on April 14, 1894. For 25 cents, you could peer into one of ten machines and watch a short moving picture \u2014 a man sneezing, a barber shop scene, a boxing match. Edison had invented the motion picture camera but thought movies were a fad. He refused to develop a projector, saying it would kill the per-viewer business model. Other inventors built projectors instead, and the movie industry was born without him. Edison had the future in his hands right here on Broadway and fumbled it because he was thinking too small."
+  },
+  {
+    id: "te4", category: "business", lat: 40.7493, lng: -73.9818,
+    title: "Edison Wires Morgan\u2019s Mansion", year: "1882",
+    confidence: "exact", // 219 Madison Avenue, J.P. Morgan's home
+    story: "Right here at 219 Madison Avenue, J.P. Morgan\u2019s house became one of the first private residences in the world with electric lighting. Edison personally supervised the installation in 1882. It didn\u2019t go well. The wiring was run under the floors, and one night a short circuit set the carpet and desk on fire in Morgan\u2019s study. Mrs. Morgan wanted the whole thing ripped out. Morgan refused \u2014 he loved the technology and was already investing heavily in Edison\u2019s company. He kept the lights. That stubbornness made Morgan the key financial backer of electrification. The richest man in finance literally bet his house on Edison."
+  },
+  {
+    id: "te5", category: "science", lat: 40.7580, lng: -73.9855,
+    title: "Edison Lights Up the New York Times", year: "1882",
+    confidence: "general", // Times building at Park Row was among first Edison customers
+    story: "The New York Times was one of Edison\u2019s first electric customers. When the Pearl Street station fired up in September 1882, the Times building at Park Row lit up with Edison\u2019s incandescent bulbs. The paper published a glowing review \u2014 literally. The reporter wrote that the light was \u201Csoft, mellow, and grateful to the eye\u201D and noted that you could read by it without the headaches that gaslight caused. Within a year, Edison had wired much of the Financial District. The man who dropped out of school after three months had rewired the most important city in the world."
+  },
+
+  {
+    id: "te6", category: "business", lat: 40.7068, lng: -74.0108,
+    title: "Edison\u2019s Lucky Break on New Street", year: "1869",
+    confidence: "exact", // 18 New Street, Laws Gold Reporting Company, well-documented
+    story: "18 New Street, right near Wall Street \u2014 a young, broke Thomas Edison wandered into the Laws Gold Reporting Company in 1869, and their stock ticker had just broken down. Nobody could fix it. Edison, who\u2019d been sleeping in the battery room of the building because he had no money for a room, stepped forward and repaired it on the spot. He was hired immediately. He then improved the stock ticker design so dramatically that Western Union bought the rights for $40,000 \u2014 a fortune that funded his first real laboratory. Every invention that followed \u2014 the phonograph, the light bulb, the power grid \u2014 traces back to one lucky moment on this street when the right machine broke in front of the right person."
+  },
+
+  // === DAVID OGILVY ===
+  {
+    id: "do1", category: "business", lat: 40.7539, lng: -73.9736,
+    title: "Ogilvy\u2019s First Ad Agency", year: "1948",
+    confidence: "general", // Started at 148 East 48th Street area, small office
+    story: "Right here near 48th and Lexington, David Ogilvy started his advertising agency in 1948 with zero clients, zero experience, and $6,000 in savings. He was 37 years old. He\u2019d been a chef in Paris, a door-to-door stove salesman in Scotland, a farmer among the Amish, and a spy for British intelligence during World War II. He\u2019d never written an ad in his life. Within a decade he\u2019d be the most famous adman in the world. He later said the key to advertising was research, not creativity \u2014 \u201CAdvertising people who ignore research are as dangerous as generals who ignore decodes of enemy signals.\u201D"
+  },
+  {
+    id: "do2", category: "business", lat: 40.7558, lng: -73.9760,
+    title: "The Madison Avenue Revolution", year: "1950s",
+    confidence: "general", // Madison Avenue advertising district, general area
+    story: "Madison Avenue between 42nd and 57th \u2014 this stretch was the advertising capital of the world, and David Ogilvy was its philosopher king. He wrote the most famous headline in advertising history: \u201CAt 60 miles an hour the loudest noise in this new Rolls-Royce comes from the electric clock.\u201D He spent three weeks researching that car before writing a single word. His Hathaway shirt campaign became legendary because of a $1.50 impulse buy \u2014 on the way to the photo shoot, Ogilvy stopped at a drugstore and bought an eyepatch, put it on the model, and created one of the most iconic images in advertising history. He turned Dove from an unknown soap into a household name with one line: \u201COnly Dove is one-quarter moisturizing cream.\u201D That campaign ran for decades."
+  },
+  {
+    id: "do3", category: "business", lat: 40.7614, lng: -73.9776,
+    title: "Ogilvy\u2019s Rules for Madison Avenue", year: "1963",
+    confidence: "general", // Ogilvy & Mather grew to multiple midtown locations
+    story: "David Ogilvy ran his agency with a set of rules that terrified and inspired Madison Avenue. He banned jargon. He banned bragging about creative awards. He told new hires: \u201CWe sell, or else.\u201D When he opened a new office, he\u2019d leave a set of Russian nesting dolls on every executive\u2019s desk with a note inside the smallest one: \u201CIf each of us hires people who are smaller than we are, we shall become a company of dwarfs. But if each of us hires people who are bigger than we are, we shall become a company of giants.\u201D He published \u201CConfessions of an Advertising Man\u201D in 1963. It\u2019s still the best book on advertising ever written."
+  },
+  {
+    id: "do4", category: "business", lat: 40.7590, lng: -73.9800,
+    title: "The \u201CMad Men\u201D Era on Madison", year: "1960s",
+    confidence: "general", // General Madison Avenue, 50s area
+    story: "Right here on Madison Avenue in the 1960s, men in gray flannel suits drank three-martini lunches and sold America its dreams. Ogilvy was the intellectual of the bunch, but the avenue was crowded with legends: Leo Burnett created the Marlboro Man, Bill Bernbach revolutionized creative at DDB, and Mary Wells became the first woman CEO of a company listed on the New York Stock Exchange. Ogilvy stood apart because he was an outsider \u2014 a Scotsman who\u2019d never gone to college, running circles around Ivy League admen. He said the advertising business attracted \u201Ca disproportionate number of alcoholics, megalomaniacs, and fools.\u201D He fit right in."
+  },
+
+  // === RALPH LAUREN ===
+  {
+    id: "rl1", category: "business", lat: 40.8816, lng: -73.8825,
+    title: "Ralph Lauren Grew Up Here", year: "1939",
+    confidence: "general", // Grew up near Mosholu Parkway in the Bronx
+    story: "Ralph Lauren was born Ralph Lifshitz right here in the Bronx, near Mosholu Parkway, in 1939. His father was a house painter from Belarus. Ralph and his brother changed their last name in high school because kids made fun of it. He wasn\u2019t a great student, but he had an obsession with clothes. He\u2019d spend his after-school earnings on suits from local shops, dressing better than every kid in the neighborhood. His classmates voted him \u201CMost Likely to Succeed.\u201D He didn\u2019t go to fashion school \u2014 he studied business at Baruch for two years and dropped out. Everything he knew about style, he taught himself on these Bronx streets."
+  },
+  {
+    id: "rl2", category: "business", lat: 40.7484, lng: -73.9857,
+    title: "Lauren\u2019s Ties in the Empire State Building", year: "1967",
+    confidence: "general", // Worked for Beau Brummell neckwear, office near garment district
+    story: "Ralph Lauren\u2019s entire empire started with a tie. In 1967, he was a 28-year-old salesman at a necktie company near here in the Garment District. He kept pushing his boss to make wider, more colorful ties \u2014 the opposite of the skinny, boring ties everyone was wearing. His boss said no. So Lauren started making his own, hand-sewing them from expensive fabric scraps. He called the line \u201CPolo.\u201D Bloomingdale\u2019s buyer Marvin Traub agreed to stock them, but only if Lauren removed the Polo label. Lauren refused, took back the ties, and walked out. He\u2019d rather have nothing than give up the name. Bloomingdale\u2019s eventually caved."
+  },
+  {
+    id: "rl3", category: "business", lat: 40.7723, lng: -73.9662,
+    title: "The Polo Mansion on Madison", year: "1986",
+    confidence: "exact", // 867 Madison Avenue at 72nd Street, the Rhinelander Mansion
+    story: "867 Madison Avenue, at 72nd Street \u2014 Ralph Lauren turned the 1898 Rhinelander Mansion into the most famous retail store in fashion history. When he opened it in 1986, people thought he was crazy. Retail stores were supposed to be bright, modern, and minimal. Lauren filled his with antique furniture, oriental rugs, and oil paintings. It didn\u2019t look like a store \u2014 it looked like an English country house where you happened to be able to buy a sweater. He wasn\u2019t selling clothes; he was selling a world. A kid from the Bronx whose father painted houses had created the most aspirational brand in America \u2014 and housed it in a mansion on Madison Avenue."
+  },
+  {
+    id: "rl4", category: "business", lat: 40.7614, lng: -73.9752,
+    title: "The Polo Bar: Ralph\u2019s Living Room", year: "2015",
+    confidence: "exact", // 1 East 55th Street, still open
+    story: "1 East 55th Street, right off Fifth Avenue \u2014 the Polo Bar is Ralph Lauren\u2019s restaurant, and it\u2019s the only place in New York where you can eat inside someone\u2019s brand. Dark wood, green leather, equestrian paintings, old money energy \u2014 it\u2019s basically a Ralph Lauren ad you can sit in and order a burger. The waitlist is legendarily long. Celebrities, moguls, and old-guard New Yorkers pack the room. Lauren eats here regularly \u2014 always at the same corner table. The kid from the Bronx who used to press his face against department store windows now owns the most exclusive dining room in Midtown."
+  },
+  {
+    id: "rl5", category: "business", lat: 40.7651, lng: -73.9729,
+    title: "Lauren\u2019s Purple Label Flagship", year: "2010",
+    confidence: "exact", // 888 Madison Avenue at 72nd area
+    story: "Ralph Lauren owns more retail space on Madison Avenue than almost any other designer \u2014 the Rhinelander Mansion, the women\u2019s store, the Purple Label men\u2019s shop. He\u2019s colonized this stretch of the Upper East Side the way the Vanderbilts colonized Fifth Avenue a century earlier. What makes it remarkable is how completely he invented himself. He has no formal design training. He can\u2019t sketch. He can\u2019t sew. He\u2019s never taken a fashion class. He just has taste \u2014 and an almost supernatural ability to project a fantasy that millions of people want to buy into. He\u2019s worth over $6 billion, and it all started with a wider tie."
+  },
+
+  // === JIMMY IOVINE ===
+  {
+    id: "ji1", category: "music", lat: 40.6773, lng: -74.0048,
+    title: "Jimmy Iovine\u2019s Red Hook Roots", year: "1953",
+    confidence: "general", // Grew up in Red Hook, Brooklyn
+    story: "Jimmy Iovine grew up right here in Red Hook, Brooklyn, the son of a longshoreman. The neighborhood was tough, working-class Italian, and nobody left to go into the music business. Iovine was a terrible student with undiagnosed dyslexia. He couldn\u2019t read well, but he could hear things other people couldn\u2019t. He got a job sweeping floors at a recording studio in Manhattan and worked his way up by being the first one there and the last one to leave. He never went to college. He later said Red Hook taught him everything he needed to know about business: \u201CWhere I grew up, you had to be tough. You had to figure things out. Nobody was going to help you.\u201D"
+  },
+  {
+    id: "ji2", category: "music", lat: 40.7595, lng: -73.9883,
+    title: "Record Plant Studios", year: "1974",
+    confidence: "exact", // Record Plant at 321 West 44th Street
+    story: "321 West 44th Street \u2014 Record Plant Studios is where Jimmy Iovine transformed from a kid sweeping floors into the most connected man in music. He started as a gofer, then talked his way into engineering sessions. John Lennon liked him so much he made Iovine the engineer on his \u201CWalls and Bridges\u201D album in 1974. Iovine was 21 years old, engineering a former Beatle\u2019s record. Lennon taught him that great records weren\u2019t about perfection \u2014 they were about capturing a feeling. That lesson shaped everything Iovine did after. From this studio on 44th Street, a Brooklyn kid with no formal training became the music industry\u2019s most important ears."
+  },
+  {
+    id: "ji3", category: "music", lat: 40.7595, lng: -73.9870,
+    title: "Iovine Engineers \u201CBorn to Run\u201D", year: "1975",
+    confidence: "general", // Multiple NYC studios used for Born to Run sessions
+    story: "In 1975, Jimmy Iovine was the recording engineer on Bruce Springsteen\u2019s \u201CBorn to Run\u201D \u2014 one of the most important rock albums ever made. The sessions were grueling. Springsteen was a perfectionist who\u2019d do hundreds of takes. The title track alone took six months to finish. Iovine learned something crucial in those studios: the artists who made the best records were the ones who were completely, pathologically obsessed. He carried that lesson into everything \u2014 producing Patti Smith, Tom Petty, and Stevie Nicks, then founding Interscope Records and eventually selling Beats by Dre to Apple for $3 billion. Every empire Iovine built traces back to all-night sessions in Midtown studios."
+  },
+  {
+    id: "ji4", category: "music", lat: 40.7561, lng: -73.9872,
+    title: "Iovine Meets Patti Smith", year: "1978",
+    confidence: "general", // NYC music scene, various studios and clubs
+    story: "In the late 1970s, Jimmy Iovine went from engineering other people\u2019s records to producing them. His breakthrough came when he produced Patti Smith\u2019s \u201CEaster\u201D album, which featured \u201CBecause the Night\u201D \u2014 a song Bruce Springsteen had written but couldn\u2019t finish. Iovine, who knew both artists from NYC studio sessions, connected them. The song became Patti Smith\u2019s biggest hit. That was Iovine\u2019s superpower: not his ears, but his ability to connect people. He saw relationships as the real product. He later did the same thing when he paired Dr. Dre with Apple. Same instinct, billion-dollar scale."
+  }
+];
+
+// === Merge hand-written + generated facts ===
+// Hand-written facts take priority — skip generated facts within ~80m of a hand-written one
+if (typeof GENERATED_FACTS !== "undefined" && GENERATED_FACTS.length > 0) {
+  var toRad_m = function(d) { return d * Math.PI / 180; };
+  var dist_m = function(a, b) {
+    var R = 6371e3;
+    var dLat = toRad_m(b.lat - a.lat);
+    var dLng = toRad_m(b.lng - a.lng);
+    var x = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(toRad_m(a.lat))*Math.cos(toRad_m(b.lat))*Math.sin(dLng/2)*Math.sin(dLng/2);
+    return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1-x));
+  };
+  var handwrittenCount = FACTS.length;
+  GENERATED_FACTS.forEach(function(gf) {
+    var tooClose = false;
+    for (var i = 0; i < FACTS.length; i++) {
+      if (dist_m(gf, FACTS[i]) < 80) { tooClose = true; break; }
+    }
+    if (!tooClose) FACTS.push(gf);
+  });
+  console.log("Facts: " + handwrittenCount + " hand-written + " + (FACTS.length - handwrittenCount) + " generated = " + FACTS.length + " total");
+}
+
+// === App Code ===
+var selectedInterests = new Set();
+var heardFacts = new Set();
+var map = null;
+var userMarker = null;
+var factMarkers = {};
+var watchId = null;
+var lastPosition = null;
+var totalDistance = 0;
+var currentFact = null;
+var triggerDistance = 80;
+var autoNarrate = true;
+var speechRate = 1;
+var activelySpeaking = false;
+var lastTriggeredId = null;
+var cooldownFacts = new Set();
+
+document.addEventListener("DOMContentLoaded", function() {
+  loadState();
+  renderInterests();
+  setupEventListeners();
+  if (selectedInterests.size > 0) {
+    showApp();
+  }
+});
+
+function loadState() {
+  try {
+    var saved = localStorage.getItem("whh-state");
+    if (saved) {
+      var state = JSON.parse(saved);
+      selectedInterests = new Set(state.interests || []);
+      heardFacts = new Set(state.heard || []);
+      totalDistance = state.distance || 0;
+      triggerDistance = state.triggerDistance || 80;
+      autoNarrate = state.autoNarrate !== false;
+      speechRate = state.speechRate || 1;
+    }
+  } catch (e) {
+    console.error("Failed to load state", e);
+  }
+}
+
+function saveState() {
+  try {
+    localStorage.setItem("whh-state", JSON.stringify({
+      interests: Array.from(selectedInterests),
+      heard: Array.from(heardFacts),
+      distance: totalDistance,
+      triggerDistance: triggerDistance,
+      autoNarrate: autoNarrate,
+      speechRate: speechRate
+    }));
+  } catch (e) {
+    console.error("Failed to save state", e);
+  }
+}
+
+function renderInterests(containerId) {
+  containerId = containerId || "interests-grid";
+  var grid = document.getElementById(containerId);
+  grid.innerHTML = "";
+  INTERESTS.forEach(function(interest) {
+    var chip = document.createElement("div");
+    chip.className = "interest-chip" + (selectedInterests.has(interest.id) ? " selected" : "");
+    chip.innerHTML = '<span class="icon">' + interest.icon + '</span><span>' + interest.label + '</span>';
+    chip.addEventListener("click", function() {
+      if (selectedInterests.has(interest.id)) {
+        selectedInterests.delete(interest.id);
+      } else {
+        selectedInterests.add(interest.id);
+      }
+      chip.classList.toggle("selected");
+      document.getElementById("start-btn").disabled = selectedInterests.size === 0;
+      saveState();
+      if (map) updateVisibleMarkers();
+    });
+    grid.appendChild(chip);
+  });
+}
+
+function setupEventListeners() {
+  document.getElementById("start-btn").addEventListener("click", showApp);
+  document.getElementById("close-story").addEventListener("click", closeStory);
+  document.getElementById("center-btn").addEventListener("click", centerOnUser);
+  document.getElementById("settings-btn").addEventListener("click", openSettings);
+  document.getElementById("close-settings").addEventListener("click", closeSettings);
+  document.getElementById("narrate-btn").addEventListener("click", narrateCurrentFact);
+  document.getElementById("stop-narrate-btn").addEventListener("click", stopNarration);
+
+  document.getElementById("trigger-distance").addEventListener("change", function(e) {
+    triggerDistance = parseInt(e.target.value);
+    saveState();
+  });
+  document.getElementById("auto-narrate").addEventListener("change", function(e) {
+    autoNarrate = e.target.checked;
+    saveState();
+  });
+  document.getElementById("speech-rate").addEventListener("change", function(e) {
+    speechRate = parseFloat(e.target.value);
+    saveState();
+  });
+}
+
+function showApp() {
+  document.getElementById("onboarding").classList.remove("active");
+  document.getElementById("app").classList.add("active");
+  saveState();
+  initMap();
+  startTracking();
+  updateStats();
+}
+
+function initMap() {
+  if (map) return;
+  map = L.map("map", { zoomControl: false, attributionControl: true }).setView([40.7580, -73.9855], 15);
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/voyager/{z}/{x}/{y}{r}.png", {
+    attribution: "\u00A9 OpenStreetMap \u00A9 CARTO",
+    maxZoom: 19
+  }).addTo(map);
+  addFactMarkers();
+}
+
+function addFactMarkers() {
+  FACTS.forEach(function(fact) {
+    if (!selectedInterests.has(fact.category)) return;
+    var color = CATEGORY_COLORS[fact.category] || "#e94560";
+    var interest = INTERESTS.find(function(i) { return i.id === fact.category; });
+    var icon = interest ? interest.icon : "\u{1F4CD}";
+    var heard = heardFacts.has(fact.id);
+    var marker = L.marker([fact.lat, fact.lng], {
+      icon: L.divIcon({
+        className: "",
+        html: '<div class="fact-marker' + (heard ? ' heard' : '') + '" style="background:' + color + '">' + icon + '</div>',
+        iconSize: [28, 28],
+        iconAnchor: [14, 14]
+      })
+    }).addTo(map);
+    marker.on("click", function() { showStory(fact); });
+    factMarkers[fact.id] = marker;
+  });
+}
+
+function updateVisibleMarkers() {
+  Object.values(factMarkers).forEach(function(m) { map.removeLayer(m); });
+  factMarkers = {};
+  addFactMarkers();
+}
+
+function startTracking() {
+  if (!navigator.geolocation) {
+    showToast("Geolocation not available");
+    return;
+  }
+  watchId = navigator.geolocation.watchPosition(onPositionUpdate, onPositionError, {
+    enableHighAccuracy: true,
+    maximumAge: 5000,
+    timeout: 15000
+  });
+}
+
+function onPositionUpdate(position) {
+  var lat = position.coords.latitude;
+  var lng = position.coords.longitude;
+  if (!userMarker) {
+    userMarker = L.marker([lat, lng], {
+      icon: L.divIcon({
+        className: "",
+        html: '<div class="user-marker"></div>',
+        iconSize: [20, 20],
+        iconAnchor: [10, 10]
+      })
+    }).addTo(map);
+    map.setView([lat, lng], 16);
+  } else {
+    userMarker.setLatLng([lat, lng]);
+  }
+  if (lastPosition) {
+    var d = getDistance(lastPosition.lat, lastPosition.lng, lat, lng);
+    if (d > 5 && d < 100) {
+      totalDistance += d;
+      saveState();
+    }
+  }
+  lastPosition = { lat: lat, lng: lng };
+  checkProximity(lat, lng);
+  updateStats();
+}
+
+function onPositionError(error) {
+  console.error("Geolocation error:", error);
+  if (error.code === 1) showToast("Please allow location access to use the app");
+}
+
+function centerOnUser() {
+  if (lastPosition) map.setView([lastPosition.lat, lastPosition.lng], 16, { animate: true });
+}
+
+function checkProximity(lat, lng) {
+  var relevantFacts = FACTS.filter(function(f) {
+    return selectedInterests.has(f.category) && !heardFacts.has(f.id) && !cooldownFacts.has(f.id);
+  });
+  var closestFact = null;
+  var closestDist = Infinity;
+  for (var i = 0; i < relevantFacts.length; i++) {
+    var dist = getDistance(lat, lng, relevantFacts[i].lat, relevantFacts[i].lng);
+    if (dist < triggerDistance && dist < closestDist) {
+      closestDist = dist;
+      closestFact = relevantFacts[i];
+    }
+  }
+  if (closestFact && closestFact.id !== lastTriggeredId) {
+    lastTriggeredId = closestFact.id;
+    triggerFact(closestFact);
+  }
+}
+
+function triggerFact(fact) {
+  var toast = document.getElementById("nearby-toast");
+  var toastText = document.getElementById("nearby-text");
+  toastText.textContent = fact.title;
+  toast.classList.remove("hidden");
+  toast.onclick = function() {
+    toast.classList.add("hidden");
+    showStory(fact);
+  };
+  if (autoNarrate) {
+    showStory(fact);
+    setTimeout(function() { narrateCurrentFact(); }, 500);
+  }
+  setTimeout(function() { toast.classList.add("hidden"); }, 8000);
+}
+
+function showStory(fact) {
+  currentFact = fact;
+  document.getElementById("story-category").textContent = fact.category;
+  document.getElementById("story-title").textContent = fact.title;
+  document.getElementById("story-year").textContent = fact.year;
+  document.getElementById("story-text").textContent = fact.story;
+  document.getElementById("story-card").classList.remove("hidden");
+  heardFacts.add(fact.id);
+  cooldownFacts.add(fact.id);
+  saveState();
+  updateStats();
+  if (factMarkers[fact.id]) {
+    var color = CATEGORY_COLORS[fact.category] || "#e94560";
+    var interest = INTERESTS.find(function(i) { return i.id === fact.category; });
+    var icon = interest ? interest.icon : "\u{1F4CD}";
+    factMarkers[fact.id].setIcon(L.divIcon({
+      className: "",
+      html: '<div class="fact-marker heard" style="background:' + color + '">' + icon + '</div>',
+      iconSize: [28, 28],
+      iconAnchor: [14, 14]
+    }));
+  }
+  document.getElementById("nearby-toast").classList.add("hidden");
+  map.setView([fact.lat, fact.lng], 17, { animate: true });
+}
+
+function closeStory() {
+  document.getElementById("story-card").classList.add("hidden");
+  stopNarration();
+  currentFact = null;
+}
+
+function narrateCurrentFact() {
+  if (!currentFact) return;
+  stopNarration();
+  var intro = "Near here: " + currentFact.title + ", " + currentFact.year + ".";
+  var fullText = intro + " " + currentFact.story;
+  var utterance = new SpeechSynthesisUtterance(fullText);
+  utterance.rate = speechRate;
+  utterance.pitch = 1;
+  utterance.volume = 1;
+  var voices = speechSynthesis.getVoices();
+  var preferred = voices.find(function(v) {
+    return v.name.includes("Samantha") || v.name.includes("Alex") || v.name.includes("Daniel") || v.name.includes("Google US English");
+  });
+  if (preferred) utterance.voice = preferred;
+  utterance.onend = function() {
+    activelySpeaking = false;
+    document.getElementById("narrate-btn").classList.remove("hidden");
+    document.getElementById("stop-narrate-btn").classList.add("hidden");
+  };
+  speechSynthesis.speak(utterance);
+  activelySpeaking = true;
+  document.getElementById("narrate-btn").classList.add("hidden");
+  document.getElementById("stop-narrate-btn").classList.remove("hidden");
+}
+
+function stopNarration() {
+  speechSynthesis.cancel();
+  activelySpeaking = false;
+  document.getElementById("narrate-btn").classList.remove("hidden");
+  document.getElementById("stop-narrate-btn").classList.add("hidden");
+}
+
+function openSettings() {
+  document.getElementById("trigger-distance").value = triggerDistance;
+  document.getElementById("auto-narrate").checked = autoNarrate;
+  document.getElementById("speech-rate").value = speechRate;
+  renderInterests("settings-interests-grid");
+  document.getElementById("settings-modal").classList.remove("hidden");
+}
+
+function closeSettings() {
+  document.getElementById("settings-modal").classList.add("hidden");
+  updateVisibleMarkers();
+}
+
+function updateStats() {
+  document.getElementById("facts-heard").textContent = heardFacts.size + (heardFacts.size === 1 ? " story" : " stories") + " heard";
+  document.getElementById("distance-walked").textContent = (totalDistance / 1609.34).toFixed(1) + " mi walked";
+}
+
+function showToast(message) {
+  var toast = document.getElementById("nearby-toast");
+  document.getElementById("nearby-text").textContent = message;
+  toast.classList.remove("hidden");
+  setTimeout(function() { toast.classList.add("hidden"); }, 5000);
+}
+
+function getDistance(lat1, lon1, lat2, lon2) {
+  var R = 6371e3;
+  var dLat = toRad(lat2 - lat1);
+  var dLon = toRad(lon2 - lon1);
+  var a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function toRad(deg) { return deg * (Math.PI / 180); }
+
+speechSynthesis.onvoiceschanged = function() { speechSynthesis.getVoices(); };
+  </script>
+</body>
+</html>
