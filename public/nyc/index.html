@@ -26,7 +26,7 @@
   --text: #000000;
   --text-muted: #555;
   --card-bg: #ffffff;
-  --radius: 10px;
+  --radius: 5px;
 }
 
 body {
@@ -36,6 +36,7 @@ body {
   overflow: hidden;
   height: 100dvh;
   width: 100vw;
+  letter-spacing: -0.04em;
 }
 
 .screen {
@@ -188,7 +189,7 @@ body {
 .header-btn {
   width: 36px;
   height: 36px;
-  border-radius: 8px;
+  border-radius: var(--radius);
   border: 1.5px solid rgba(255,255,255,0.25);
   background: transparent;
   color: #fff;
@@ -221,7 +222,7 @@ body {
   left: 0;
   right: 0;
   background: #fff;
-  border-radius: 16px 16px 0 0;
+  border-radius: var(--radius) var(--radius) 0 0;
   padding: 24px 20px calc(20px + env(safe-area-inset-bottom));
   z-index: 1000;
   max-height: 55vh;
@@ -293,7 +294,7 @@ body {
 .narrate-btn {
   padding: 10px 20px;
   border: 2px solid #000;
-  border-radius: 8px;
+  border-radius: var(--radius);
   background: #fff;
   color: #000;
   font-family: 'Inter', sans-serif;
@@ -397,13 +398,12 @@ body {
 
 .modal-content {
   background: #fff;
-  border-radius: 16px;
+  border-radius: var(--radius);
   padding: 28px 24px;
   width: 100%;
   max-width: 400px;
   max-height: 80vh;
   overflow-y: auto;
-  border: 2px solid #000;
 }
 
 .modal-content h2 {
@@ -448,7 +448,7 @@ body {
   background: #f5f5f5;
   color: #000;
   border: 2px solid #000;
-  border-radius: 6px;
+  border-radius: var(--radius);
   padding: 8px 12px;
   font-size: 14px;
   font-family: 'Inter', sans-serif;
