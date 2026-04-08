@@ -5,10 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#ffffff">
+  <meta name="theme-color" content="#000000">
   <title>What Happened Here</title>
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
 * {
   margin: 0;
@@ -17,18 +19,18 @@
 }
 
 :root {
-  --bg: #f5f5f7;
+  --bg: #ffffff;
   --bg-light: #ffffff;
-  --accent: #d63031;
-  --accent-glow: rgba(214, 48, 49, 0.15);
-  --text: #1a1a1a;
-  --text-muted: #666;
+  --accent: #000000;
+  --accent-glow: rgba(0, 0, 0, 0.08);
+  --text: #000000;
+  --text-muted: #555;
   --card-bg: #ffffff;
-  --radius: 14px;
+  --radius: 10px;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   background: var(--bg);
   color: var(--text);
   overflow: hidden;
@@ -46,12 +48,13 @@ body {
   display: flex;
 }
 
+/* === ONBOARDING === */
 #onboarding {
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: linear-gradient(135deg, #f5f5f7 0%, #e8e8ed 50%, #dfe6ed 100%);
+  background: #ffffff;
 }
 
 .onboarding-content {
@@ -61,22 +64,27 @@ body {
 }
 
 .onboarding-content h1 {
-  font-size: 32px;
-  font-weight: 800;
+  font-size: 42px;
+  font-weight: 900;
+  letter-spacing: -2px;
+  text-transform: uppercase;
   margin-bottom: 8px;
-  background: linear-gradient(135deg, #1a1a1a, #d63031);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #000;
+  line-height: 1;
 }
 
 .subtitle {
   color: var(--text-muted);
-  margin-bottom: 36px;
-  font-size: 16px;
+  margin-bottom: 40px;
+  font-size: 15px;
+  font-weight: 400;
 }
 
 .interest-section h2 {
-  font-size: 18px;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
   margin-bottom: 4px;
 }
 
@@ -89,24 +97,27 @@ body {
 .interests-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  gap: 8px;
   margin-bottom: 28px;
 }
 
 .interest-chip {
   padding: 12px 8px;
-  border: 2px solid rgba(0,0,0,0.1);
+  border: 2px solid #e0e0e0;
   border-radius: var(--radius);
-  background: rgba(255,255,255,0.7);
+  background: #fff;
   color: var(--text);
-  font-size: 13px;
+  font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.15s;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
   -webkit-tap-highlight-color: transparent;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .interest-chip .icon {
@@ -114,57 +125,111 @@ body {
 }
 
 .interest-chip.selected {
-  border-color: var(--accent);
-  background: var(--accent-glow);
-  box-shadow: 0 0 20px var(--accent-glow);
+  border-color: #000;
+  background: #000;
+  color: #fff;
+  box-shadow: none;
 }
 
+/* === BUTTONS === */
 .primary-btn {
   width: 100%;
   padding: 16px;
   border: none;
   border-radius: var(--radius);
-  background: var(--accent);
-  color: white;
-  font-size: 17px;
+  background: #000;
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
   font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.15s;
 }
 
 .primary-btn:disabled {
-  opacity: 0.4;
+  opacity: 0.25;
   cursor: not-allowed;
 }
 
 .primary-btn:not(:disabled):active {
   transform: scale(0.97);
+  background: #333;
 }
 
+/* === MAP HEADER === */
+.map-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 900;
+  background: #000;
+  color: #fff;
+  padding: calc(8px + env(safe-area-inset-top)) 20px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.map-header h1 {
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.map-header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.header-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1.5px solid rgba(255,255,255,0.25);
+  background: transparent;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.header-btn:active {
+  background: rgba(255,255,255,0.15);
+}
+
+/* === MAP === */
 #map {
   height: 100%;
   width: 100%;
   z-index: 1;
+  padding-top: calc(46px + env(safe-area-inset-top));
 }
 
 .leaflet-control-attribution {
   font-size: 9px !important;
 }
 
+/* === STORY CARD === */
 .story-card {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  background: var(--card-bg);
-  border-radius: 20px 20px 0 0;
-  padding: 20px 20px calc(20px + env(safe-area-inset-bottom));
+  background: #fff;
+  border-radius: 16px 16px 0 0;
+  padding: 24px 20px calc(20px + env(safe-area-inset-bottom));
   z-index: 1000;
   max-height: 55vh;
   overflow-y: auto;
-  box-shadow: 0 -4px 30px rgba(0,0,0,0.12);
+  box-shadow: 0 -2px 30px rgba(0,0,0,0.15);
   transition: transform 0.3s ease, opacity 0.3s ease;
   -webkit-overflow-scrolling: touch;
+  border-top: 3px solid #000;
 }
 
 .story-card.hidden {
@@ -181,75 +246,85 @@ body {
 }
 
 .story-category {
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--accent);
+  letter-spacing: 2px;
+  color: #000;
 }
 
 .close-btn {
   background: none;
   border: none;
-  color: var(--text-muted);
-  font-size: 24px;
+  color: #999;
+  font-size: 28px;
   cursor: pointer;
   padding: 4px 8px;
+  line-height: 1;
 }
 
 .story-card h3 {
-  font-size: 20px;
-  font-weight: 700;
-  margin-bottom: 4px;
+  font-size: 22px;
+  font-weight: 900;
+  margin-bottom: 2px;
+  letter-spacing: -0.5px;
+  line-height: 1.2;
 }
 
 .story-year {
   font-size: 13px;
-  color: var(--accent);
+  color: #888;
   font-weight: 600;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .story-text {
   font-size: 15px;
-  line-height: 1.6;
-  color: #333;
+  line-height: 1.7;
+  color: #222;
 }
 
 .story-actions {
-  margin-top: 16px;
+  margin-top: 18px;
   display: flex;
   gap: 10px;
 }
 
 .narrate-btn {
   padding: 10px 20px;
-  border: 2px solid rgba(0,0,0,0.1);
-  border-radius: 10px;
-  background: rgba(0,0,0,0.05);
-  color: var(--text);
-  font-size: 14px;
+  border: 2px solid #000;
+  border-radius: 8px;
+  background: #fff;
+  color: #000;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   cursor: pointer;
 }
 
 .narrate-btn:active {
-  background: rgba(0,0,0,0.1);
+  background: #000;
+  color: #fff;
 }
 
+/* === NEARBY TOAST === */
 .nearby-toast {
   position: fixed;
-  top: calc(16px + env(safe-area-inset-top));
-  left: 16px;
-  right: 16px;
-  background: var(--card-bg);
-  border: 1px solid var(--accent);
+  top: calc(56px + env(safe-area-inset-top));
+  left: 12px;
+  right: 12px;
+  background: #000;
+  color: #fff;
+  border: none;
   border-radius: var(--radius);
   padding: 14px 18px;
   z-index: 1000;
   display: flex;
   align-items: center;
   gap: 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
   cursor: pointer;
   transition: transform 0.3s ease, opacity 0.3s ease;
 }
@@ -261,72 +336,54 @@ body {
 }
 
 .pulse {
-  width: 12px;
-  height: 12px;
-  background: var(--accent);
+  width: 10px;
+  height: 10px;
+  background: #fff;
   border-radius: 50%;
   animation: pulse 1.5s infinite;
   flex-shrink: 0;
 }
 
 @keyframes pulse {
-  0% { box-shadow: 0 0 0 0 var(--accent-glow); }
-  70% { box-shadow: 0 0 0 10px transparent; }
+  0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.4); }
+  70% { box-shadow: 0 0 0 8px transparent; }
   100% { box-shadow: 0 0 0 0 transparent; }
 }
 
 #nearby-text {
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
 }
 
+/* === CONTROLS (moved to header) === */
 .controls {
-  position: fixed;
-  right: 16px;
-  top: calc(80px + env(safe-area-inset-top));
-  z-index: 500;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  display: none;
 }
 
-.control-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  border: none;
-  background: var(--card-bg);
-  color: var(--text);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.12);
-}
-
-.control-btn:active {
-  background: #e8e8ed;
-}
-
+/* === STATS BAR === */
 .stats-bar {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  background: var(--card-bg);
+  background: #000;
+  color: #fff;
   padding: 10px 20px calc(10px + env(safe-area-inset-bottom));
   display: flex;
   justify-content: space-between;
-  font-size: 13px;
-  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
   z-index: 500;
-  border-top: 1px solid rgba(0,0,0,0.1);
+  border-top: none;
 }
 
+/* === SETTINGS MODAL === */
 .modal {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.4);
+  background: rgba(0,0,0,0.6);
   z-index: 2000;
   display: flex;
   align-items: center;
@@ -339,32 +396,40 @@ body {
 }
 
 .modal-content {
-  background: var(--bg-light);
-  border-radius: 20px;
+  background: #fff;
+  border-radius: 16px;
   padding: 28px 24px;
   width: 100%;
   max-width: 400px;
   max-height: 80vh;
   overflow-y: auto;
+  border: 2px solid #000;
 }
 
 .modal-content h2 {
   margin-bottom: 20px;
+  font-size: 24px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .setting-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid rgba(0,0,0,0.08);
+  padding: 14px 0;
+  border-bottom: 1px solid #e0e0e0;
   flex-wrap: wrap;
   gap: 12px;
 }
 
 .setting-row h3 {
   width: 100%;
-  font-size: 15px;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
   margin-bottom: 4px;
 }
 
@@ -374,57 +439,62 @@ body {
 }
 
 .setting-row label {
-  font-size: 15px;
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .setting-row select,
 .setting-row input[type="checkbox"] {
-  background: var(--bg);
-  color: var(--text);
-  border: 1px solid rgba(0,0,0,0.12);
-  border-radius: 8px;
+  background: #f5f5f5;
+  color: #000;
+  border: 2px solid #000;
+  border-radius: 6px;
   padding: 8px 12px;
   font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
 }
 
 .setting-row input[type="checkbox"] {
   width: 22px;
   height: 22px;
+  accent-color: #000;
 }
 
 .modal-content .primary-btn {
   margin-top: 20px;
 }
 
+/* === MAP MARKERS === */
 .user-marker {
-  width: 20px;
-  height: 20px;
-  background: #4a90d9;
-  border: 3px solid white;
+  width: 18px;
+  height: 18px;
+  background: #000;
+  border: 3px solid #fff;
   border-radius: 50%;
-  box-shadow: 0 0 15px rgba(74, 144, 217, 0.6);
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.4);
 }
 
 .fact-marker {
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-  border: 2px solid white;
+  font-size: 13px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  border: 2px solid #fff;
   cursor: pointer;
 }
 
 .fact-marker.heard {
-  opacity: 0.45;
-  filter: grayscale(0.5);
+  opacity: 0.35;
+  filter: grayscale(0.6);
 }
 
 .leaflet-tile-pane {
-  filter: none;
+  filter: saturate(0.3) brightness(1.05);
 }
   </style>
 </head>
@@ -447,6 +517,23 @@ body {
 
   <!-- Main App Screen -->
   <div id="app" class="screen">
+    <!-- Persistent Header -->
+    <div class="map-header">
+      <h1>What Happened Here</h1>
+      <div class="map-header-actions">
+        <button id="center-btn" class="header-btn" title="Center on me">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/>
+          </svg>
+        </button>
+        <button id="settings-btn" class="header-btn" title="Settings">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
     <div id="map"></div>
 
     <!-- Story Card -->
@@ -470,20 +557,6 @@ body {
       <span id="nearby-text"></span>
     </div>
 
-    <!-- Controls -->
-    <div class="controls">
-      <button id="center-btn" class="control-btn" title="Center on me">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/>
-        </svg>
-      </button>
-      <button id="settings-btn" class="control-btn" title="Settings">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-        </svg>
-      </button>
-    </div>
-
     <!-- Stats bar -->
     <div class="stats-bar">
       <span id="facts-heard">0 stories heard</span>
@@ -494,9 +567,9 @@ body {
   <!-- Settings Modal -->
   <div id="settings-modal" class="modal hidden">
     <div class="modal-content">
-      <h2>Settings</h2>
+      <h2>SETTINGS</h2>
       <div class="setting-row">
-        <label>Trigger distance</label>
+        <label>TRIGGER DISTANCE</label>
         <select id="trigger-distance">
           <option value="50">50m (close)</option>
           <option value="80" selected>80m (default)</option>
@@ -504,11 +577,11 @@ body {
         </select>
       </div>
       <div class="setting-row">
-        <label>Auto-narrate</label>
+        <label>AUTO-NARRATE</label>
         <input type="checkbox" id="auto-narrate" checked>
       </div>
       <div class="setting-row">
-        <label>Speech speed</label>
+        <label>SPEECH SPEED</label>
         <select id="speech-rate">
           <option value="0.8">Slow</option>
           <option value="1" selected>Normal</option>
@@ -516,10 +589,10 @@ body {
         </select>
       </div>
       <div class="setting-row">
-        <h3>Your Interests</h3>
+        <h3>YOUR INTERESTS</h3>
         <div class="interests-grid" id="settings-interests-grid"></div>
       </div>
-      <button id="close-settings" class="primary-btn">Done</button>
+      <button id="close-settings" class="primary-btn">DONE</button>
     </div>
   </div>
 
