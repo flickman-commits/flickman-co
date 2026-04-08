@@ -166,12 +166,10 @@ body {
   left: 0;
   right: 0;
   z-index: 900;
-  background: #000;
-  color: #fff;
-  padding: calc(8px + env(safe-area-inset-top)) 20px 10px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  background: transparent;
+  color: #000;
+  padding: calc(12px + env(safe-area-inset-top)) 20px 10px;
+  pointer-events: none;
 }
 
 .map-header h1 {
@@ -179,28 +177,40 @@ body {
   font-weight: 900;
   letter-spacing: 2px;
   text-transform: uppercase;
+  text-shadow: 0 1px 4px rgba(255,255,255,0.8);
 }
 
 .map-header-actions {
+  display: none;
+}
+
+/* === FLOATING CONTROLS (bottom-right) === */
+.controls {
   display: flex;
+  flex-direction: column;
+  position: fixed;
+  bottom: calc(50px + env(safe-area-inset-bottom));
+  right: 16px;
+  z-index: 800;
   gap: 8px;
 }
 
-.header-btn {
-  width: 36px;
-  height: 36px;
+.control-btn {
+  width: 40px;
+  height: 40px;
   border-radius: var(--radius);
-  border: 1.5px solid rgba(255,255,255,0.25);
-  background: transparent;
-  color: #fff;
+  border: none;
+  background: #fff;
+  color: #000;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 
-.header-btn:active {
-  background: rgba(255,255,255,0.15);
+.control-btn:active {
+  background: #f0f0f0;
 }
 
 /* === MAP === */
@@ -208,7 +218,6 @@ body {
   height: 100%;
   width: 100%;
   z-index: 1;
-  padding-top: calc(46px + env(safe-area-inset-top));
 }
 
 .leaflet-control-attribution {
@@ -313,7 +322,7 @@ body {
 /* === NEARBY TOAST === */
 .nearby-toast {
   position: fixed;
-  top: calc(56px + env(safe-area-inset-top));
+  top: calc(48px + env(safe-area-inset-top));
   left: 12px;
   right: 12px;
   background: #000;
@@ -356,10 +365,7 @@ body {
   font-weight: 700;
 }
 
-/* === CONTROLS (moved to header) === */
-.controls {
-  display: none;
-}
+/* old controls placeholder removed */
 
 /* === STATS BAR === */
 .stats-bar {
@@ -517,24 +523,26 @@ body {
 
   <!-- Main App Screen -->
   <div id="app" class="screen">
-    <!-- Persistent Header -->
+    <!-- Floating Title -->
     <div class="map-header">
       <h1>What Happened Here</h1>
-      <div class="map-header-actions">
-        <button id="center-btn" class="header-btn" title="Center on me">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/>
-          </svg>
-        </button>
-        <button id="settings-btn" class="header-btn" title="Settings">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/>
-          </svg>
-        </button>
-      </div>
     </div>
 
     <div id="map"></div>
+
+    <!-- Controls (bottom-right) -->
+    <div class="controls">
+      <button id="center-btn" class="control-btn" title="Center on me">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/>
+        </svg>
+      </button>
+      <button id="settings-btn" class="control-btn" title="Settings">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/>
+        </svg>
+      </button>
+    </div>
 
     <!-- Story Card -->
     <div id="story-card" class="story-card hidden">
@@ -559,7 +567,7 @@ body {
 
     <!-- Stats bar -->
     <div class="stats-bar">
-      <span id="facts-heard">0 stories heard</span>
+      <span id="facts-heard">0/0 stories heard</span>
       <span id="distance-walked">0.0 mi walked</span>
     </div>
   </div>
@@ -1813,7 +1821,7 @@ function closeSettings() {
 }
 
 function updateStats() {
-  document.getElementById("facts-heard").textContent = heardFacts.size + (heardFacts.size === 1 ? " story" : " stories") + " heard";
+  document.getElementById("facts-heard").textContent = heardFacts.size + "/" + FACTS.length + " stories heard";
   document.getElementById("distance-walked").textContent = (totalDistance / 1609.34).toFixed(1) + " mi walked";
 }
 
