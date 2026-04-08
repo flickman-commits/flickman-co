@@ -1253,8 +1253,156 @@ var FACTS = [
   {
     id: "ji4", category: "music", lat: 40.7561, lng: -73.9872,
     title: "Iovine Meets Patti Smith", year: "1978",
-    confidence: "general", // NYC music scene, various studios and clubs
+    confidence: "general",
     story: "In the late 1970s, Jimmy Iovine went from engineering other people\u2019s records to producing them. His breakthrough came when he produced Patti Smith\u2019s \u201CEaster\u201D album, which featured \u201CBecause the Night\u201D \u2014 a song Bruce Springsteen had written but couldn\u2019t finish. Iovine, who knew both artists from NYC studio sessions, connected them. The song became Patti Smith\u2019s biggest hit. That was Iovine\u2019s superpower: not his ears, but his ability to connect people. He saw relationships as the real product. He later did the same thing when he paired Dr. Dre with Apple. Same instinct, billion-dollar scale."
+  },
+
+  // === WEST SIDE HIGHWAY / HUDSON RIVER GREENWAY ===
+  {
+    id: "ws1", category: "business", lat: 40.7036, lng: -74.0170,
+    title: "Pier 54: Where the Titanic Was Supposed to Dock", year: "1912",
+    confidence: "exact",
+    story: "Right here at Pier 54, West 13th Street \u2014 on April 18, 1912, the Cunard liner Carpathia docked carrying 705 survivors of the Titanic disaster. Over 30,000 people crowded the waterfront in the rain, waiting. This was the White Star Line\u2019s berth \u2014 the Titanic was supposed to arrive here three days earlier. Three years later, on May 1, 1915, the Lusitania departed from this same pier on her final voyage \u2014 torpedoed by a German U-boat off Ireland, killing 1,198 people, an event that helped drag the U.S. into World War I. The same pier, two of the worst maritime disasters in history."
+  },
+  {
+    id: "ws2", category: "business", lat: 40.7428, lng: -74.0067,
+    title: "Chelsea Market: Where the Oreo Was Born", year: "1912",
+    confidence: "exact", // 75 Ninth Avenue
+    story: "75 Ninth Avenue, between 15th and 16th \u2014 in 1912, inside this massive factory, the National Biscuit Company invented the Oreo cookie, now the best-selling cookie in the world. Nabisco left for New Jersey in the 1950s. The building became Chelsea Market, a food hall and office complex. Then in 2018, Google\u2019s parent company Alphabet bought it for $2.4 billion \u2014 one of the most expensive single-building real estate transactions in New York history. The block of Ninth Avenue outside was ceremonially renamed \u201COreo Way.\u201D From cookies to code, this building has been feeding people for over a century."
+  },
+  {
+    id: "ws3", category: "business", lat: 40.7537, lng: -74.0023,
+    title: "Hudson Yards: $25 Billion Over Active Train Tracks", year: "2019",
+    confidence: "exact", // Hudson Yards, 30th-34th between 10th-12th
+    story: "Right here at 30th Street and 10th Avenue, Stephen Ross pulled off the most audacious real estate project in American history. Hudson Yards cost $25 billion \u2014 roughly a billion dollars per acre \u2014 making it the largest private development in U.S. history. What makes it insane: he built a massive platform over 30 active rail tracks that feed into Penn Station. Trains are still running underneath you right now. Ross founded Related Companies in 1972 starting with affordable housing, bought the Miami Dolphins for $1.1 billion, and donated $478 million to the University of Michigan. He bet everything that Manhattan\u2019s far west side would become the new center of the city. The jury\u2019s still out."
+  },
+  {
+    id: "ws4", category: "business", lat: 40.7534, lng: -74.0020,
+    title: "The Vessel: A $200 Million Tragedy", year: "2019",
+    confidence: "exact", // Hudson Yards Public Square
+    story: "This honeycomb-like structure at Hudson Yards was supposed to be New York\u2019s Eiffel Tower \u2014 154 flights of stairs, 2,500 steps, designed by Thomas Heatherwick and commissioned by Stephen Ross for $200 million. Instead it became a tragedy. Four people died by suicide jumping from the structure within 18 months of its opening, including a 14-year-old boy. It closed, briefly reopened, closed again. Critics called it a symbol of how the ultra-wealthy fail at making public space. It finally reopened in 2024 with floor-to-ceiling steel mesh barriers, but the top level remains permanently closed. The most expensive public sculpture in the world, and you can\u2019t even reach the top."
+  },
+  {
+    id: "ws5", category: "business", lat: 40.7130, lng: -74.0150,
+    title: "Goldman Sachs Got $1.65 Billion to Stay in Manhattan", year: "2009",
+    confidence: "exact", // 200 West Street
+    story: "200 West Street \u2014 after 9/11, Goldman Sachs was seriously considering moving its traders to Jersey City. Traders revolted \u2014 they refused to leave Manhattan. The city and state, desperate to keep Goldman downtown, offered $1.65 billion in tax-exempt Liberty Bonds created specifically for post-9/11 rebuilding. Goldman got a $2.4 billion, 44-story tower essentially subsidized by recovery funds. Critics were furious \u2014 the richest bank on Wall Street got public money to build a luxury headquarters. Defenders said Goldman\u2019s presence anchored the rebirth of Lower Manhattan. Love it or hate it, the gamble worked. This building helped bring downtown back."
+  },
+  {
+    id: "ws6", category: "business", lat: 40.7093, lng: -74.0180,
+    title: "You\u2019re Standing on Land That Didn\u2019t Exist", year: "1968",
+    confidence: "exact", // Brookfield Place / Battery Park City
+    story: "Right here at Brookfield Place, near Vesey Street \u2014 the ground beneath your feet did not exist before 1966. When workers dug down to bedrock for the World Trade Center foundations, they trucked the earth across West Street and dumped it into the Hudson River, creating 92 acres of new land. Battery Park City was literally built on World Trade Center dirt. Paul Reichmann, a Canadian developer who was once the richest man in the world, built the World Financial Center on this manufactured land in the 1980s. If you\u2019re running along the Hudson here, you\u2019re running on what used to be the river."
+  },
+  {
+    id: "ws7", category: "arts", lat: 40.7397, lng: -74.0089,
+    title: "The Whitney Museum: Lauder Shamed Billionaires Into Giving", year: "2015",
+    confidence: "exact", // 99 Gansevoort Street
+    story: "99 Gansevoort Street \u2014 when the Whitney Museum announced it was moving here from the Upper East Side, the 2008 financial crisis hit almost immediately. The project nearly died. Then Leonard Lauder \u2014 Est\u00E9e Lauder\u2019s son, chairman of the Whitney\u2019s board \u2014 swooped in with $131 million, the largest donation in the museum\u2019s history. His move was calculated: the gift was timed to shame other trustees into matching. It worked. The building now bears his name. Michelle Obama cut the ribbon. The kid from Corona, Queens whose mother mixed face cream in her kitchen \u2014 her son now has his name on a $422 million Renzo Piano building in the Meatpacking District."
+  },
+  {
+    id: "ws8", category: "business", lat: 40.7420, lng: -74.0068,
+    title: "Restaurant Florent: The Diner That Changed a Neighborhood", year: "1985",
+    confidence: "exact", // 69 Gansevoort Street
+    story: "69 Gansevoort Street \u2014 in 1985, a French-born restaurateur named Florent Morellet opened an all-night diner in a former greasy spoon, surrounded by meatpacking plants and a thriving late-night sex work scene. Restaurant Florent became a magnet for artists, drag queens, club kids, and downtown celebrities. Florent is widely credited as the person who made it acceptable \u2014 even fashionable \u2014 for outsiders to come to the Meatpacking District. The restaurant closed in 2008 as rents soared, a victim of the very gentrification it had sparked. By then, Stella McCartney and Alexander McQueen had boutiques on the same block. One French guy with a diner turned a slaughterhouse district into a luxury shopping destination."
+  },
+  {
+    id: "ws9", category: "architecture", lat: 40.7480, lng: -74.0048,
+    title: "The High Line: Death Avenue to Art Park", year: "2009",
+    confidence: "exact", // High Line, Gansevoort to 34th
+    story: "You\u2019re walking on what used to be called Death Avenue. In the early 1900s, 10th Avenue was so deadly \u2014 freight trains ran at street level, killing pedestrians constantly \u2014 that the railroad hired \u201CWest Side Cowboys,\u201D men on horseback who rode ahead of the trains waving red flags. The elevated rail line was built in the 1930s to solve this. Its last train ran in 1980, carrying three carloads of frozen turkeys. For 20 years it sat abandoned, wildflowers growing through the tracks. Then in 1999, two strangers \u2014 Joshua David and Robert Hammond \u2014 both showed up at the same community meeting about its future. They spent a decade fighting to save it. Property values within a few blocks jumped 35% after it opened. Two guys who\u2019d never met saved a railroad and created one of the most visited attractions in New York."
+  },
+  {
+    id: "ws10", category: "crime", lat: 40.7508, lng: -74.0003,
+    title: "The SS Normandie: Luxury Liner Capsized, Mob Got Involved", year: "1942",
+    confidence: "exact", // Pier 88, West 48th St
+    story: "Right here at Pier 88, West 48th Street \u2014 on February 9, 1942, the SS Normandie, a magnificent French ocean liner seized by the U.S. Navy after Pearl Harbor, caught fire while workers were welding. The blaze spread to thousands of life preservers. Firefighters poured so much water onto the ship that she became top-heavy and capsized at the pier. The sight of the great liner lying on her side in the ice-filled Hudson became one of the iconic images of wartime New York. Rumors swirled about sabotage. Mafia boss Lucky Luciano, in prison at the time, offered the Navy help securing the waterfront \u2014 launching \u201COperation Underworld,\u201D the controversial wartime alliance between Naval Intelligence and the mob."
+  },
+  {
+    id: "ws11", category: "architecture", lat: 40.8559, lng: -73.9478,
+    title: "The Little Red Lighthouse Saved by Children\u2019s Letters", year: "1951",
+    confidence: "exact", // Fort Washington Park, under GWB
+    story: "Right here under the George Washington Bridge, near 178th Street \u2014 this 40-foot red lighthouse was built in 1880 and became obsolete when the bridge opened in 1931. In 1942, a children\u2019s book called \u201CThe Little Red Lighthouse and the Great Gray Bridge\u201D told the story of a small lighthouse that feels useless when a great bridge is built above it. When the Coast Guard announced plans to auction the lighthouse in 1951, children across the city wrote letters begging to save it. The public outcry \u2014 driven almost entirely by kids who loved the book \u2014 worked. It was donated to the Parks Department. A children\u2019s book saved a lighthouse. That\u2019s the most New York story possible."
+  },
+
+  // === CENTRAL PARK & SURROUNDINGS ===
+  {
+    id: "cp1", category: "politics", lat: 40.7832, lng: -73.9657,
+    title: "Seneca Village: The Community Destroyed for a Park", year: "1857",
+    confidence: "exact", // West side of Central Park, 82nd-89th Streets
+    story: "Right here, between 82nd and 89th Streets on the park\u2019s west side, a thriving community called Seneca Village stood before Central Park existed. Founded in 1825 when Andrew Williams, a Black man, bought three lots for $125, it grew to 264 residents \u2014 two-thirds Black, the rest Irish and German immigrants. They had three churches, a school, and something radical: property ownership, which gave Black men the right to vote in an era when New York required Black voters to own $250 in property. In 1857, the city used eminent domain to evict every resident and raze the village. The press called them squatters. They weren\u2019t. Archaeological digs in 2011 unearthed ceramic plates, shoes, a cast-iron stove \u2014 proof of a settled, middle-class community erased for a park."
+  },
+  {
+    id: "cp2", category: "arts", lat: 40.7744, lng: -73.9708,
+    title: "Bethesda Fountain: First Woman to Get a Major Art Commission", year: "1868",
+    confidence: "exact", // Bethesda Fountain, mid-park at 72nd
+    story: "Right here at Bethesda Fountain, mid-park at 72nd Street \u2014 the \u201CAngel of the Waters\u201D sculpture was created by Emma Stebbins in 1868, making her the first woman to receive a major public art commission in New York City. Stebbins was in a relationship with actress Charlotte Cushman, one of the most famous women in 19th-century America. The angel commemorates the opening of the Croton Aqueduct, which brought clean water to the city and helped end cholera epidemics. By the 1970s, the fountain was dry and vandalized, the terrace a haven for drug dealers. The Central Park Conservancy restored it. Today it\u2019s one of the most photographed spots in the city \u2014 a monument to clean water, made by a queer woman in the 1860s."
+  },
+  {
+    id: "cp3", category: "music", lat: 40.7757, lng: -73.9750,
+    title: "Simon & Garfunkel: 500,000 People on the Great Lawn", year: "1981",
+    confidence: "exact", // Great Lawn, 79th-86th
+    story: "Right here on the Great Lawn, between 79th and 86th Streets \u2014 on September 19, 1981, Simon and Garfunkel reunited for a free concert that drew over 500,000 people, one of the largest concert audiences in history. The park was in deep decline \u2014 crime-ridden, the Lawn itself was bare dirt. The concert paradoxically both celebrated and further destroyed the grass. Diana Ross had performed a free concert here two months earlier in a massive rainstorm, and the damage was so severe it contributed to the push for the Great Lawn\u2019s $18 million restoration in 1997. Half a million people showed up to watch two guys from Queens sing about feeling alone."
+  },
+  {
+    id: "cp4", category: "business", lat: 40.7882, lng: -73.9580,
+    title: "Jackie O Ran This Loop Every Day", year: "1970s",
+    confidence: "exact", // Jacqueline Kennedy Onassis Reservoir
+    story: "This is the Jacqueline Kennedy Onassis Reservoir \u2014 1.58 miles of crushed gravel, the most famous running loop in the world. Jackie lived at 1040 Fifth Avenue, right there at 85th Street, overlooking the reservoir\u2019s south end, from 1964 until her death in 1994. She ran and walked this loop constantly. She also fought to save Grand Central Terminal from demolition in the 1970s \u2014 one of the most important preservation battles in American history. The reservoir was renamed for her in 1994. The convention is to run counterclockwise. In the \u201870s and \u201880s, this loop was called \u201Cthe dating track\u201D \u2014 where ambitious, attractive New Yorkers ran and met each other. Madonna, Dustin Hoffman, and Bill Rodgers were all regulars."
+  },
+  {
+    id: "cp5", category: "sports", lat: 40.7845, lng: -73.9560,
+    title: "Fred Lebow\u2019s Last Marathon", year: "1992",
+    confidence: "exact", // Fred Lebow statue, near 90th St entrance
+    story: "Right here near the 90th Street entrance to the reservoir \u2014 there\u2019s a bronze statue of Fred Lebow checking his watch. Lebow founded the New York City Marathon in 1970 as a small loop race inside Central Park \u2014 126 runners. He grew it into the largest marathon in the world, 50,000 runners crossing all five boroughs. In 1990, he was diagnosed with brain cancer. In 1992, in remission, he ran his final marathon alongside Grete Waitz, the nine-time women\u2019s champion, finishing in 5:32:35. He died two years later. Every year on marathon day, his statue is moved to the finish line near 67th Street. Runners touch it for good luck."
+  },
+  {
+    id: "cp6", category: "business", lat: 40.7651, lng: -73.9790,
+    title: "Billionaires\u2019 Row: The $238 Million Apartment", year: "2019",
+    confidence: "exact", // 220 Central Park South / 57th Street corridor
+    story: "Right here along 57th Street, looking south from the park \u2014 this is Billionaires\u2019 Row. In January 2019, Ken Griffin, founder of Citadel hedge fund, bought four floors at 220 Central Park South for $238 million \u2014 the most expensive home sale in U.S. history. The building has no public website and has never been advertised. Down the block, Harry Macklowe built 432 Park Avenue after demolishing the Drake Hotel. Then came his divorce: after 57 years of marriage, their art collection sold at Sotheby\u2019s for $922 million. Macklowe then projected a massive photo of himself and his new girlfriend on the side of his own building. One57\u2019s penthouse sold to Michael Dell for $100.47 million. Central Park Tower, at 1,550 feet, is the tallest residential building in the world. The combined value of apartments on this one block exceeds the GDP of some countries."
+  },
+  {
+    id: "cp7", category: "business", lat: 40.7642, lng: -73.9726,
+    title: "Steve Jobs\u2019 Glass Cube Gets 57 Million Visitors", year: "2006",
+    confidence: "exact", // 767 Fifth Avenue, Apple Store
+    story: "767 Fifth Avenue, right at 59th Street \u2014 Steve Jobs personally insisted on building a 40-foot glass cube as the entrance to Apple\u2019s underground store on the General Motors Building plaza. The developer Harry Macklowe wanted something different. Jobs wouldn\u2019t budge. The original cube cost $9 million. Jobs opened the store himself in 2006, personally greeting the first customers. The entire retail space is underground, beneath the plaza. The store now gets over 57 million visitors per year \u2014 more than the Statue of Liberty, more than the Empire State Building, more than any tourist attraction in the city. Apple redesigned the cube in 2019 with fewer, larger glass panels. The most visited store in the world is a transparent box."
+  },
+  {
+    id: "cp8", category: "business", lat: 40.7712, lng: -73.9763,
+    title: "740 Park: The Richest Address in America", year: "1930",
+    confidence: "exact", // 740 Park Avenue at 71st Street
+    story: "740 Park Avenue, at 71st Street \u2014 this is the richest residential address in America. Built in 1930 by James T. Lee, grandfather of Jacqueline Kennedy, who grew up here as little Jacqueline Bouvier. John D. Rockefeller Jr. moved into the duplex in 1937. In 2000, Stephen Schwarzman, co-founder of Blackstone Group, bought that same Rockefeller apartment for $30 million. David Koch bought an 18-room duplex for $17 million. The building has 31 units and the highest concentration of billionaires of any building in the country. Jackie Kennedy to Rockefeller to Schwarzman \u2014 the apartment keeps changing hands, each owner richer than the last."
+  },
+  {
+    id: "cp9", category: "food", lat: 40.7724, lng: -73.9794,
+    title: "Tavern on the Green Was a Literal Sheep House", year: "1934",
+    confidence: "exact", // Central Park West at 67th Street
+    story: "Central Park West at 67th Street \u2014 Tavern on the Green started life in the 1880s as a sheepfold, housing 200 Southdown sheep that grazed in Sheep Meadow. Robert Moses converted it into a restaurant in 1934. In 1974, Warner LeRoy took it over and spent $10 million renovating a restaurant he didn\u2019t even own \u2014 it sits on city parkland. At the grand reopening, he served the world\u2019s largest sundae, flew in a champagne bottle from France that had its own first-class airplane seat, and built a 16-foot cake replica of Central Park. LeRoy was the son of Mervyn LeRoy, who directed The Wizard of Oz. The city eventually refused to renew the lease, and a judge ruled he\u2019d fraudulently trademarked the name. A sheepfold became a showman\u2019s palace became a legal battlefield."
+  },
+  {
+    id: "cp10", category: "arts", lat: 40.7799, lng: -73.9690,
+    title: "Papp vs. Moses: Free Shakespeare in the Park", year: "1962",
+    confidence: "exact", // Delacorte Theater, mid-park near 80th St
+    story: "Right here at the Delacorte Theater, mid-park near 80th Street \u2014 Joseph Papp founded free Shakespeare in the Park in 1962 by battling Robert Moses, the city\u2019s all-powerful parks commissioner. Moses wanted to charge admission. Papp refused. The fight went public, and New Yorkers sided with Papp. George Delacorte donated money for this open-air theater. The tradition continues every summer with free performances. Meryl Streep, Al Pacino, Denzel Washington, and Philip Seymour Hoffman have all performed on this stage, for free, in a park. Papp proved that the best theater in the world doesn\u2019t need to cost anything."
+  },
+  {
+    id: "cp11", category: "crime", lat: 40.7946, lng: -73.9553,
+    title: "The Exonerated Five", year: "1989",
+    confidence: "exact", // North end of Central Park, near 102nd St
+    story: "Right here near the 102nd Street cross-drive in the park\u2019s north end \u2014 on April 19, 1989, a 28-year-old investment banker was brutally attacked while jogging. Five teenagers \u2014 Korey Wise, Yusef Salaam, Antron McCray, Raymond Santana, and Kevin Richardson \u2014 were convicted and served between 6 and 13 years in prison. In 2002, a serial rapist already in prison confessed, and DNA proved it. All five convictions were vacated. Donald Trump had taken out full-page newspaper ads calling for their execution. The case exposed catastrophic failures in the justice system. Yusef Salaam won a New York City Council seat in 2023. The Central Park Five became the Exonerated Five."
+  },
+  {
+    id: "cp12", category: "business", lat: 40.7644, lng: -73.9747,
+    title: "15 Central Park West: The Billion-Dollar Building", year: "2008",
+    confidence: "exact", // 15 CPW, between 61st and 62nd
+    story: "15 Central Park West, between 61st and 62nd \u2014 developers Arthur and William Zeckendorf bought the old Mayflower Hotel site for $401 million and built what Vanity Fair called \u201Cthe highest-priced new apartment building in the history of New York.\u201D Within two months of sales opening, 74 units sold for a combined $650 million. Total sales surpassed $1 billion. Lloyd Blankfein, the Goldman Sachs CEO, lives here. So do Sting, Denzel Washington, Robert De Niro, and Norman Lear. The Zeckendorf name has been in New York real estate for three generations \u2014 their grandfather William Sr. assembled the land for the United Nations. Real estate dynasties, like the buildings themselves, just keep getting taller."
+  },
+  {
+    id: "cp13", category: "architecture", lat: 40.7826, lng: -73.9653,
+    title: "Cleopatra\u2019s Needle: Vanderbilt Paid to Move a 3,500-Year-Old Obelisk", year: "1881",
+    confidence: "exact", // Behind the Met, east side near 81st St
+    story: "Right here behind the Met, near 81st Street \u2014 this 71-foot Egyptian obelisk is 3,500 years old, originally from Heliopolis. It took Navy Commander Henry Gorringe 112 days to transport it from Alexandria to New York. Moving it from the Hudson dockside to this spot required a specially built rail system and took months. William Henry Vanderbilt personally paid the $100,000-plus moving costs \u2014 several million in today\u2019s dollars. Here\u2019s the tragic part: the hieroglyphics have eroded more in 140 years in New York than in 3,000 years in Egypt, because of pollution and weather. New York is literally dissolving a monument that survived three millennia."
   }
 ];
 
