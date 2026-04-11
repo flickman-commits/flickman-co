@@ -503,6 +503,156 @@ body {
 .leaflet-tile-pane {
   filter: saturate(0.3) brightness(1.05);
 }
+
+/* === TUTORIAL SCREEN === */
+#tutorial {
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 60px 24px 40px;
+  background: #ffffff;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tutorial-content {
+  max-width: 400px;
+  width: 100%;
+}
+
+.tutorial-content h1 {
+  font-size: 32px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.03em;
+  margin-bottom: 32px;
+  text-align: center;
+}
+
+.tutorial-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.tutorial-step-number {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  background: #000;
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 14px;
+}
+
+.tutorial-step-text h3 {
+  font-size: 16px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.tutorial-step-text p {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* === PERMISSION STATUS === */
+.permission-section {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.permission-section h3 {
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+
+.permission-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+}
+
+.permission-row span {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.permission-status {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 4px 10px;
+  border-radius: var(--radius);
+}
+
+.permission-status.granted {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.permission-status.denied {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.permission-status.prompt {
+  background: #000;
+  color: #fff;
+  cursor: pointer;
+}
+
+.permission-status.unavailable {
+  background: #f5f5f5;
+  color: #999;
+}
+
+/* === RADIUS HALO === */
+.radius-halo {
+  border: 2px solid rgba(0, 0, 0, 0.15);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+/* === SETTINGS EXTRAS === */
+.settings-divider {
+  border: none;
+  border-top: 1px solid #e0e0e0;
+  margin: 16px 0;
+}
+
+.settings-link-btn {
+  width: 100%;
+  padding: 12px;
+  background: transparent;
+  border: 2px solid #e0e0e0;
+  border-radius: var(--radius);
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.settings-link-btn:active {
+  background: #f5f5f5;
+}
   </style>
 </head>
 <body>
@@ -519,6 +669,39 @@ body {
       </div>
 
       <button id="start-btn" class="primary-btn" disabled>Start Exploring</button>
+    </div>
+  </div>
+
+  <!-- Tutorial Screen -->
+  <div id="tutorial" class="screen">
+    <div class="tutorial-content">
+      <h1>How It Works</h1>
+
+      <div class="tutorial-step">
+        <div class="tutorial-step-number">1</div>
+        <div class="tutorial-step-text">
+          <h3>Walk the city</h3>
+          <p>Put your phone in your pocket and explore. The app tracks your location in the background.</p>
+        </div>
+      </div>
+
+      <div class="tutorial-step">
+        <div class="tutorial-step-number">2</div>
+        <div class="tutorial-step-text">
+          <h3>Get buzzed</h3>
+          <p>When you're within range of a story, you'll feel a vibration and hear a ping. No need to stare at your screen.</p>
+        </div>
+      </div>
+
+      <div class="tutorial-step">
+        <div class="tutorial-step-number">3</div>
+        <div class="tutorial-step-text">
+          <h3>Listen or read</h3>
+          <p>Tap the notification to hear the story narrated, or read it yourself. Then keep walking — there's always more.</p>
+        </div>
+      </div>
+
+      <button id="tutorial-done-btn" class="primary-btn">LET'S GO</button>
     </div>
   </div>
 
@@ -601,6 +784,21 @@ body {
         <h3>YOUR INTERESTS</h3>
         <div class="interests-grid" id="settings-interests-grid"></div>
       </div>
+      <div class="permission-section">
+        <h3>PERMISSIONS</h3>
+        <div class="permission-row">
+          <span>Location</span>
+          <span id="perm-location" class="permission-status prompt">ENABLE</span>
+        </div>
+        <div class="permission-row">
+          <span>Notifications</span>
+          <span id="perm-notifications" class="permission-status prompt">ENABLE</span>
+        </div>
+      </div>
+
+      <hr class="settings-divider">
+      <button id="restart-tutorial-btn" class="settings-link-btn">REPLAY TUTORIAL</button>
+      <button id="reset-heard-btn" class="settings-link-btn">RESET ALL STORIES</button>
       <button id="close-settings" class="primary-btn">DONE</button>
     </div>
   </div>
@@ -1526,15 +1724,56 @@ var speechRate = 1;
 var activelySpeaking = false;
 var lastTriggeredId = null;
 var cooldownFacts = new Set();
+var radiusCircle = null;
+var pingSound = null;
 
 document.addEventListener("DOMContentLoaded", function() {
   loadState();
   renderInterests();
   setupEventListeners();
+  initPingSound();
   if (selectedInterests.size > 0) {
-    showApp();
+    var tutorialSeen = localStorage.getItem("whh-tutorial-seen");
+    if (tutorialSeen) {
+      showApp();
+    } else {
+      showTutorial();
+    }
   }
 });
+
+function initPingSound() {
+  try {
+    var AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (AudioContext) {
+      pingSound = new AudioContext();
+    }
+  } catch(e) {}
+}
+
+function playPing() {
+  try {
+    if (!pingSound) initPingSound();
+    if (!pingSound) return;
+    if (pingSound.state === "suspended") pingSound.resume();
+    var osc = pingSound.createOscillator();
+    var gain = pingSound.createGain();
+    osc.connect(gain);
+    gain.connect(pingSound.destination);
+    osc.frequency.setValueAtTime(880, pingSound.currentTime);
+    osc.frequency.setValueAtTime(1320, pingSound.currentTime + 0.1);
+    gain.gain.setValueAtTime(0.3, pingSound.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, pingSound.currentTime + 0.4);
+    osc.start(pingSound.currentTime);
+    osc.stop(pingSound.currentTime + 0.4);
+  } catch(e) {}
+}
+
+function vibrate(pattern) {
+  try {
+    if (navigator.vibrate) navigator.vibrate(pattern);
+  } catch(e) {}
+}
 
 function loadState() {
   try {
@@ -1592,13 +1831,41 @@ function renderInterests(containerId) {
 }
 
 function setupEventListeners() {
-  document.getElementById("start-btn").addEventListener("click", showApp);
+  document.getElementById("start-btn").addEventListener("click", function() {
+    var tutorialSeen = localStorage.getItem("whh-tutorial-seen");
+    if (tutorialSeen) {
+      showApp();
+    } else {
+      showTutorial();
+    }
+  });
+  document.getElementById("tutorial-done-btn").addEventListener("click", function() {
+    localStorage.setItem("whh-tutorial-seen", "1");
+    document.getElementById("tutorial").classList.remove("active");
+    showApp();
+  });
   document.getElementById("close-story").addEventListener("click", closeStory);
   document.getElementById("center-btn").addEventListener("click", centerOnUser);
   document.getElementById("settings-btn").addEventListener("click", openSettings);
   document.getElementById("close-settings").addEventListener("click", closeSettings);
   document.getElementById("narrate-btn").addEventListener("click", narrateCurrentFact);
   document.getElementById("stop-narrate-btn").addEventListener("click", stopNarration);
+  document.getElementById("restart-tutorial-btn").addEventListener("click", function() {
+    closeSettings();
+    showTutorial();
+  });
+  document.getElementById("reset-heard-btn").addEventListener("click", function() {
+    if (confirm("Reset all heard stories? This can't be undone.")) {
+      heardFacts.clear();
+      totalDistance = 0;
+      saveState();
+      updateStats();
+      updateVisibleMarkers();
+      closeSettings();
+    }
+  });
+  document.getElementById("perm-location").addEventListener("click", requestLocationPermission);
+  document.getElementById("perm-notifications").addEventListener("click", requestNotificationPermission);
 
   document.getElementById("trigger-distance").addEventListener("change", function(e) {
     triggerDistance = parseInt(e.target.value);
@@ -1614,13 +1881,22 @@ function setupEventListeners() {
   });
 }
 
+function showTutorial() {
+  document.getElementById("onboarding").classList.remove("active");
+  document.getElementById("app").classList.remove("active");
+  document.getElementById("tutorial").classList.add("active");
+}
+
 function showApp() {
   document.getElementById("onboarding").classList.remove("active");
+  document.getElementById("tutorial").classList.remove("active");
   document.getElementById("app").classList.add("active");
   saveState();
   initMap();
   startTracking();
+  requestNotificationPermission();
   updateStats();
+  updatePermissionStatus();
 }
 
 function initMap() {
@@ -1684,9 +1960,21 @@ function onPositionUpdate(position) {
         iconAnchor: [10, 10]
       })
     }).addTo(map);
+    radiusCircle = L.circle([lat, lng], {
+      radius: triggerDistance,
+      className: "radius-halo",
+      fillOpacity: 0.06,
+      weight: 1.5,
+      color: "rgba(0,0,0,0.15)",
+      fillColor: "rgba(0,0,0,0.04)"
+    }).addTo(map);
     map.setView([lat, lng], 16);
   } else {
     userMarker.setLatLng([lat, lng]);
+    if (radiusCircle) {
+      radiusCircle.setLatLng([lat, lng]);
+      radiusCircle.setRadius(triggerDistance);
+    }
   }
   if (lastPosition) {
     var d = getDistance(lastPosition.lat, lastPosition.lng, lat, lng);
@@ -1698,6 +1986,7 @@ function onPositionUpdate(position) {
   lastPosition = { lat: lat, lng: lng };
   checkProximity(lat, lng);
   updateStats();
+  updatePermissionStatus();
 }
 
 function onPositionError(error) {
@@ -1729,9 +2018,17 @@ function checkProximity(lat, lng) {
 }
 
 function triggerFact(fact) {
+  // Haptic buzz: two quick pulses
+  vibrate([100, 50, 100]);
+  // Audio ping
+  playPing();
+  // Send browser notification if permitted
+  sendNotification(fact.title, fact.year);
+
   var toast = document.getElementById("nearby-toast");
   var toastText = document.getElementById("nearby-text");
-  toastText.textContent = fact.title;
+  // Show teaser: title + year + tap prompt
+  toastText.innerHTML = '<strong>' + fact.title + '</strong> <span style="opacity:0.7">(' + fact.year + ')</span><br><span style="font-size:12px;opacity:0.6">Tap to explore</span>';
   toast.classList.remove("hidden");
   toast.onclick = function() {
     toast.classList.add("hidden");
@@ -1741,7 +2038,7 @@ function triggerFact(fact) {
     showStory(fact);
     setTimeout(function() { narrateCurrentFact(); }, 500);
   }
-  setTimeout(function() { toast.classList.add("hidden"); }, 8000);
+  setTimeout(function() { toast.classList.add("hidden"); }, 10000);
 }
 
 function showStory(fact) {
@@ -1813,6 +2110,7 @@ function openSettings() {
   document.getElementById("auto-narrate").checked = autoNarrate;
   document.getElementById("speech-rate").value = speechRate;
   renderInterests("settings-interests-grid");
+  updatePermissionStatus();
   document.getElementById("settings-modal").classList.remove("hidden");
 }
 
@@ -1844,6 +2142,77 @@ function getDistance(lat1, lon1, lat2, lon2) {
 function toRad(deg) { return deg * (Math.PI / 180); }
 
 speechSynthesis.onvoiceschanged = function() { speechSynthesis.getVoices(); };
+
+// === Permissions ===
+function updatePermissionStatus() {
+  // Location
+  var locEl = document.getElementById("perm-location");
+  if (locEl) {
+    if (navigator.permissions && navigator.permissions.query) {
+      navigator.permissions.query({ name: "geolocation" }).then(function(result) {
+        setPermBadge(locEl, result.state);
+        result.onchange = function() { setPermBadge(locEl, result.state); };
+      }).catch(function() {
+        // Fallback: if we have a position, it's granted
+        setPermBadge(locEl, lastPosition ? "granted" : "prompt");
+      });
+    } else {
+      setPermBadge(locEl, lastPosition ? "granted" : "prompt");
+    }
+  }
+  // Notifications
+  var notifEl = document.getElementById("perm-notifications");
+  if (notifEl) {
+    if ("Notification" in window) {
+      setPermBadge(notifEl, Notification.permission);
+    } else {
+      notifEl.textContent = "N/A";
+      notifEl.className = "permission-status unavailable";
+    }
+  }
+}
+
+function setPermBadge(el, state) {
+  if (state === "granted") {
+    el.textContent = "ON";
+    el.className = "permission-status granted";
+  } else if (state === "denied") {
+    el.textContent = "BLOCKED";
+    el.className = "permission-status denied";
+  } else {
+    el.textContent = "ENABLE";
+    el.className = "permission-status prompt";
+  }
+}
+
+function requestLocationPermission() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      function() { updatePermissionStatus(); startTracking(); },
+      function() { updatePermissionStatus(); },
+      { enableHighAccuracy: true }
+    );
+  }
+}
+
+function requestNotificationPermission() {
+  if ("Notification" in window && Notification.permission === "default") {
+    Notification.requestPermission().then(function() { updatePermissionStatus(); });
+  }
+}
+
+function sendNotification(title, year) {
+  if ("Notification" in window && Notification.permission === "granted") {
+    try {
+      new Notification("What Happened Here", {
+        body: title + " (" + year + ")",
+        icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📍</text></svg>",
+        tag: "whh-proximity",
+        renotify: true
+      });
+    } catch(e) {}
+  }
+}
   </script>
 </body>
 </html>
