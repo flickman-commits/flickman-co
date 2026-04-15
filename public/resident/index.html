@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Private Dining Events in NYC | Resident</title>
+  <meta name="description" content="Host unforgettable private dinners in NYC with Michelin-trained chefs, exclusive venues, and white-glove event management. Corporate events, client dinners, and private celebrations starting at $5,000.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --color-bg: #FAF8F5;
+      --color-bg-alt: #F2EDE7;
+      --color-bg-dark: #1A1714;
+      --color-text: #1A1714;
+      --color-text-muted: #6B6560;
+      --color-text-light: #FAF8F5;
+      --color-accent: #8B6914;
+      --color-accent-hover: #A37D1A;
+      --color-border: #E0D9D0;
+      --color-positive: #2D5A27;
+      --color-negative: #8B2020;
+      --font-heading: 'Playfair Display', Georgia, serif;
+      --font-body: 'Inter', -apple-system, sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-body);
+      background: var(--color-bg);
+      color: var(--color-text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    img, video { max-width: 100%; display: block; }
+
+    /* ========== UTILITY ========== */
+    .container { max-width: 1140px; margin: 0 auto; padding: 0 24px; }
+    .container-wide { max-width: 1320px; margin: 0 auto; padding: 0 24px; }
+    .section-pad { padding: 80px 0; }
+    .text-center { text-align: center; }
+
+    /* ========== TYPOGRAPHY ========== */
+    h1, h2, h3, h4 {
+      font-family: var(--font-heading);
+      font-weight: 500;
+      letter-spacing: -0.04em;
+      line-height: 1.15;
+    }
+    h1 { font-size: clamp(1.8rem, 3.5vw, 3rem); }
+    h2 { font-size: clamp(1.5rem, 3vw, 2.4rem); }
+    h3 { font-size: clamp(1.1rem, 2vw, 1.35rem); }
+
+    .subhead {
+      font-family: var(--font-body);
+      font-size: clamp(0.92rem, 1.5vw, 1.05rem);
+      color: var(--color-text-muted);
+      font-weight: 400;
+      line-height: 1.55;
+    }
+
+    /* ========== BUTTONS ========== */
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: var(--color-bg-dark);
+      color: var(--color-text-light);
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 14px 32px;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s ease;
+    }
+    .btn-primary:hover { background: #333; }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: transparent;
+      color: var(--color-text-muted);
+      font-family: var(--font-body);
+      font-size: 0.82rem;
+      font-weight: 500;
+      padding: 10px 20px;
+      border: 1px solid var(--color-border);
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+    .btn-secondary:hover { border-color: var(--color-text); color: var(--color-text); }
+
+    .price-badge {
+      display: inline-block;
+      background: rgba(139,105,20,0.15);
+      color: var(--color-accent);
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 2px 10px;
+      letter-spacing: 0.02em;
+    }
+
+    /* ========== HERO ========== */
+    .hero {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: 100vh;
+    }
+
+    .hero-media {
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-media-placeholder {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(145deg, #2A2520 0%, #3D3530 50%, #1A1714 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+    }
+    .hero-media-placeholder span {
+      color: rgba(255,255,255,0.25);
+      font-family: var(--font-heading);
+      font-size: 1rem;
+      font-style: italic;
+      text-align: center;
+      max-width: 300px;
+    }
+
+    .hero-content {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 48px 56px;
+      max-height: 100vh;
+      overflow: hidden;
+    }
+
+    .hero-proof {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--color-text-muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .hero-proof .stars { color: var(--color-accent); font-size: 0.85rem; letter-spacing: 2px; }
+
+    .hero h1 { margin-bottom: 10px; }
+    .hero .subhead { margin-bottom: 20px; max-width: 460px; }
+
+    .hero-divider { width: 40px; height: 1px; background: var(--color-border); margin-bottom: 16px; }
+
+    .trust-ticker {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-bottom: 20px;
+    }
+    .trust-ticker .tick {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.68rem;
+      font-weight: 500;
+      color: var(--color-text-muted);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      background: var(--color-bg-alt);
+      padding: 4px 10px;
+    }
+    .trust-ticker .tick::before {
+      content: '';
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--color-accent);
+      flex-shrink: 0;
+    }
+
+    .hero-cta-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .hero-process {
+      display: flex;
+      align-items: center;
+      font-size: 0.75rem;
+      color: var(--color-text-muted);
+      letter-spacing: 0.02em;
+    }
+    .hero-process .step { font-weight: 500; }
+    .hero-process .arrow { margin: 0 10px; color: var(--color-border); }
+
+    /* ========== CLIENT LOGOS ========== */
+    .logos-strip {
+      background: var(--color-bg-alt);
+      padding: 24px 0;
+      overflow: hidden;
+    }
+    .logos-label {
+      text-align: center;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+      margin-bottom: 14px;
+    }
+    .logos-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 36px;
+      flex-wrap: wrap;
+      padding: 0 24px;
+    }
+    .logos-row span {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--color-text-muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      opacity: 0.45;
+      white-space: nowrap;
+    }
+
+    /* ========== PHOTO GALLERY STRIP ========== */
+    .gallery-strip {
+      padding: 0;
+      overflow: hidden;
+      background: var(--color-bg-dark);
+    }
+    .gallery-scroll {
+      display: flex;
+      gap: 4px;
+      animation: gallery-scroll 40s linear infinite;
+    }
+    .gallery-scroll .gallery-item {
+      flex-shrink: 0;
+      width: 320px;
+      height: 220px;
+      background: linear-gradient(135deg, #2A2520, #3D3530);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .gallery-scroll .gallery-item span {
+      color: rgba(255,255,255,0.2);
+      font-size: 0.75rem;
+      font-style: italic;
+      font-family: var(--font-heading);
+      text-align: center;
+      padding: 16px;
+    }
+    @keyframes gallery-scroll {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    .gallery-strip:hover .gallery-scroll { animation-play-state: paused; }
+
+    /* ========== HOW IT WORKS ========== */
+    .how-it-works { background: var(--color-bg); }
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 40px;
+      margin-top: 48px;
+    }
+    .step-card { text-align: center; padding: 0 12px; }
+    .step-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      border: 1.5px solid var(--color-bg-dark);
+      border-radius: 50%;
+      font-family: var(--font-heading);
+      font-size: 1rem;
+      font-weight: 500;
+      margin-bottom: 14px;
+    }
+    .step-card h3 { margin-bottom: 6px; }
+    .step-card p { font-size: 0.88rem; color: var(--color-text-muted); line-height: 1.6; }
+
+    /* ========== FULL-WIDTH VIDEO SECTION ========== */
+    .video-section {
+      position: relative;
+      background: var(--color-bg-dark);
+      overflow: hidden;
+    }
+    .video-container {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16/7;
+      max-height: 500px;
+      background: linear-gradient(145deg, #2A2520, #1A1714);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .video-container span {
+      color: rgba(255,255,255,0.2);
+      font-family: var(--font-heading);
+      font-size: 1.1rem;
+      font-style: italic;
+      text-align: center;
+      max-width: 400px;
+    }
+    .video-play-btn {
+      position: absolute;
+      width: 72px;
+      height: 72px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-radius: 50%;
+      background: rgba(26,23,20,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .video-play-btn:hover { background: rgba(26,23,20,0.8); border-color: rgba(255,255,255,0.7); }
+    .video-play-btn::after {
+      content: '';
+      display: block;
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-width: 10px 0 10px 18px;
+      border-color: transparent transparent transparent rgba(255,255,255,0.8);
+      margin-left: 4px;
+    }
+    .video-caption {
+      position: absolute;
+      bottom: 24px;
+      left: 24px;
+      color: rgba(255,255,255,0.6);
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    /* ========== WHAT'S INCLUDED ========== */
+    .whats-included {
+      background: var(--color-bg-dark);
+      color: var(--color-text-light);
+    }
+    .whats-included h2 { color: var(--color-text-light); }
+    .whats-included .subhead { color: rgba(250,248,245,0.6); }
+
+    .included-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
+      margin-top: 48px;
+    }
+    .included-item {
+      display: flex;
+      gap: 14px;
+    }
+    .included-icon {
+      flex-shrink: 0;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(250,248,245,0.12);
+      border-radius: 50%;
+      font-size: 1rem;
+    }
+    .included-item h4 {
+      font-family: var(--font-body);
+      font-size: 0.88rem;
+      font-weight: 600;
+      margin-bottom: 3px;
+      color: var(--color-text-light);
+      letter-spacing: -0.01em;
+    }
+    .included-item p {
+      font-size: 0.82rem;
+      color: rgba(250,248,245,0.5);
+      line-height: 1.5;
+    }
+
+    /* ========== PULL QUOTE ========== */
+    .pull-quote { background: var(--color-bg-alt); }
+    .pull-quote blockquote {
+      font-family: var(--font-heading);
+      font-size: clamp(1.2rem, 2.8vw, 1.8rem);
+      font-style: italic;
+      font-weight: 400;
+      line-height: 1.4;
+      letter-spacing: -0.02em;
+      max-width: 760px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .pull-quote cite {
+      display: block;
+      margin-top: 16px;
+      font-family: var(--font-body);
+      font-size: 0.82rem;
+      font-style: normal;
+      font-weight: 500;
+      color: var(--color-text-muted);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    /* ========== SIDE-BY-SIDE FEATURE ========== */
+    .feature-split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: 480px;
+    }
+    .feature-split-media {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, #2A2520, #3D3530);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .feature-split-media span {
+      color: rgba(255,255,255,0.2);
+      font-family: var(--font-heading);
+      font-size: 1rem;
+      font-style: italic;
+      text-align: center;
+      padding: 40px;
+    }
+    .feature-split-content {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 56px 64px;
+    }
+    .feature-split-content h2 { margin-bottom: 12px; }
+    .feature-split-content .subhead { margin-bottom: 24px; }
+    .feature-split-content .btn-primary { align-self: flex-start; }
+
+    .feature-split.reversed .feature-split-media { order: 2; }
+    .feature-split.reversed .feature-split-content { order: 1; }
+
+    .feature-split.dark { background: var(--color-bg-dark); }
+    .feature-split.dark .feature-split-content { color: var(--color-text-light); }
+    .feature-split.dark .feature-split-content h2 { color: var(--color-text-light); }
+    .feature-split.dark .feature-split-content .subhead { color: rgba(250,248,245,0.6); }
+
+    /* ========== COMPARISON ========== */
+    .comparison { background: var(--color-bg); }
+    .comparison-table {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+      margin-top: 48px;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .comparison-col { padding: 28px; }
+    .comparison-col.us { background: #F0F5EE; border: 1px solid #C8D9C4; }
+    .comparison-col.them { background: #F8F0F0; border: 1px solid #DCC4C4; }
+    .comparison-col-header {
+      font-family: var(--font-body);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+      padding-bottom: 10px;
+    }
+    .comparison-col.us .comparison-col-header { color: var(--color-positive); border-bottom: 1px solid #C8D9C4; }
+    .comparison-col.them .comparison-col-header { color: var(--color-negative); border-bottom: 1px solid #DCC4C4; }
+
+    .comparison-col ul { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+    .comparison-col li { font-size: 0.88rem; line-height: 1.45; padding-left: 22px; position: relative; }
+    .comparison-col.us li::before { content: '\2713'; position: absolute; left: 0; color: var(--color-positive); font-weight: 700; }
+    .comparison-col.them li::before { content: '\2717'; position: absolute; left: 0; color: var(--color-negative); font-weight: 700; }
+
+    /* ========== EVENT TYPES ========== */
+    .event-types { background: var(--color-bg-alt); }
+    .event-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 40px;
+    }
+    .event-card {
+      background: var(--color-bg);
+      padding: 24px 20px;
+      border: 1px solid var(--color-border);
+      transition: border-color 0.2s;
+    }
+    .event-card:hover { border-color: var(--color-text); }
+    .event-card h4 {
+      font-family: var(--font-heading);
+      font-size: 1rem;
+      font-weight: 500;
+      margin-bottom: 5px;
+    }
+    .event-card p { font-size: 0.82rem; color: var(--color-text-muted); line-height: 1.5; }
+
+    /* ========== PULL QUOTE 2 (dark) ========== */
+    .pull-quote-2 { background: var(--color-bg-dark); color: var(--color-text-light); }
+    .pull-quote-2 blockquote {
+      font-family: var(--font-heading);
+      font-size: clamp(1.2rem, 2.8vw, 1.8rem);
+      font-style: italic;
+      font-weight: 400;
+      line-height: 1.4;
+      letter-spacing: -0.02em;
+      max-width: 760px;
+      margin: 0 auto;
+      text-align: center;
+      color: var(--color-text-light);
+    }
+    .pull-quote-2 cite {
+      display: block;
+      margin-top: 16px;
+      font-family: var(--font-body);
+      font-size: 0.82rem;
+      font-style: normal;
+      font-weight: 500;
+      color: rgba(250,248,245,0.45);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    /* ========== CREDIBILITY ========== */
+    .credibility { background: var(--color-bg); }
+    .cred-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 40px;
+      margin-top: 48px;
+    }
+    .cred-item { text-align: center; }
+    .cred-item .number {
+      font-family: var(--font-heading);
+      font-size: 2.2rem;
+      font-weight: 500;
+      letter-spacing: -0.04em;
+      margin-bottom: 2px;
+    }
+    .cred-item .label {
+      font-size: 0.78rem;
+      color: var(--color-text-muted);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+    .press-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+      flex-wrap: wrap;
+      margin-top: 36px;
+      padding-top: 36px;
+      border-top: 1px solid var(--color-border);
+    }
+    .press-row span {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--color-text-muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      opacity: 0.4;
+    }
+
+    /* ========== BOTTOM CTA ========== */
+    .bottom-cta {
+      background: var(--color-bg-dark);
+      color: var(--color-text-light);
+      text-align: center;
+    }
+    .bottom-cta h2 { color: var(--color-text-light); margin-bottom: 10px; }
+    .bottom-cta .subhead { color: rgba(250,248,245,0.6); margin-bottom: 28px; }
+    .bottom-cta .btn-primary {
+      background: var(--color-text-light);
+      color: var(--color-bg-dark);
+    }
+    .bottom-cta .btn-primary:hover { background: #e8e4de; }
+
+    /* ========== FAQ ========== */
+    .faq { background: var(--color-bg-alt); }
+    .faq-list { max-width: 720px; margin: 36px auto 0; }
+    .faq-item { border-bottom: 1px solid var(--color-border); }
+    .faq-question {
+      width: 100%;
+      background: none;
+      border: none;
+      padding: 18px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      font-family: var(--font-body);
+      font-size: 0.92rem;
+      font-weight: 500;
+      color: var(--color-text);
+      cursor: pointer;
+      text-align: left;
+      line-height: 1.4;
+    }
+    .faq-question::after {
+      content: '+';
+      font-size: 1.2rem;
+      font-weight: 300;
+      flex-shrink: 0;
+      transition: transform 0.2s;
+    }
+    .faq-item.open .faq-question::after { content: '\2212'; }
+    .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+    .faq-answer-inner {
+      padding: 0 0 18px;
+      font-size: 0.86rem;
+      color: var(--color-text-muted);
+      line-height: 1.65;
+    }
+
+    /* ========== STICKY BAR ========== */
+    .sticky-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(26,23,20,0.95);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      z-index: 100;
+      transform: translateY(100%);
+      transition: transform 0.3s ease;
+      box-shadow: 0 -2px 24px rgba(0,0,0,0.2);
+    }
+    .sticky-bar.visible { transform: translateY(0); }
+    .sticky-bar p {
+      font-size: 0.84rem;
+      color: rgba(250,248,245,0.6);
+    }
+    .sticky-bar .btn-primary {
+      background: var(--color-text-light);
+      color: var(--color-bg-dark);
+      padding: 11px 28px;
+      font-size: 0.82rem;
+    }
+    .sticky-bar .btn-primary:hover { background: #e8e4de; }
+
+    /* ========== MODAL ========== */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(26,23,20,0.6);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+    .modal-overlay.open { opacity: 1; visibility: visible; }
+    .modal {
+      background: var(--color-bg);
+      width: 100%;
+      max-width: 480px;
+      padding: 36px 32px;
+      position: relative;
+      transform: translateY(20px);
+      transition: transform 0.3s ease;
+    }
+    .modal-overlay.open .modal { transform: translateY(0); }
+    .modal-close {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: none;
+      border: none;
+      font-size: 1.3rem;
+      cursor: pointer;
+      color: var(--color-text-muted);
+      padding: 4px;
+      line-height: 1;
+    }
+    .modal h3 { margin-bottom: 4px; }
+    .modal .subhead { margin-bottom: 20px; font-size: 0.86rem; }
+
+    .form-group { margin-bottom: 14px; }
+    .form-group label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+      margin-bottom: 5px;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 11px 12px;
+      font-family: var(--font-body);
+      font-size: 0.88rem;
+      border: 1px solid var(--color-border);
+      background: var(--color-bg);
+      color: var(--color-text);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-group input:focus,
+    .form-group select:focus { border-color: var(--color-text); }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .form-submit { margin-top: 18px; }
+    .form-submit .btn-primary { width: 100%; }
+    .form-note { margin-top: 10px; font-size: 0.73rem; color: var(--color-text-muted); text-align: center; }
+
+    .thank-you { text-align: center; padding: 40px 0; display: none; }
+    .thank-you.show { display: block; }
+    .thank-you h3 { margin-bottom: 8px; }
+    .thank-you p { color: var(--color-text-muted); font-size: 0.88rem; }
+
+    /* ========== RESPONSIVE ========== */
+    @media (max-width: 768px) {
+      .hero { grid-template-columns: 1fr; min-height: auto; }
+      .hero-media { min-height: 280px; }
+      .hero-content { padding: 28px 20px 36px; max-height: none; }
+      .hero-cta-group { flex-direction: column; align-items: stretch; }
+      .hero-cta-group .btn-primary { width: 100%; }
+      .steps-grid { grid-template-columns: 1fr; gap: 28px; }
+      .included-grid { grid-template-columns: 1fr; }
+      .comparison-table { grid-template-columns: 1fr; }
+      .cred-grid { grid-template-columns: 1fr; gap: 20px; }
+      .event-grid { grid-template-columns: 1fr; }
+      .feature-split { grid-template-columns: 1fr; min-height: auto; }
+      .feature-split-media { min-height: 260px; }
+      .feature-split-content { padding: 32px 20px; }
+      .feature-split.reversed .feature-split-media { order: 0; }
+      .feature-split.reversed .feature-split-content { order: 0; }
+      .form-row { grid-template-columns: 1fr; }
+      .gallery-scroll .gallery-item { width: 240px; height: 160px; }
+      .sticky-bar p { display: none; }
+    }
+
+    @media (min-width: 769px) and (max-width: 1024px) {
+      .hero-content { padding: 36px 40px; }
+      .included-grid { grid-template-columns: repeat(2, 1fr); }
+      .event-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== HERO ==================== -->
+  <section class="hero" id="hero">
+    <div class="hero-media">
+      <div class="hero-media-placeholder">
+        <span>Hero image: Intimate candlelit dinner in a luxury NYC penthouse, guests gathered around a beautifully styled table</span>
+      </div>
+    </div>
+    <div class="hero-content">
+      <div class="hero-proof">
+        <span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+        <span>200+ Private Events Hosted in NYC</span>
+      </div>
+
+      <h1>Private Dining Experiences Your Guests Won't Stop Talking About</h1>
+
+      <p class="subhead">Michelin-trained chefs, exclusive venues, and white-glove event management for corporate dinners, client events, and private celebrations in New York City.</p>
+
+      <div class="hero-divider"></div>
+
+      <div class="trust-ticker">
+        <span class="tick">Michelin-Trained Chefs</span>
+        <span class="tick">Exclusive Private Venues</span>
+        <span class="tick">Fully Custom Menus</span>
+        <span class="tick">8 to 50 Guests</span>
+      </div>
+
+      <div class="hero-cta-group">
+        <button class="btn-primary cta-open" id="hero-cta">Plan My Event <span class="price-badge">From $5,000</span></button>
+        <button class="btn-secondary" onclick="document.getElementById('how-it-works').scrollIntoView({behavior:'smooth'})">See How It Works &darr;</button>
+      </div>
+
+      <div class="hero-process">
+        <span class="step">Inquire</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step">Plan Your Menu</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step">Host Your Event</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== CLIENT LOGOS ==================== -->
+  <div class="logos-strip">
+    <div class="logos-label">Trusted by teams at</div>
+    <div class="logos-row">
+      <span>Monday.com</span>
+      <span>Deloitte</span>
+      <span>Hermes</span>
+      <span>TikTok</span>
+      <span>Snap Inc.</span>
+      <span>Atento Capital</span>
+      <span>Nexxen</span>
+      <span>InGo</span>
+    </div>
+  </div>
+
+  <!-- ==================== PHOTO GALLERY STRIP ==================== -->
+  <div class="gallery-strip">
+    <div class="gallery-scroll">
+      <div class="gallery-item"><span>Event photo: Table setup with warm lighting</span></div>
+      <div class="gallery-item"><span>Event photo: Chef plating a dish tableside</span></div>
+      <div class="gallery-item"><span>Event photo: Guests enjoying wine at a private loft</span></div>
+      <div class="gallery-item"><span>Event photo: Elegant crudo with caviar</span></div>
+      <div class="gallery-item"><span>Event photo: Host pouring champagne</span></div>
+      <div class="gallery-item"><span>Event photo: Overhead shot of a multi-course spread</span></div>
+      <div class="gallery-item"><span>Event photo: Intimate penthouse dining room</span></div>
+      <div class="gallery-item"><span>Event photo: Dessert course presentation</span></div>
+      <!-- Duplicate for seamless loop -->
+      <div class="gallery-item"><span>Event photo: Table setup with warm lighting</span></div>
+      <div class="gallery-item"><span>Event photo: Chef plating a dish tableside</span></div>
+      <div class="gallery-item"><span>Event photo: Guests enjoying wine at a private loft</span></div>
+      <div class="gallery-item"><span>Event photo: Elegant crudo with caviar</span></div>
+      <div class="gallery-item"><span>Event photo: Host pouring champagne</span></div>
+      <div class="gallery-item"><span>Event photo: Overhead shot of a multi-course spread</span></div>
+      <div class="gallery-item"><span>Event photo: Intimate penthouse dining room</span></div>
+      <div class="gallery-item"><span>Event photo: Dessert course presentation</span></div>
+    </div>
+  </div>
+
+  <!-- ==================== HOW IT WORKS ==================== -->
+  <section class="how-it-works section-pad text-center" id="how-it-works">
+    <div class="container">
+      <h2>Three Steps to an Unforgettable Event</h2>
+      <p class="subhead">We handle every detail so you can focus on your guests.</p>
+
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-number">1</div>
+          <h3>Tell Us Your Vision</h3>
+          <p>Share the occasion, group size, and any preferences. We'll pair you with the right chef and venue for your event.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-number">2</div>
+          <h3>We Curate Every Detail</h3>
+          <p>Your chef designs a custom, one-night-only menu. We handle the venue, staffing, beverages, tableware, and styling.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-number">3</div>
+          <h3>You Host, We Execute</h3>
+          <p>Show up and enjoy. Your chef presents each course tableside while our team manages everything behind the scenes.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== VIDEO SECTION ==================== -->
+  <section class="video-section">
+    <div class="video-container">
+      <span>Full event highlight reel: Chef preparing, guests arriving, courses being presented, reactions</span>
+      <div class="video-play-btn"></div>
+      <div class="video-caption">Watch: A Resident Private Dining Experience</div>
+    </div>
+  </section>
+
+  <!-- ==================== WHAT'S INCLUDED ==================== -->
+  <section class="whats-included section-pad">
+    <div class="container">
+      <div class="text-center">
+        <h2>Everything Is Taken Care Of</h2>
+        <p class="subhead">One point of contact. Full-service event management from first call to last course.</p>
+      </div>
+
+      <div class="included-grid">
+        <div class="included-item">
+          <div class="included-icon">&#127860;</div>
+          <div>
+            <h4>Michelin-Trained Private Chef</h4>
+            <p>Chefs from Eleven Madison Park, Per Se, Noma, and The French Laundry craft a bespoke menu and present each course.</p>
+          </div>
+        </div>
+        <div class="included-item">
+          <div class="included-icon">&#127967;</div>
+          <div>
+            <h4>Exclusive Private Venue</h4>
+            <p>Luxury penthouses, private lounges, and members-only spaces vetted for privacy and ambiance.</p>
+          </div>
+        </div>
+        <div class="included-item">
+          <div class="included-icon">&#127863;</div>
+          <div>
+            <h4>Wine & Beverage Pairings</h4>
+            <p>Sommelier-curated wine pairings, craft cocktails, or custom beverage programs.</p>
+          </div>
+        </div>
+        <div class="included-item">
+          <div class="included-icon">&#9883;</div>
+          <div>
+            <h4>Full Event Styling</h4>
+            <p>Tableware, florals, lighting, and decor coordinated to match the tone of your event.</p>
+          </div>
+        </div>
+        <div class="included-item">
+          <div class="included-icon">&#128101;</div>
+          <div>
+            <h4>Professional Service Staff</h4>
+            <p>Experienced front-of-house team handles every interaction seamlessly.</p>
+          </div>
+        </div>
+        <div class="included-item">
+          <div class="included-icon">&#128221;</div>
+          <div>
+            <h4>Dietary Accommodations</h4>
+            <p>Vegetarian, vegan, kosher, halal, allergy-friendly. Every guest is accounted for.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== PULL QUOTE 1 ==================== -->
+  <section class="pull-quote section-pad">
+    <div class="container">
+      <blockquote>
+        "If anyone is looking for a fantastic client entertainment experience, highly recommend Resident. Wonderful dinner alongside our partners, punctuated with intrigue and laughter from the chef and sommelier."
+        <cite>&mdash; Nexxen</cite>
+      </blockquote>
+    </div>
+  </section>
+
+  <!-- ==================== FEATURE SPLIT: THE CHEFS ==================== -->
+  <section class="feature-split">
+    <div class="feature-split-media">
+      <span>Photo/video: Chef presenting a course tableside, interacting with guests, telling the story behind the dish</span>
+    </div>
+    <div class="feature-split-content">
+      <h2>Chefs Who Don't Hide in the Kitchen</h2>
+      <p class="subhead">Our chefs come from the world's best restaurants &mdash; Eleven Madison Park, Per Se, Noma, The French Laundry. They present each course tableside, share the story behind every dish, and make your guests the center of the experience.</p>
+      <button class="btn-primary cta-open">Plan My Event</button>
+    </div>
+  </section>
+
+  <!-- ==================== COMPARISON ==================== -->
+  <section class="comparison section-pad">
+    <div class="container">
+      <div class="text-center">
+        <h2>Host Something They'll Actually Remember</h2>
+        <p class="subhead">Your event is a reflection of your organization. Make it count.</p>
+      </div>
+
+      <div class="comparison-table">
+        <div class="comparison-col us">
+          <div class="comparison-col-header">Resident Private Dining</div>
+          <ul>
+            <li>Michelin-trained chef presents each course tableside and tells the story behind the menu</li>
+            <li>Exclusive private venues curated for ambiance, privacy, and discretion</li>
+            <li>One-night-only custom menu designed around your group and occasion</li>
+            <li>White-glove event management from first call to last course</li>
+          </ul>
+        </div>
+        <div class="comparison-col them">
+          <div class="comparison-col-header">Hotel Banquet Room</div>
+          <ul>
+            <li>Generic prix fixe from a kitchen you'll never see, served by rotating staff</li>
+            <li>Same conference room decor that every other company books</li>
+            <li>Standard menu shared across dozens of events each week</li>
+            <li>You coordinate vendors, AV, catering, and setup yourself</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== FEATURE SPLIT: THE VENUES ==================== -->
+  <section class="feature-split reversed dark">
+    <div class="feature-split-media">
+      <span>Photo: Stunning private venue &mdash; luxury penthouse with skyline views, candlelit table set for 20</span>
+    </div>
+    <div class="feature-split-content">
+      <h2>Venues You Can't Book Anywhere Else</h2>
+      <p class="subhead">Elegant penthouses, modern lofts, and members-only lounges &mdash; all carefully vetted for privacy, ambiance, and exclusivity. We'll match the perfect space to the tone of your event.</p>
+      <button class="btn-primary cta-open">Plan My Event</button>
+    </div>
+  </section>
+
+  <!-- ==================== EVENT TYPES ==================== -->
+  <section class="event-types section-pad">
+    <div class="container">
+      <div class="text-center">
+        <h2>Built for Every Occasion</h2>
+        <p class="subhead">Whether you're impressing clients or celebrating your team, we've done it before.</p>
+      </div>
+
+      <div class="event-grid">
+        <div class="event-card">
+          <h4>Client Dinners</h4>
+          <p>Impress key accounts and deepen relationships over a world-class meal in an intimate setting.</p>
+        </div>
+        <div class="event-card">
+          <h4>Executive Off-Sites</h4>
+          <p>Leadership retreats and board meetings paired with a culinary experience that sparks real conversation.</p>
+        </div>
+        <div class="event-card">
+          <h4>Team Celebrations</h4>
+          <p>Holiday parties, milestone events, and team-building dinners that people actually look forward to.</p>
+        </div>
+        <div class="event-card">
+          <h4>Networking Events</h4>
+          <p>Cocktail receptions and multi-course dinners designed to create connection, not just attendance.</p>
+        </div>
+        <div class="event-card">
+          <h4>Brand Activations</h4>
+          <p>Press dinners, influencer events, and product launches in venues that feel exclusive and on-brand.</p>
+        </div>
+        <div class="event-card">
+          <h4>Private Celebrations</h4>
+          <p>Birthdays, anniversaries, and intimate weddings for those who want something far beyond a restaurant.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== PULL QUOTE 2 ==================== -->
+  <section class="pull-quote-2 section-pad">
+    <div class="container">
+      <blockquote>
+        "It felt elegant, exclusive, and the whole experience was a genuine treat. More than just a dinner &mdash; it was a curated culinary experience our team still talks about."
+        <cite>&mdash; Atento Capital</cite>
+      </blockquote>
+    </div>
+  </section>
+
+  <!-- ==================== CREDIBILITY ==================== -->
+  <section class="credibility section-pad">
+    <div class="container">
+      <div class="text-center">
+        <h2>The Numbers Behind the Experience</h2>
+      </div>
+
+      <div class="cred-grid">
+        <div class="cred-item">
+          <div class="number">200+</div>
+          <div class="label">Private Events Hosted</div>
+        </div>
+        <div class="cred-item">
+          <div class="number">50+</div>
+          <div class="label">Michelin-Trained Chefs</div>
+        </div>
+        <div class="cred-item">
+          <div class="number">NYC</div>
+          <div class="label">Exclusive Venue Network</div>
+        </div>
+      </div>
+
+      <div class="press-row">
+        <span>Michelin Guide</span>
+        <span>New York Times</span>
+        <span>Time Out</span>
+        <span>Fast Company</span>
+        <span>Inc. 5000</span>
+        <span>GrubStreet</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== BOTTOM CTA ==================== -->
+  <section class="bottom-cta section-pad" id="bottom-cta">
+    <div class="container">
+      <h2>Your Next Event Deserves Better<br>Than a Restaurant Back Room</h2>
+      <p class="subhead">Tell us what you're planning. We'll show you what's possible.</p>
+      <button class="btn-primary cta-open">Plan My Event</button>
+    </div>
+  </section>
+
+  <!-- ==================== FAQ ==================== -->
+  <section class="faq section-pad" id="faq">
+    <div class="container">
+      <div class="text-center">
+        <h2>Common Questions</h2>
+      </div>
+
+      <div class="faq-list">
+        <div class="faq-item">
+          <button class="faq-question">How much does a private dining event cost?</button>
+          <div class="faq-answer">
+            <div class="faq-answer-inner">Custom private experiences start at $5,000. Final pricing depends on guest count, menu complexity, venue selection, and beverage program. After an initial conversation, we'll provide a detailed proposal tailored to your event.</div>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How far in advance should I book?</button>
+          <div class="faq-answer">
+            <div class="faq-answer-inner">We recommend reaching out at least 3-4 weeks before your event to ensure availability of your preferred chef and venue. For peak seasons (holiday parties, year-end celebrations), 6-8 weeks is ideal. That said, we've pulled off incredible events with shorter timelines when needed.</div>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How many guests can you accommodate?</button>
+          <div class="faq-answer">
+            <div class="faq-answer-inner">Our private dining experiences are designed for groups of 8 to 50 guests. The format works best for intimate, seated dinners where every guest has a meaningful experience. For larger groups, we offer cocktail reception formats that can scale further.</div>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Can you accommodate dietary restrictions?</button>
+          <div class="faq-answer">
+            <div class="faq-answer-inner">Absolutely. Our chefs regularly accommodate vegetarian, vegan, gluten-free, kosher, halal, and allergy-specific requirements. Every menu is custom-designed, so dietary needs are built into the experience from the start rather than treated as an afterthought.</div>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Where do the events take place?</button>
+          <div class="faq-answer">
+            <div class="faq-answer-inner">We host events across Manhattan in exclusive private venues including luxury penthouses, members-only clubs, private lounges, and curated loft spaces. Each venue is selected based on your group size, event tone, and desired ambiance. We can also work with a venue you already have in mind.</div>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What if I need to change or cancel my event?</button>
+          <div class="faq-answer">
+            <div class="faq-answer-inner">We understand plans change. We'll walk through our flexible rescheduling and cancellation policy during your planning call. Our goal is to make the process as stress-free as the event itself.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== STICKY BAR ==================== -->
+  <div class="sticky-bar" id="sticky-bar">
+    <p>Private dining events from $5,000</p>
+    <button class="btn-primary cta-open">Plan My Event</button>
+  </div>
+
+  <!-- ==================== FORM MODAL ==================== -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <button class="modal-close" id="modal-close">&times;</button>
+
+      <div id="form-container">
+        <h3>Plan Your Private Event</h3>
+        <p class="subhead">Tell us a few details and we'll get back to you within 24 hours with a custom proposal.</p>
+
+        <form id="inquiry-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="first-name">First Name</label>
+              <input type="text" id="first-name" name="first_name" required>
+            </div>
+            <div class="form-group">
+              <label for="last-name">Last Name</label>
+              <input type="text" id="last-name" name="last_name" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="email">Work Email</label>
+            <input type="email" id="email" name="email" required>
+          </div>
+
+          <div class="form-group">
+            <label for="event-type">Event Type</label>
+            <select id="event-type" name="event_type" required>
+              <option value="" disabled selected>Select an event type</option>
+              <option value="client-dinner">Client Dinner</option>
+              <option value="executive-offsite">Executive Off-Site</option>
+              <option value="team-celebration">Team Celebration</option>
+              <option value="networking">Networking Event</option>
+              <option value="brand-activation">Brand Activation</option>
+              <option value="private-celebration">Private Celebration</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="guest-count">Estimated Guests</label>
+              <select id="guest-count" name="guest_count">
+                <option value="" disabled selected>Select</option>
+                <option value="8-15">8 - 15</option>
+                <option value="16-25">16 - 25</option>
+                <option value="26-50">26 - 50</option>
+                <option value="50+">50+</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="date">Preferred Date</label>
+              <input type="text" id="date" name="preferred_date" placeholder="MM/DD or flexible">
+            </div>
+          </div>
+
+          <div class="form-submit">
+            <button type="submit" class="btn-primary">Plan My Event</button>
+          </div>
+        </form>
+
+        <p class="form-note">We'll respond within 24 hours. No commitment required.</p>
+      </div>
+
+      <div class="thank-you" id="thank-you">
+        <h3>You're All Set</h3>
+        <p>Thanks for reaching out. A member of the Resident team will be in touch within 24 hours to discuss your event.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // FAQ Accordion
+    document.querySelectorAll('.faq-question').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const item = btn.parentElement;
+        const answer = item.querySelector('.faq-answer');
+        const isOpen = item.classList.contains('open');
+        document.querySelectorAll('.faq-item').forEach(i => {
+          i.classList.remove('open');
+          i.querySelector('.faq-answer').style.maxHeight = null;
+        });
+        if (!isOpen) {
+          item.classList.add('open');
+          answer.style.maxHeight = answer.scrollHeight + 'px';
+        }
+      });
+    });
+
+    // Sticky Bar
+    const heroCta = document.getElementById('hero-cta');
+    const stickyBar = document.getElementById('sticky-bar');
+    if (heroCta && stickyBar) {
+      const observer = new IntersectionObserver(
+        ([entry]) => { stickyBar.classList.toggle('visible', !entry.isIntersecting); },
+        { threshold: 0 }
+      );
+      observer.observe(heroCta);
+    }
+
+    // Modal
+    const overlay = document.getElementById('modal-overlay');
+    const closeBtn = document.getElementById('modal-close');
+
+    document.querySelectorAll('.cta-open').forEach(btn => {
+      btn.addEventListener('click', () => {
+        overlay.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      });
+    });
+
+    function closeModal() {
+      overlay.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+    closeBtn.addEventListener('click', closeModal);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+    // Form Submit
+    const form = document.getElementById('inquiry-form');
+    const formContainer = document.getElementById('form-container');
+    const thankYou = document.getElementById('thank-you');
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      formContainer.querySelector('form').style.display = 'none';
+      formContainer.querySelector('h3').style.display = 'none';
+      formContainer.querySelector('.subhead').style.display = 'none';
+      formContainer.querySelector('.form-note').style.display = 'none';
+      thankYou.classList.add('show');
+    });
+  </script>
+</body>
+</html>
