@@ -103,8 +103,8 @@
 
     .price-badge {
       display: inline-block;
-      background: rgba(139,105,20,0.15);
-      color: var(--color-accent);
+      background: rgba(255,255,255,0.2);
+      color: var(--color-text-light);
       font-size: 0.72rem;
       font-weight: 600;
       padding: 2px 10px;
@@ -220,18 +220,16 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 36px;
+      gap: 32px;
       flex-wrap: wrap;
       padding: 0 24px;
     }
-    .logos-row span {
-      font-size: 0.82rem;
-      font-weight: 600;
-      color: var(--color-text-muted);
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      opacity: 0.45;
-      white-space: nowrap;
+    .logos-row img {
+      height: 22px;
+      width: auto;
+      opacity: 0.4;
+      filter: grayscale(100%);
+      object-fit: contain;
     }
 
     /* ========== PHOTO GALLERY STRIP ========== */
@@ -627,9 +625,8 @@
       bottom: 0;
       left: 0;
       right: 0;
-      background: rgba(26,23,20,0.95);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      background: var(--color-bg);
+      border-top: 1px solid var(--color-border);
       padding: 12px 24px;
       display: flex;
       align-items: center;
@@ -638,20 +635,19 @@
       z-index: 100;
       transform: translateY(100%);
       transition: transform 0.3s ease;
-      box-shadow: 0 -2px 24px rgba(0,0,0,0.2);
     }
     .sticky-bar.visible { transform: translateY(0); }
     .sticky-bar p {
       font-size: 0.84rem;
-      color: rgba(250,248,245,0.6);
+      color: var(--color-text-muted);
     }
     .sticky-bar .btn-primary {
-      background: var(--color-text-light);
-      color: var(--color-bg-dark);
+      background: var(--color-bg-dark);
+      color: var(--color-text-light);
       padding: 11px 28px;
       font-size: 0.82rem;
     }
-    .sticky-bar .btn-primary:hover { background: #e8e4de; }
+    .sticky-bar .btn-primary:hover { background: #333; }
 
     /* ========== MODAL ========== */
     .modal-overlay {
@@ -784,7 +780,7 @@
       </div>
 
       <div class="hero-cta-group">
-        <button class="btn-primary cta-open" id="hero-cta">Plan My Event <span class="price-badge">From $5,000</span></button>
+        <button class="btn-primary cta-open" id="hero-cta">Plan My Event <span class="price-badge">Starting at $5k</span></button>
         <button class="btn-secondary" onclick="document.getElementById('how-it-works').scrollIntoView({behavior:'smooth'})">See How It Works &darr;</button>
       </div>
 
@@ -802,14 +798,14 @@
   <div class="logos-strip">
     <div class="logos-label">Trusted by teams at</div>
     <div class="logos-row">
-      <span>Monday.com</span>
-      <span>Deloitte</span>
-      <span>Hermes</span>
-      <span>TikTok</span>
-      <span>Snap Inc.</span>
-      <span>Atento Capital</span>
-      <span>Nexxen</span>
-      <span>InGo</span>
+      <img src="images/logos/monday.png" alt="Monday.com">
+      <img src="images/logos/deloitte.png" alt="Deloitte">
+      <img src="images/logos/hermes.png" alt="Hermes">
+      <img src="images/logos/tiktok.png" alt="TikTok">
+      <img src="images/logos/snap.png" alt="Snap Inc.">
+      <img src="images/logos/atento.png" alt="Atento Capital">
+      <img src="images/logos/nexxen.png" alt="Nexxen">
+      <img src="images/logos/ingo.png" alt="InGo">
     </div>
   </div>
 
@@ -1130,8 +1126,8 @@
 
   <!-- ==================== STICKY BAR ==================== -->
   <div class="sticky-bar" id="sticky-bar">
-    <p>Private dining events from $5,000</p>
-    <button class="btn-primary cta-open">Plan My Event</button>
+    <p>Private dining events in NYC</p>
+    <button class="btn-primary cta-open">Plan My Event <span class="price-badge">Starting at $5k</span></button>
   </div>
 
   <!-- ==================== FORM MODAL ==================== -->
