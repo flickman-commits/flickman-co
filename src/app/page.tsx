@@ -1,6 +1,5 @@
 import Hero from "@/components/Hero";
 import Goals from "@/components/Goals";
-import About from "@/components/About";
 import Companies from "@/components/Companies";
 import Blog from "@/components/Blog";
 import ToolsStack from "@/components/ToolsStack";
@@ -20,7 +19,6 @@ export default async function Home() {
       <main>
         <Hero />
         <Goals />
-        <About />
         <Companies />
         <Blog posts={posts} />
         <ToolsStack />
