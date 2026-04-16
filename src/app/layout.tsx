@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Press_Start_2P } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
+import Script from "next/script";
 import "./globals.css";
+
+const GA_ID = "G-MCBKNBCEY2";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -34,6 +37,19 @@ export default function RootLayout({
       <body className={`${inter.variable} ${pixelFont.variable} font-[family-name:var(--font-body)] bg-cream text-coal antialiased`}>
         {children}
         <Analytics />
+        {/* Google Analytics 4 */}
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+          strategy="afterInteractive"
+        />
+        <Script id="ga4-init" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${GA_ID}');
+          `}
+        </Script>
       </body>
     </html>
   );
