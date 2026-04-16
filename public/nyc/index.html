@@ -1732,14 +1732,12 @@ document.addEventListener("DOMContentLoaded", function() {
   renderInterests();
   setupEventListeners();
   initPingSound();
-  if (selectedInterests.size > 0) {
-    var tutorialSeen = localStorage.getItem("whh-tutorial-seen");
-    if (tutorialSeen) {
-      showApp();
-    } else {
-      showTutorial();
-    }
+  // Skip onboarding — go straight to app with all interests selected
+  if (selectedInterests.size === 0) {
+    INTERESTS.forEach(function(i) { selectedInterests.add(i.id); });
+    saveState();
   }
+  showApp();
 });
 
 function initPingSound() {
@@ -1832,12 +1830,7 @@ function renderInterests(containerId) {
 
 function setupEventListeners() {
   document.getElementById("start-btn").addEventListener("click", function() {
-    var tutorialSeen = localStorage.getItem("whh-tutorial-seen");
-    if (tutorialSeen) {
-      showApp();
-    } else {
-      showTutorial();
-    }
+    showApp();
   });
   document.getElementById("tutorial-done-btn").addEventListener("click", function() {
     localStorage.setItem("whh-tutorial-seen", "1");
