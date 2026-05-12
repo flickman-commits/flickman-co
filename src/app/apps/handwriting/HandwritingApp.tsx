@@ -6,23 +6,23 @@ import type { GlyphMap, Point, Stroke } from "./lib/types";
 import { STORAGE_KEY } from "./lib/types";
 import { buildFont, downloadFont } from "./lib/fontBuilder";
 
-type Step = "onboarding" | "method" | "drawing" | "preview" | "checkout";
+type Step = "onboarding" | "drawing" | "preview" | "checkout";
 
 const ONBOARDING_CARDS = [
   {
     icon: "✍️",
     title: "Make your handwriting a real font",
-    body: "Draw your letters once. Get back a font file you can use anywhere — Notes, Docs, your website, your résumé.",
+    body: "Draw each letter once. Get back a font file that types in your own handwriting.",
   },
   {
     icon: "📱",
-    title: "Best on your phone",
-    body: "Use your finger — it's faster than a mouse and feels like writing.",
+    title: "Use it everywhere",
+    body: "Captions on your IG videos. Notes. Docs. Your résumé. Birthday cards. Anywhere you can pick a font.",
   },
   {
-    icon: "💸",
-    title: "Free to play, $15 to keep",
-    body: "Draw and preview your font for free. Pay only if you love it.",
+    icon: "👆",
+    title: "Just use your finger",
+    body: "Letter by letter. Skip what you want. You'll see a live preview in your own handwriting when you're done.",
   },
 ];
 
@@ -87,14 +87,8 @@ export default function HandwritingApp() {
           onBack={() => setOnbIndex((i) => Math.max(0, i - 1))}
           onNext={() => {
             if (onbIndex < ONBOARDING_CARDS.length - 1) setOnbIndex(onbIndex + 1);
-            else setStep("method");
+            else setStep("drawing");
           }}
-        />
-      )}
-
-      {step === "method" && (
-        <MethodPicker
-          onDraw={() => setStep("drawing")}
         />
       )}
 
@@ -179,51 +173,8 @@ function Onboarding({
             boxShadow: "inset 2px 2px 4px rgba(255,255,255,0.2), inset -2px -2px 4px rgba(0,0,0,0.15)",
           }}
         >
-          {isLast ? "Create my own font →" : "Next →"}
+          {isLast ? "Start drawing →" : "Next →"}
         </button>
-      </div>
-    </main>
-  );
-}
-
-/* ────────────────────────────────────────────────────────────────── */
-/* Method picker                                                       */
-/* ────────────────────────────────────────────────────────────────── */
-
-function MethodPicker({ onDraw }: { onDraw: () => void }) {
-  return (
-    <main className="px-6 pt-6 pb-6 max-w-md mx-auto">
-      <h1 className="text-2xl font-bold mb-2">Pick a method</h1>
-      <p className="opacity-60 mb-8">Two ways to make your font.</p>
-
-      <button
-        onClick={onDraw}
-        className="w-full text-left p-5 rounded-2xl mb-4 bg-white border-2 border-black/10 active:scale-[0.99] transition-transform"
-        style={{
-          boxShadow:
-            "inset 2px 2px 4px rgba(255,255,255,0.5), inset -2px -2px 4px rgba(0,0,0,0.04), 0 4px 14px rgba(0,0,0,0.08)",
-        }}
-      >
-        <div className="flex items-center gap-4">
-          <div className="text-4xl">✍️</div>
-          <div className="flex-1">
-            <div className="font-bold text-lg">Draw each letter</div>
-            <div className="text-sm opacity-60">Use your finger. ~3 minutes.</div>
-          </div>
-          <div className="text-2xl opacity-30">→</div>
-        </div>
-      </button>
-
-      <div
-        className="w-full text-left p-5 rounded-2xl bg-black/5 border-2 border-dashed border-black/10 opacity-60"
-      >
-        <div className="flex items-center gap-4">
-          <div className="text-4xl">📷</div>
-          <div className="flex-1">
-            <div className="font-bold text-lg">Upload a photo of your handwriting</div>
-            <div className="text-sm opacity-60">Coming soon — drawing works great in the meantime.</div>
-          </div>
-        </div>
       </div>
     </main>
   );
