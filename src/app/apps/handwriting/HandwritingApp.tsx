@@ -1,7 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { glyphs, TOTAL_GLYPHS, type Zone } from "./lib/glyphs";
+import {
+  glyphs,
+  TOTAL_GLYPHS,
+  PHASES,
+  phaseForChar,
+  indexWithinPhase,
+  type Zone,
+} from "./lib/glyphs";
 import type { GlyphMap, Point, Stroke } from "./lib/types";
 import { STORAGE_KEY } from "./lib/types";
 import { buildFont, downloadFont } from "./lib/fontBuilder";
@@ -22,7 +29,7 @@ const ONBOARDING_CARDS = [
   {
     icon: "👆",
     title: "Just use your finger",
-    body: "Letter by letter. Skip what you want. You'll see a live preview in your own handwriting when you're done.",
+    body: "We'll go in order: capitals → lowercase → numbers → punctuation. Skip what you want. You'll see a live preview when you're done.",
   },
 ];
 
@@ -208,6 +215,17 @@ function DrawingFlow({
     () => glyphMap[spec.char]?.strokes ?? []
   );
 
+  // Phase transition card — shown briefly when entering a new phase.
+  const [showPhaseIntro, setShowPhaseIntro] = useState(false);
+  const prevPhaseRef = useRef(phaseForChar(spec.char));
+  useEffect(() => {
+    const current = phaseForChar(spec.char);
+    if (current !== prevPhaseRef.current && index !== 0) {
+      setShowPhaseIntro(true);
+    }
+    prevPhaseRef.current = current;
+  }, [index, spec.char]);
+
   // Reset strokes when moving to a new glyph.
   useEffect(() => {
     setStrokes(glyphMap[spec.char]?.strokes ?? []);
@@ -217,6 +235,20 @@ function DrawingFlow({
     if (index < TOTAL_GLYPHS - 1) setIndex((i) => i + 1);
     else onDone();
   };
+
+  const phaseInfo = indexWithinPhase(index);
+  const phaseMeta = PHASES.find((p) => p.key === phaseInfo.phase)!;
+
+  if (showPhaseIntro) {
+    return (
+      <PhaseIntro
+        label={phaseInfo.label}
+        emoji={phaseMeta.emoji}
+        total={phaseInfo.total}
+        onContinue={() => setShowPhaseIntro(false)}
+      />
+    );
+  }
 
   const handleSaveAndNext = (
     finalStrokes: Stroke[],
@@ -234,6 +266,23 @@ function DrawingFlow({
 
   return (
     <main className="px-4 pb-4 max-w-md mx-auto flex flex-col">
+      {/* Phase pill */}
+      <div className="flex items-center justify-center mb-2">
+        <div
+          className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-bold tracking-wider"
+          style={{
+            background: "rgba(93,156,48,0.12)",
+            color: "#3D6A1F",
+            fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+          }}
+        >
+          <span>{phaseMeta.emoji}</span>
+          <span>{phaseInfo.label}</span>
+          <span className="opacity-60">·</span>
+          <span className="opacity-70">{phaseInfo.i} of {phaseInfo.total}</span>
+        </div>
+      </div>
+
       <div className="flex items-center justify-between mb-3 px-1">
         <div className="text-sm opacity-60 font-mono">
           Draw <span className="opacity-100 text-base font-bold">{spec.label ?? `“${spec.char}”`}</span>
@@ -318,6 +367,50 @@ function DrawingFlow({
 
 function completedCountFor(glyphMap: GlyphMap): number {
   return Object.values(glyphMap).filter((g) => g.strokes.length > 0).length;
+}
+
+/* Phase transition splash — briefly shown when entering a new section. */
+function PhaseIntro({
+  label,
+  emoji,
+  total,
+  onContinue,
+}: {
+  label: string;
+  emoji: string;
+  total: number;
+  onContinue: () => void;
+}) {
+  // Auto-advance after 1.4 s so it doesn't feel like another tap.
+  useEffect(() => {
+    const t = setTimeout(onContinue, 1400);
+    return () => clearTimeout(t);
+  }, [onContinue]);
+
+  return (
+    <main className="px-6 max-w-md mx-auto min-h-[70vh] flex flex-col items-center justify-center text-center">
+      <div className="text-7xl mb-4 animate-pulse">{emoji}</div>
+      <div
+        className="inline-block px-4 py-2 rounded-full text-xs font-bold tracking-widest mb-3"
+        style={{
+          background: "rgba(93,156,48,0.15)",
+          color: "#3D6A1F",
+          fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+        }}
+      >
+        NEXT UP
+      </div>
+      <h2 className="text-3xl font-bold mb-2">{label}</h2>
+      <p className="opacity-60 mb-8">{total} {total === 1 ? "character" : "characters"} to go</p>
+      <button
+        onClick={onContinue}
+        className="px-6 h-12 rounded-xl text-sm font-bold opacity-70"
+        style={{ background: "white", border: "2px solid rgba(0,0,0,0.1)" }}
+      >
+        Let&rsquo;s go →
+      </button>
+    </main>
+  );
 }
 
 /* Tiny wrapper so the Save button gets fresh canvas size when clicked. */

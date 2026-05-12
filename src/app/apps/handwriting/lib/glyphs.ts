@@ -42,3 +42,32 @@ const punct: GlyphSpec[] = [
 export const glyphs: GlyphSpec[] = [...upper, ...lower, ...digits, ...punct];
 
 export const TOTAL_GLYPHS = glyphs.length;
+
+export type Phase = "upper" | "lower" | "digits" | "punct";
+
+export const PHASES: { key: Phase; label: string; total: number; emoji: string }[] = [
+  { key: "upper", label: "UPPERCASE", total: upper.length, emoji: "🅰️" },
+  { key: "lower", label: "lowercase", total: lower.length, emoji: "🔡" },
+  { key: "digits", label: "Numbers", total: digits.length, emoji: "🔢" },
+  { key: "punct", label: "Punctuation", total: punct.length, emoji: "❗" },
+];
+
+export function phaseForChar(c: string): Phase {
+  if (/^[A-Z]$/.test(c)) return "upper";
+  if (/^[a-z]$/.test(c)) return "lower";
+  if (/^[0-9]$/.test(c)) return "digits";
+  return "punct";
+}
+
+/** First index of a given phase in the global glyphs array. */
+export function phaseStartIndex(p: Phase): number {
+  return glyphs.findIndex((g) => phaseForChar(g.char) === p);
+}
+
+/** Position (1-indexed) of `globalIndex` within its phase. */
+export function indexWithinPhase(globalIndex: number): { i: number; phase: Phase; total: number; label: string } {
+  const phase = phaseForChar(glyphs[globalIndex].char);
+  const start = phaseStartIndex(phase);
+  const info = PHASES.find((p) => p.key === phase)!;
+  return { i: globalIndex - start + 1, phase, total: info.total, label: info.label };
+}
