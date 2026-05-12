@@ -42,9 +42,28 @@ That scaffolds `public/apps/my-slug/` with HTML + manifest. Then:
 ## Two tiers of app
 
 - **Static** (default) → drop HTML/JS/CSS into `public/apps/<slug>/`.
-- **Dynamic** (needs backend) → build a Next.js route at `src/app/apps/<slug>/page.tsx` and skip the public folder. Use this when you need API routes, server-side secrets, or a database.
+- **Dynamic** (needs backend) → build a Next.js route at `src/app/apps/<slug>/page.tsx` and skip the public folder. Use this when you need API routes, server-side secrets, payments, or a database.
 
 Both work at `flickman.co/apps/<slug>`. Both show up via the registry.
+
+### Example: dynamic app
+
+`/apps/handwriting` is a dynamic app. It lives at:
+
+```
+src/app/apps/handwriting/
+  page.tsx               ← server component, renders the client app
+  HandwritingApp.tsx     ← "use client" — state machine + UI
+  lib/                   ← font building, glyph defs, types
+  success/page.tsx       ← post-payment download landing
+src/app/api/handwriting/
+  checkout/route.ts      ← Stripe Checkout session creator
+```
+
+Required env vars on Vercel (dashboard → Settings → Environment Variables):
+
+- `STRIPE_SECRET_KEY` — `sk_test_...` or `sk_live_...`
+- `STRIPE_PRICE_HANDWRITING` — _(optional)_ a pre-created Price ID. If absent, the route creates a $15 line item inline.
 
 ## Shared styling
 

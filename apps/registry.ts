@@ -30,9 +30,10 @@ export type AppEntry = {
 export const apps: AppEntry[] = [
   {
     slug: "nyc",
-    name: "NYC Facts",
+    name: "What Happened Here?",
     icon: "🗽",
-    description: "A new fact about New York City, every day.",
+    description:
+      "Pings you with hyperlocal NYC history as you walk past it.",
     createdAt: "2025-09-01",
   },
   {
@@ -41,6 +42,13 @@ export const apps: AppEntry[] = [
     icon: "🏠",
     description: "A quiet corner of the internet.",
     createdAt: "2025-09-01",
+  },
+  {
+    slug: "handwriting",
+    name: "My Handwriting Font",
+    icon: "✍️",
+    description: "Turn your handwriting into a real, downloadable font.",
+    createdAt: "2026-05-11",
   },
 ];
 
