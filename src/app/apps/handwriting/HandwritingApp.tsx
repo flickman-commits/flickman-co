@@ -12,6 +12,7 @@ import {
 import type { GlyphMap, Point, Stroke } from "./lib/types";
 import { STORAGE_KEY, getStorage } from "./lib/types";
 import { buildFont, downloadFont } from "./lib/fontBuilder";
+import { tokens, type } from "./lib/design";
 
 type Step = "onboarding" | "drawing" | "preview" | "checkout";
 
@@ -75,7 +76,6 @@ export default function HandwritingApp() {
   const startOver = useCallback(() => {
     try {
       getStorage().removeItem(STORAGE_KEY);
-      // Also clear any legacy localStorage data from older versions of this app.
       if (typeof window !== "undefined") window.localStorage.removeItem(STORAGE_KEY);
     } catch {}
     setGlyphMap({});
@@ -89,14 +89,38 @@ export default function HandwritingApp() {
   ).length;
 
   return (
-    <div className="min-h-screen bg-[#FFF8F0] text-[#2C2C2C]" style={{
-      paddingTop: "max(env(safe-area-inset-top), 8px)",
-      paddingBottom: "max(env(safe-area-inset-bottom), 8px)",
-    }}>
-      <header className="px-5 pt-4 pb-2 flex items-center justify-between text-xs">
-        <a href="/" className="opacity-50 hover:opacity-100 font-mono">← flickman.co</a>
+    <div
+      style={{
+        minHeight: "100vh",
+        background: tokens.color.canvas,
+        color: tokens.color.ink,
+        fontFamily: tokens.fontFamily,
+        paddingTop: "max(env(safe-area-inset-top), 8px)",
+        paddingBottom: "max(env(safe-area-inset-bottom), 8px)",
+      }}
+    >
+      <header
+        style={{
+          padding: "12px 20px 8px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <a
+          href="/"
+          style={{
+            ...type.captionSm,
+            color: tokens.color.muted,
+            textDecoration: "none",
+          }}
+        >
+          ← flickman.co
+        </a>
         {step === "drawing" && (
-          <span className="opacity-50 font-mono">{completedCount} / {TOTAL_GLYPHS}</span>
+          <span style={{ ...type.captionSm, color: tokens.color.muted }}>
+            {completedCount} / {TOTAL_GLYPHS}
+          </span>
         )}
       </header>
 
@@ -131,12 +155,114 @@ export default function HandwritingApp() {
         />
       )}
 
-      {step === "checkout" && (
-        <CheckoutStep
-          onBack={() => setStep("preview")}
-        />
-      )}
+      {step === "checkout" && <CheckoutStep onBack={() => setStep("preview")} />}
     </div>
+  );
+}
+
+/* ────────────────────────────────────────────────────────────────── */
+/* Shared primitives                                                   */
+/* ────────────────────────────────────────────────────────────────── */
+
+function PrimaryButton({
+  children,
+  onClick,
+  disabled,
+  type: btnType = "button",
+  width = "full",
+}: {
+  children: React.ReactNode;
+  onClick?: () => void;
+  disabled?: boolean;
+  type?: "button" | "submit";
+  width?: "full" | "auto";
+}) {
+  return (
+    <button
+      type={btnType}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        ...type.buttonMd,
+        background: disabled ? tokens.color.primaryDisabled : tokens.color.primary,
+        color: tokens.color.onPrimary,
+        height: 48,
+        padding: "0 24px",
+        borderRadius: tokens.radius.sm,
+        border: "none",
+        width: width === "full" ? "100%" : "auto",
+        cursor: disabled ? "not-allowed" : "pointer",
+        transition: "background-color 120ms ease",
+        fontFamily: tokens.fontFamily,
+      }}
+      onPointerDown={(e) => {
+        if (!disabled) (e.currentTarget.style.background = tokens.color.primaryActive);
+      }}
+      onPointerUp={(e) => {
+        if (!disabled) (e.currentTarget.style.background = tokens.color.primary);
+      }}
+      onPointerLeave={(e) => {
+        if (!disabled) (e.currentTarget.style.background = tokens.color.primary);
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
+function SecondaryButton({
+  children,
+  onClick,
+  width = "full",
+}: {
+  children: React.ReactNode;
+  onClick?: () => void;
+  width?: "full" | "auto";
+}) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        ...type.buttonMd,
+        background: tokens.color.canvas,
+        color: tokens.color.ink,
+        height: 48,
+        padding: "0 24px",
+        borderRadius: tokens.radius.sm,
+        border: `1px solid ${tokens.color.ink}`,
+        width: width === "full" ? "100%" : "auto",
+        cursor: "pointer",
+        fontFamily: tokens.fontFamily,
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
+function TertiaryLink({
+  children,
+  onClick,
+}: {
+  children: React.ReactNode;
+  onClick?: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        ...type.bodySm,
+        background: "transparent",
+        color: tokens.color.ink,
+        border: "none",
+        padding: 0,
+        textDecoration: "underline",
+        cursor: "pointer",
+        fontFamily: tokens.fontFamily,
+      }}
+    >
+      {children}
+    </button>
   );
 }
 
@@ -156,46 +282,77 @@ function Onboarding({
   const card = ONBOARDING_CARDS[index];
   const isLast = index === ONBOARDING_CARDS.length - 1;
   return (
-    <main className="px-6 pt-10 pb-6 max-w-md mx-auto flex flex-col min-h-[80vh]">
-      <div className="flex-1 flex flex-col items-center justify-center text-center">
-        <div className="text-7xl mb-6">{card.icon}</div>
-        <h1 className="text-2xl font-bold mb-3">{card.title}</h1>
-        <p className="text-base opacity-70 leading-relaxed max-w-xs">{card.body}</p>
+    <main
+      style={{
+        padding: "40px 24px 24px",
+        maxWidth: 420,
+        margin: "0 auto",
+        minHeight: "80vh",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          textAlign: "center",
+        }}
+      >
+        <div style={{ fontSize: 72, marginBottom: 24 }}>{card.icon}</div>
+        <h1 style={{ ...type.displayXl, color: tokens.color.ink, margin: "0 0 12px" }}>
+          {card.title}
+        </h1>
+        <p
+          style={{
+            ...type.bodyMd,
+            color: tokens.color.body,
+            margin: 0,
+            maxWidth: 320,
+          }}
+        >
+          {card.body}
+        </p>
       </div>
 
-      <div className="flex items-center justify-center gap-2 mb-6">
+      <div
+        style={{
+          display: "flex",
+          gap: 8,
+          alignItems: "center",
+          justifyContent: "center",
+          marginBottom: 24,
+        }}
+      >
         {ONBOARDING_CARDS.map((_, i) => (
           <span
             key={i}
-            className="block rounded-full transition-all"
             style={{
+              display: "block",
+              borderRadius: tokens.radius.full,
+              transition: "all 200ms ease",
               width: i === index ? 24 : 8,
               height: 8,
-              background: i === index ? "#5D9C30" : "rgba(0,0,0,0.15)",
+              background: i === index ? tokens.color.ink : tokens.color.hairline,
             }}
           />
         ))}
       </div>
 
-      <div className="flex gap-3">
+      <div style={{ display: "flex", gap: 12 }}>
         {index > 0 && (
-          <button
-            onClick={onBack}
-            className="flex-1 h-14 rounded-xl border-2 border-black/10 text-base font-semibold bg-white"
-          >
-            ← Back
-          </button>
+          <div style={{ flex: 1 }}>
+            <SecondaryButton onClick={onBack}>← Back</SecondaryButton>
+          </div>
         )}
-        <button
-          onClick={onNext}
-          className="flex-[2] h-14 rounded-xl text-base font-bold text-white"
-          style={{
-            background: "#5D9C30",
-            boxShadow: "inset 2px 2px 4px rgba(255,255,255,0.2), inset -2px -2px 4px rgba(0,0,0,0.15)",
-          }}
-        >
-          {isLast ? "Start drawing →" : "Next →"}
-        </button>
+        <div style={{ flex: 2 }}>
+          <PrimaryButton onClick={onNext}>
+            {isLast ? "Start drawing →" : "Next →"}
+          </PrimaryButton>
+        </div>
       </div>
     </main>
   );
@@ -231,7 +388,6 @@ function DrawingFlow({
     () => glyphMap[spec.char]?.strokes ?? []
   );
 
-  // Phase transition card — shown briefly when entering a new phase.
   const [showPhaseIntro, setShowPhaseIntro] = useState(false);
   const prevPhaseRef = useRef(phaseForChar(spec.char));
   useEffect(() => {
@@ -242,7 +398,6 @@ function DrawingFlow({
     prevPhaseRef.current = current;
   }, [index, spec.char]);
 
-  // Reset strokes when moving to a new glyph.
   useEffect(() => {
     setStrokes(glyphMap[spec.char]?.strokes ?? []);
   }, [index, spec.char, glyphMap]);
@@ -250,6 +405,18 @@ function DrawingFlow({
   const next = () => {
     if (index < TOTAL_GLYPHS - 1) setIndex((i) => i + 1);
     else onDone();
+  };
+
+  const handleSaveAndNext = (
+    finalStrokes: Stroke[],
+    canvas: { width: number; height: number },
+    baselineY: number,
+    strokeWidth: number
+  ) => {
+    if (finalStrokes.length > 0) {
+      onSave(spec.char, finalStrokes, canvas, baselineY, strokeWidth);
+    }
+    next();
   };
 
   const phaseInfo = indexWithinPhase(index);
@@ -266,51 +433,72 @@ function DrawingFlow({
     );
   }
 
-  const handleSaveAndNext = (
-    finalStrokes: Stroke[],
-    canvas: { width: number; height: number },
-    baselineY: number,
-    strokeWidth: number
-  ) => {
-    if (finalStrokes.length > 0) {
-      onSave(spec.char, finalStrokes, canvas, baselineY, strokeWidth);
-    }
-    next();
-  };
-
   const completedThis = (glyphMap[spec.char]?.strokes.length ?? 0) > 0;
 
   return (
-    <main className="px-4 pb-4 max-w-md mx-auto flex flex-col">
+    <main
+      style={{
+        padding: "0 16px 16px",
+        maxWidth: 420,
+        margin: "0 auto",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       {/* Phase pill */}
-      <div className="flex items-center justify-center mb-2">
+      <div style={{ display: "flex", justifyContent: "center", marginBottom: 8 }}>
         <div
-          className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-bold tracking-wider"
           style={{
-            background: "rgba(93,156,48,0.12)",
-            color: "#3D6A1F",
-            fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            padding: "4px 12px",
+            borderRadius: tokens.radius.full,
+            background: tokens.color.surfaceSoft,
+            color: tokens.color.ink,
+            ...type.uppercaseTag,
           }}
         >
-          <span>{phaseMeta.emoji}</span>
+          <span style={{ textTransform: "none", fontSize: 13 }}>{phaseMeta.emoji}</span>
           <span>{phaseInfo.label}</span>
-          <span className="opacity-60">·</span>
-          <span className="opacity-70">{phaseInfo.i} of {phaseInfo.total}</span>
+          <span style={{ color: tokens.color.muted, textTransform: "none", fontWeight: 400 }}>
+            · {phaseInfo.i} of {phaseInfo.total}
+          </span>
         </div>
       </div>
 
-      <div className="flex items-center justify-between mb-3 px-1">
-        <div className="text-sm opacity-60 font-mono">
-          Draw <span className="opacity-100 text-base font-bold">{spec.label ?? `“${spec.char}”`}</span>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: 12,
+          padding: "0 4px",
+        }}
+      >
+        <div style={{ ...type.bodySm, color: tokens.color.muted }}>
+          Draw{" "}
+          <span style={{ color: tokens.color.ink, ...type.titleMd }}>
+            {spec.label ?? `“${spec.char}”`}
+          </span>
         </div>
-        <div className="flex gap-1.5">
-          {/* mini progress */}
-          <div className="h-2 w-32 rounded-full bg-black/10 overflow-hidden">
-            <div
-              className="h-full bg-[#5D9C30] transition-all"
-              style={{ width: `${((index + 1) / TOTAL_GLYPHS) * 100}%` }}
-            />
-          </div>
+        <div
+          style={{
+            height: 4,
+            width: 96,
+            borderRadius: tokens.radius.full,
+            background: tokens.color.hairlineSoft,
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              height: "100%",
+              background: tokens.color.ink,
+              transition: "width 300ms ease",
+              width: `${((index + 1) / TOTAL_GLYPHS) * 100}%`,
+            }}
+          />
         </div>
       </div>
 
@@ -321,23 +509,54 @@ function DrawingFlow({
         onStrokesChange={setStrokes}
       />
 
-      <div className="flex gap-2 mt-3">
+      <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
         <button
           onClick={() => setIndex((i) => Math.max(0, i - 1))}
           disabled={index === 0}
-          className="h-14 px-4 rounded-xl border-2 border-black/10 bg-white font-semibold disabled:opacity-30"
+          style={{
+            height: 48,
+            padding: "0 16px",
+            borderRadius: tokens.radius.sm,
+            border: `1px solid ${tokens.color.hairline}`,
+            background: tokens.color.canvas,
+            color: tokens.color.ink,
+            fontFamily: tokens.fontFamily,
+            ...type.buttonMd,
+            opacity: index === 0 ? 0.3 : 1,
+            cursor: index === 0 ? "not-allowed" : "pointer",
+          }}
         >
           ←
         </button>
         <button
           onClick={() => setStrokes([])}
-          className="h-14 px-4 rounded-xl border-2 border-black/10 bg-white font-semibold text-sm"
+          style={{
+            height: 48,
+            padding: "0 16px",
+            borderRadius: tokens.radius.sm,
+            border: `1px solid ${tokens.color.hairline}`,
+            background: tokens.color.canvas,
+            color: tokens.color.ink,
+            fontFamily: tokens.fontFamily,
+            ...type.buttonMd,
+            cursor: "pointer",
+          }}
         >
           Clear
         </button>
         <button
           onClick={next}
-          className="h-14 flex-1 rounded-xl border-2 border-black/10 bg-white font-semibold text-sm opacity-70"
+          style={{
+            height: 48,
+            flex: 1,
+            borderRadius: tokens.radius.sm,
+            border: `1px solid ${tokens.color.hairline}`,
+            background: tokens.color.canvas,
+            color: tokens.color.muted,
+            fontFamily: tokens.fontFamily,
+            ...type.buttonMd,
+            cursor: "pointer",
+          }}
         >
           Skip →
         </button>
@@ -348,7 +567,15 @@ function DrawingFlow({
         />
       </div>
 
-      <div className="mt-3 flex flex-wrap gap-1 justify-center opacity-60">
+      <div
+        style={{
+          marginTop: 12,
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 4,
+          justifyContent: "center",
+        }}
+      >
         {glyphs.slice(Math.max(0, index - 4), index + 10).map((g, i) => {
           const realIdx = Math.max(0, index - 4) + i;
           const done = (glyphMap[g.char]?.strokes.length ?? 0) > 0;
@@ -357,10 +584,21 @@ function DrawingFlow({
             <button
               key={`${g.char}-${realIdx}`}
               onClick={() => setIndex(realIdx)}
-              className="w-7 h-7 rounded-md text-xs font-bold flex items-center justify-center transition-colors"
               style={{
-                background: isCurrent ? "#5D9C30" : done ? "rgba(93,156,48,0.18)" : "rgba(0,0,0,0.04)",
-                color: isCurrent ? "white" : "inherit",
+                width: 28,
+                height: 28,
+                borderRadius: tokens.radius.full,
+                border: "none",
+                background: isCurrent
+                  ? tokens.color.ink
+                  : done
+                  ? tokens.color.surfaceStrong
+                  : "transparent",
+                color: isCurrent ? tokens.color.onPrimary : tokens.color.ink,
+                ...type.bodySm,
+                fontWeight: 600,
+                cursor: "pointer",
+                fontFamily: tokens.fontFamily,
               }}
             >
               {g.char}
@@ -369,20 +607,31 @@ function DrawingFlow({
         })}
       </div>
 
-      <div className="mt-4 flex items-center justify-center gap-4 text-xs">
+      <div
+        style={{
+          marginTop: 16,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 16,
+        }}
+      >
         {completedCountFor(glyphMap) >= 10 && (
-          <button
-            onClick={onDone}
-            className="underline opacity-60 hover:opacity-100"
-          >
-            Skip the rest & preview →
-          </button>
+          <TertiaryLink onClick={onDone}>Skip the rest & preview →</TertiaryLink>
         )}
         <button
           onClick={() => {
             if (confirm("Erase everything you've drawn and start over?")) onStartOver();
           }}
-          className="underline opacity-40 hover:opacity-100"
+          style={{
+            background: "transparent",
+            border: "none",
+            color: tokens.color.muted,
+            textDecoration: "underline",
+            cursor: "pointer",
+            fontFamily: tokens.fontFamily,
+            ...type.captionSm,
+          }}
         >
           Start over
         </button>
@@ -395,7 +644,6 @@ function completedCountFor(glyphMap: GlyphMap): number {
   return Object.values(glyphMap).filter((g) => g.strokes.length > 0).length;
 }
 
-/* Phase transition splash — briefly shown when entering a new section. */
 function PhaseIntro({
   label,
   emoji,
@@ -407,39 +655,55 @@ function PhaseIntro({
   total: number;
   onContinue: () => void;
 }) {
-  // Auto-advance after 1.4 s so it doesn't feel like another tap.
   useEffect(() => {
     const t = setTimeout(onContinue, 1400);
     return () => clearTimeout(t);
   }, [onContinue]);
 
   return (
-    <main className="px-6 max-w-md mx-auto min-h-[70vh] flex flex-col items-center justify-center text-center">
-      <div className="text-7xl mb-4 animate-pulse">{emoji}</div>
+    <main
+      style={{
+        padding: "0 24px",
+        maxWidth: 420,
+        margin: "0 auto",
+        minHeight: "70vh",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        textAlign: "center",
+      }}
+    >
+      <div style={{ fontSize: 72, marginBottom: 16 }}>{emoji}</div>
       <div
-        className="inline-block px-4 py-2 rounded-full text-xs font-bold tracking-widest mb-3"
         style={{
-          background: "rgba(93,156,48,0.15)",
-          color: "#3D6A1F",
-          fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+          display: "inline-block",
+          padding: "4px 12px",
+          borderRadius: tokens.radius.full,
+          background: tokens.color.surfaceSoft,
+          color: tokens.color.muted,
+          marginBottom: 12,
+          ...type.uppercaseTag,
         }}
       >
-        NEXT UP
+        Next up
       </div>
-      <h2 className="text-3xl font-bold mb-2">{label}</h2>
-      <p className="opacity-60 mb-8">{total} {total === 1 ? "character" : "characters"} to go</p>
-      <button
-        onClick={onContinue}
-        className="px-6 h-12 rounded-xl text-sm font-bold opacity-70"
-        style={{ background: "white", border: "2px solid rgba(0,0,0,0.1)" }}
-      >
-        Let&rsquo;s go →
-      </button>
+      <h2 style={{ ...type.displayXl, color: tokens.color.ink, margin: "0 0 8px" }}>
+        {label}
+      </h2>
+      <p style={{ ...type.bodyMd, color: tokens.color.muted, margin: "0 0 32px" }}>
+        {total} {total === 1 ? "character" : "characters"} to go
+      </p>
+      <div>
+        <SecondaryButton onClick={onContinue} width="auto">
+          Let&rsquo;s go →
+        </SecondaryButton>
+      </div>
     </main>
   );
 }
 
-/* Tiny wrapper so the Save button gets fresh canvas size when clicked. */
+/* Save button — reads canvas dims via DOM ref. */
 function SaveButton({
   strokes,
   completedThis,
@@ -455,9 +719,6 @@ function SaveButton({
   ) => void;
 }) {
   const handleClick = () => {
-    // We rely on the canvas component having broadcast its current size via
-    // a global cached read. Simpler: defer to DrawingCanvas by reading from
-    // the canvas element directly.
     const c = document.getElementById("hw-canvas") as HTMLCanvasElement | null;
     if (!c) return;
     const baselineY = parseFloat(c.dataset.baseliney ?? "0");
@@ -468,11 +729,17 @@ function SaveButton({
   return (
     <button
       onClick={handleClick}
-      className="h-14 px-5 rounded-xl font-bold text-white text-sm"
       style={{
-        background: hasContent ? "#5D9C30" : "#9BB58A",
-        boxShadow: "inset 2px 2px 4px rgba(255,255,255,0.2), inset -2px -2px 4px rgba(0,0,0,0.15)",
-        minWidth: 80,
+        height: 48,
+        minWidth: 96,
+        padding: "0 20px",
+        borderRadius: tokens.radius.sm,
+        background: hasContent ? tokens.color.primary : tokens.color.primaryDisabled,
+        color: tokens.color.onPrimary,
+        border: "none",
+        fontFamily: tokens.fontFamily,
+        ...type.buttonMd,
+        cursor: "pointer",
       }}
     >
       {hasContent ? "Save →" : completedThis ? "Next →" : "Skip →"}
@@ -498,7 +765,6 @@ function DrawingCanvas({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Canvas sizing — square, fits container width.
   const [size, setSize] = useState<number>(360);
   const baselineY = useMemo(() => Math.round(size * 0.8), [size]);
   const capY = useMemo(() => Math.round(size * 0.2), [size]);
@@ -506,16 +772,13 @@ function DrawingCanvas({
   const descY = useMemo(() => Math.round(size * 0.92), [size]);
   const STROKE_WIDTH = useMemo(() => Math.max(8, Math.round(size * 0.025)), [size]);
 
-  // Track current local strokes — re-rendered to canvas on every change.
   const strokesRef = useRef<Stroke[]>(initialStrokes);
-  // Keep ref in sync if React state above resets us.
   useEffect(() => {
     strokesRef.current = initialStrokes;
     redraw();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialStrokes, size, glyphChar]);
 
-  // Measure container to set canvas size.
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -536,9 +799,8 @@ function DrawingCanvas({
     const ctx = c.getContext("2d");
     if (!ctx) return;
 
-    // Background + guides.
     ctx.clearRect(0, 0, c.width, c.height);
-    ctx.fillStyle = "#FFFFFF";
+    ctx.fillStyle = tokens.color.canvas;
     ctx.fillRect(0, 0, c.width, c.height);
 
     const drawGuide = (y: number, label: string, color: string, dashed = true) => {
@@ -551,27 +813,36 @@ function DrawingCanvas({
       ctx.stroke();
       ctx.setLineDash([]);
       ctx.fillStyle = color;
-      ctx.font = "9px ui-monospace, monospace";
+      ctx.font = `11px ${tokens.fontFamily}`;
       ctx.textAlign = "right";
       ctx.fillText(label, c.width - 12, y - 4);
     };
 
-    // Highlight the active zone with a soft band.
-    let top = capY, bottom = baselineY;
-    if (zone === "x") { top = xY; bottom = baselineY; }
-    else if (zone === "ascender") { top = capY; bottom = baselineY; }
-    else if (zone === "descender") { top = xY; bottom = descY; }
-    else if (zone === "punct") { top = baselineY - (baselineY - xY) * 0.3; bottom = baselineY; }
-    ctx.fillStyle = "rgba(93,156,48,0.07)";
+    // Active zone: soft surface-soft band (Airbnb leans on neutrals, not the brand color).
+    let top = capY,
+      bottom = baselineY;
+    if (zone === "x") {
+      top = xY;
+      bottom = baselineY;
+    } else if (zone === "ascender") {
+      top = capY;
+      bottom = baselineY;
+    } else if (zone === "descender") {
+      top = xY;
+      bottom = descY;
+    } else if (zone === "punct") {
+      top = baselineY - (baselineY - xY) * 0.3;
+      bottom = baselineY;
+    }
+    ctx.fillStyle = tokens.color.surfaceSoft;
     ctx.fillRect(0, top, c.width, bottom - top);
 
-    drawGuide(capY, "cap", "rgba(0,0,0,0.18)");
-    drawGuide(xY, "x", "rgba(0,0,0,0.18)");
-    drawGuide(baselineY, "baseline", "rgba(0,0,0,0.5)", false);
-    drawGuide(descY, "desc", "rgba(0,0,0,0.18)");
+    drawGuide(capY, "cap", tokens.color.hairline);
+    drawGuide(xY, "x", tokens.color.hairline);
+    drawGuide(baselineY, "baseline", tokens.color.muted, false);
+    drawGuide(descY, "desc", tokens.color.hairline);
 
-    // Strokes.
-    ctx.strokeStyle = "#2C2C2C";
+    ctx.strokeStyle = tokens.color.ink;
     ctx.lineWidth = STROKE_WIDTH;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
@@ -583,7 +854,6 @@ function DrawingCanvas({
         ctx.lineTo(stroke[i].x, stroke[i].y);
       }
       if (stroke.length === 1) {
-        // Dot
         ctx.arc(stroke[0].x, stroke[0].y, STROKE_WIDTH / 2, 0, Math.PI * 2);
         ctx.fill();
       } else {
@@ -596,7 +866,6 @@ function DrawingCanvas({
     redraw();
   }, [redraw, size]);
 
-  // Pointer handling.
   const drawingRef = useRef(false);
   const currentStrokeRef = useRef<Stroke>([]);
 
@@ -625,13 +894,15 @@ function DrawingCanvas({
   const end = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!drawingRef.current) return;
     drawingRef.current = false;
-    try { canvasRef.current?.releasePointerCapture(e.pointerId); } catch {}
+    try {
+      canvasRef.current?.releasePointerCapture(e.pointerId);
+    } catch {}
     onStrokesChange([...strokesRef.current]);
     redraw();
   };
 
   return (
-    <div ref={containerRef} className="w-full">
+    <div ref={containerRef} style={{ width: "100%" }}>
       <canvas
         id="hw-canvas"
         ref={canvasRef}
@@ -647,19 +918,29 @@ function DrawingCanvas({
           width: "100%",
           height: "auto",
           touchAction: "none",
-          borderRadius: 14,
-          border: "2px solid rgba(0,0,0,0.08)",
-          background: "white",
-          boxShadow:
-            "inset 2px 2px 6px rgba(255,255,255,0.5), inset -2px -2px 6px rgba(0,0,0,0.04), 0 6px 18px rgba(0,0,0,0.08)",
+          borderRadius: tokens.radius.md,
+          border: `1px solid ${tokens.color.hairline}`,
+          background: tokens.color.canvas,
+          boxShadow: tokens.shadowSoft,
         }}
       />
-      <div className="text-center text-[11px] opacity-50 mt-2">
-        Draw {zone === "descender" ? "from x-line down past baseline" :
-              zone === "ascender" ? "from cap-line down to baseline" :
-              zone === "x" ? "between x-line and baseline" :
-              zone === "punct" ? "small, near baseline" :
-              "from cap-line down to baseline"}
+      <div
+        style={{
+          textAlign: "center",
+          marginTop: 8,
+          color: tokens.color.muted,
+          ...type.captionSm,
+        }}
+      >
+        {zone === "descender"
+          ? "Draw from x-line down past baseline"
+          : zone === "ascender"
+          ? "Draw from cap-line down to baseline"
+          : zone === "x"
+          ? "Draw between x-line and baseline"
+          : zone === "punct"
+          ? "Small, near baseline"
+          : "Draw from cap-line down to baseline"}
       </div>
     </div>
   );
@@ -712,75 +993,116 @@ function PreviewStep({
   };
 
   return (
-    <main className="px-6 pt-6 pb-10 max-w-md mx-auto">
-      <h1 className="text-2xl font-bold mb-2">Try it out</h1>
-      <p className="opacity-60 mb-6">Type below to see your handwriting in action.</p>
+    <main
+      style={{
+        padding: "24px 24px 40px",
+        maxWidth: 420,
+        margin: "0 auto",
+      }}
+    >
+      <h1 style={{ ...type.displayXl, color: tokens.color.ink, margin: "0 0 8px" }}>
+        Try it out
+      </h1>
+      <p style={{ ...type.bodyMd, color: tokens.color.muted, margin: "0 0 24px" }}>
+        Type below to see your handwriting in action.
+      </p>
 
       <textarea
         value={text}
         onChange={(e) => setText(e.target.value)}
-        rows={4}
-        className="w-full p-3 rounded-xl border-2 border-black/10 bg-white text-sm mb-4 resize-none"
-        style={{ fontSize: 16 }}
+        rows={3}
+        style={{
+          width: "100%",
+          padding: "14px 12px",
+          borderRadius: tokens.radius.sm,
+          border: `1px solid ${tokens.color.hairline}`,
+          background: tokens.color.canvas,
+          color: tokens.color.ink,
+          ...type.bodyMd,
+          fontSize: 16,
+          marginBottom: 16,
+          resize: "none",
+          fontFamily: tokens.fontFamily,
+          outline: "none",
+        }}
+        onFocus={(e) => {
+          e.currentTarget.style.borderColor = tokens.color.ink;
+          e.currentTarget.style.borderWidth = "2px";
+          e.currentTarget.style.padding = "13px 11px";
+        }}
+        onBlur={(e) => {
+          e.currentTarget.style.borderColor = tokens.color.hairline;
+          e.currentTarget.style.borderWidth = "1px";
+          e.currentTarget.style.padding = "14px 12px";
+        }}
       />
 
       <div
-        className="p-5 rounded-xl bg-white border-2 border-black/10 mb-6 min-h-[140px]"
         style={{
-          boxShadow:
-            "inset 2px 2px 6px rgba(255,255,255,0.5), inset -2px -2px 6px rgba(0,0,0,0.04), 0 4px 14px rgba(0,0,0,0.06)",
+          padding: 20,
+          borderRadius: tokens.radius.md,
+          background: tokens.color.canvas,
+          border: `1px solid ${tokens.color.hairline}`,
+          boxShadow: tokens.shadowSoft,
+          marginBottom: 24,
+          minHeight: 140,
         }}
       >
         <div
           style={{
-            fontFamily: fontReady ? `"${fontFamily}", sans-serif` : "system-ui",
+            fontFamily: fontReady ? `"${fontFamily}", sans-serif` : tokens.fontFamily,
             fontSize: 28,
             lineHeight: 1.3,
             whiteSpace: "pre-wrap",
             wordBreak: "break-word",
+            color: tokens.color.ink,
             opacity: fontReady ? 1 : 0.3,
           }}
         >
           {text || "—"}
         </div>
         {!fontReady && (
-          <div className="text-xs opacity-50 mt-2">Generating your font…</div>
+          <div
+            style={{
+              ...type.captionSm,
+              color: tokens.color.muted,
+              marginTop: 8,
+            }}
+          >
+            Generating your font…
+          </div>
         )}
       </div>
 
-      <button
-        onClick={onCheckout}
-        className="w-full h-14 rounded-xl font-bold text-white text-base mb-3"
-        style={{
-          background: "#5D9C30",
-          boxShadow: "inset 2px 2px 4px rgba(255,255,255,0.2), inset -2px -2px 4px rgba(0,0,0,0.15)",
-        }}
-      >
-        Download my font — $15
-      </button>
-
-      <div className="flex gap-3">
-        <button
-          onClick={onBack}
-          className="flex-1 h-12 rounded-xl border-2 border-black/10 bg-white text-sm font-semibold"
-        >
-          ← Keep drawing
-        </button>
-        <button
-          onClick={handleDownloadPreview}
-          className="flex-1 h-12 rounded-xl border-2 border-black/10 bg-white text-sm font-semibold opacity-60"
-          title="Free, lower-quality preview"
-        >
-          Download preview
-        </button>
+      <div style={{ marginBottom: 12 }}>
+        <PrimaryButton onClick={onCheckout}>Download my font — $15</PrimaryButton>
       </div>
 
-      <div className="text-center mt-6">
+      <div style={{ display: "flex", gap: 12 }}>
+        <div style={{ flex: 1 }}>
+          <SecondaryButton onClick={onBack}>← Keep drawing</SecondaryButton>
+        </div>
+        <div style={{ flex: 1 }}>
+          <SecondaryButton onClick={handleDownloadPreview}>
+            Download preview
+          </SecondaryButton>
+        </div>
+      </div>
+
+      <div style={{ textAlign: "center", marginTop: 24 }}>
         <button
           onClick={() => {
             if (confirm("Erase everything you've drawn and start over?")) onStartOver();
           }}
-          className="text-xs underline opacity-40 hover:opacity-100"
+          style={{
+            background: "transparent",
+            border: "none",
+            color: tokens.color.muted,
+            textDecoration: "underline",
+            cursor: "pointer",
+            fontFamily: tokens.fontFamily,
+            ...type.captionSm,
+          }}
         >
           Start over
         </button>
@@ -816,39 +1138,56 @@ function CheckoutStep({ onBack }: { onBack: () => void }) {
   };
 
   return (
-    <main className="px-6 pt-10 pb-10 max-w-md mx-auto">
-      <div className="text-center mb-8">
-        <div className="text-6xl mb-4">💸</div>
-        <h1 className="text-2xl font-bold mb-2">$15 to download</h1>
-        <p className="opacity-60">One-time. Yours forever. Use it anywhere.</p>
+    <main
+      style={{
+        padding: "40px 24px",
+        maxWidth: 420,
+        margin: "0 auto",
+      }}
+    >
+      <div style={{ textAlign: "center", marginBottom: 32 }}>
+        <div style={{ fontSize: 64, marginBottom: 16 }}>💸</div>
+        <h1 style={{ ...type.displayXl, color: tokens.color.ink, margin: "0 0 8px" }}>
+          $15 to download
+        </h1>
+        <p style={{ ...type.bodyMd, color: tokens.color.muted, margin: 0 }}>
+          One-time. Yours forever. Use it anywhere.
+        </p>
       </div>
 
       {error && (
-        <div className="mb-4 p-3 rounded-lg bg-red-50 text-red-700 text-sm border border-red-200">
+        <div
+          style={{
+            marginBottom: 16,
+            padding: 12,
+            borderRadius: tokens.radius.sm,
+            background: "#fff5f5",
+            border: `1px solid ${tokens.color.primary}33`,
+            color: tokens.color.errorText,
+            ...type.bodySm,
+          }}
+        >
           {error}
         </div>
       )}
 
-      <button
-        onClick={handlePay}
-        disabled={loading}
-        className="w-full h-14 rounded-xl font-bold text-white text-base mb-3 disabled:opacity-60"
+      <div style={{ marginBottom: 12 }}>
+        <PrimaryButton onClick={handlePay} disabled={loading}>
+          {loading ? "Opening checkout…" : "Pay $15 →"}
+        </PrimaryButton>
+      </div>
+
+      <SecondaryButton onClick={onBack}>← Back to preview</SecondaryButton>
+
+      <p
         style={{
-          background: "#5D9C30",
-          boxShadow: "inset 2px 2px 4px rgba(255,255,255,0.2), inset -2px -2px 4px rgba(0,0,0,0.15)",
+          ...type.captionSm,
+          color: tokens.color.mutedSoft,
+          textAlign: "center",
+          margin: "24px 0 0",
+          lineHeight: 1.5,
         }}
       >
-        {loading ? "Opening checkout…" : "Pay $15 →"}
-      </button>
-
-      <button
-        onClick={onBack}
-        className="w-full h-12 rounded-xl border-2 border-black/10 bg-white text-sm font-semibold"
-      >
-        ← Back to preview
-      </button>
-
-      <p className="text-[11px] text-center opacity-40 mt-6 leading-relaxed">
         Secure payment via Stripe. Your handwriting data never leaves your device —
         we generate the font right in your browser.
       </p>

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { STORAGE_KEY, getStorage, type GlyphMap } from "../lib/types";
 import { buildFont, downloadFont } from "../lib/fontBuilder";
+import { tokens, type } from "../lib/design";
 
 export default function SuccessDownload() {
   const [status, setStatus] = useState<"loading" | "ready" | "missing" | "error">("loading");
@@ -25,7 +26,6 @@ export default function SuccessDownload() {
       setBlobUrl(blobUrl);
       setStatus("ready");
 
-      // Auto-trigger download once.
       const t = setTimeout(() => downloadFont(blobUrl, "my-handwriting.otf"), 600);
       return () => clearTimeout(t);
     } catch (err) {
@@ -35,46 +35,104 @@ export default function SuccessDownload() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-[#FFF8F0] text-[#2C2C2C] flex items-center justify-center px-6">
-      <div className="max-w-sm w-full text-center">
-        <div className="text-6xl mb-4">{status === "ready" ? "🎉" : status === "missing" ? "🤔" : "✍️"}</div>
+    <main
+      style={{
+        minHeight: "100vh",
+        background: tokens.color.canvas,
+        color: tokens.color.ink,
+        fontFamily: tokens.fontFamily,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "0 24px",
+      }}
+    >
+      <div style={{ maxWidth: 360, width: "100%", textAlign: "center" }}>
+        <div style={{ fontSize: 64, marginBottom: 16 }}>
+          {status === "ready" ? "🎉" : status === "missing" ? "🤔" : "✍️"}
+        </div>
         {status === "loading" && (
           <>
-            <h1 className="text-2xl font-bold mb-2">Building your font…</h1>
-            <p className="opacity-60">One sec.</p>
+            <h1 style={{ ...type.displayXl, color: tokens.color.ink, margin: "0 0 8px" }}>
+              Building your font…
+            </h1>
+            <p style={{ ...type.bodyMd, color: tokens.color.muted, margin: 0 }}>One sec.</p>
           </>
         )}
         {status === "ready" && blobUrl && (
           <>
-            <h1 className="text-2xl font-bold mb-2">It&rsquo;s yours.</h1>
-            <p className="opacity-60 mb-6">
-              Download starting automatically. Install on your phone, Mac, or PC and use it anywhere.
+            <h1 style={{ ...type.displayXl, color: tokens.color.ink, margin: "0 0 8px" }}>
+              It&rsquo;s yours.
+            </h1>
+            <p
+              style={{
+                ...type.bodyMd,
+                color: tokens.color.muted,
+                margin: "0 0 24px",
+              }}
+            >
+              Download starting automatically. Install on your phone, Mac, or PC and use it
+              anywhere.
             </p>
             <button
               onClick={() => downloadFont(blobUrl, "my-handwriting.otf")}
-              className="w-full h-14 rounded-xl font-bold text-white text-base mb-3"
               style={{
-                background: "#5D9C30",
-                boxShadow: "inset 2px 2px 4px rgba(255,255,255,0.2), inset -2px -2px 4px rgba(0,0,0,0.15)",
+                ...type.buttonMd,
+                background: tokens.color.primary,
+                color: tokens.color.onPrimary,
+                width: "100%",
+                height: 48,
+                padding: "0 24px",
+                borderRadius: tokens.radius.sm,
+                border: "none",
+                marginBottom: 12,
+                cursor: "pointer",
+                fontFamily: tokens.fontFamily,
               }}
             >
               Download again
             </button>
-            <a href="/apps" className="text-sm opacity-60 hover:opacity-100 underline">
+            <a
+              href="/apps"
+              style={{
+                ...type.captionSm,
+                color: tokens.color.muted,
+                textDecoration: "underline",
+              }}
+            >
               ← back to flickman.co/apps
             </a>
           </>
         )}
         {status === "missing" && (
           <>
-            <h1 className="text-2xl font-bold mb-2">We can&rsquo;t find your drawings</h1>
-            <p className="opacity-60 mb-6">
-              Your font is saved on the device you drew it on. Open this page in the same browser
-              you used to draw your letters, and try again.
+            <h1 style={{ ...type.displayXl, color: tokens.color.ink, margin: "0 0 8px" }}>
+              We can&rsquo;t find your drawings
+            </h1>
+            <p
+              style={{
+                ...type.bodyMd,
+                color: tokens.color.muted,
+                margin: "0 0 24px",
+              }}
+            >
+              Your font is saved on the device you drew it on. Open this page in the same
+              browser you used to draw your letters, and try again.
             </p>
             <a
               href="/apps/handwriting"
-              className="inline-block px-5 py-3 rounded-xl bg-white border-2 border-black/10 font-semibold text-sm"
+              style={{
+                display: "inline-block",
+                ...type.buttonMd,
+                color: tokens.color.ink,
+                background: tokens.color.canvas,
+                border: `1px solid ${tokens.color.ink}`,
+                padding: "0 24px",
+                lineHeight: "48px",
+                height: 48,
+                borderRadius: tokens.radius.sm,
+                textDecoration: "none",
+              }}
             >
               Start over
             </a>
@@ -82,8 +140,12 @@ export default function SuccessDownload() {
         )}
         {status === "error" && (
           <>
-            <h1 className="text-2xl font-bold mb-2">Something went wrong.</h1>
-            <p className="opacity-60 mb-6">Try refreshing this page.</p>
+            <h1 style={{ ...type.displayXl, color: tokens.color.ink, margin: "0 0 8px" }}>
+              Something went wrong.
+            </h1>
+            <p style={{ ...type.bodyMd, color: tokens.color.muted, margin: 0 }}>
+              Try refreshing this page.
+            </p>
           </>
         )}
       </div>
