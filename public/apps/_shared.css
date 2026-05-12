@@ -1,0 +1,110 @@
+/* ============================================================
+ * flickman.co shared app styles
+ * ------------------------------------------------------------
+ * Drop this into any app via:
+ *   <link rel="stylesheet" href="/apps/_shared.css">
+ *
+ * Override any variable or rule in your own stylesheet —
+ * load _shared.css FIRST, your own styles second.
+ * ============================================================ */
+
+:root {
+  --fm-cream: #FFF8F0;
+  --fm-coal: #2C2C2C;
+  --fm-grass: #5D9C30;
+  --fm-grass-light: #6AAF35;
+  --fm-diamond: #4FC3F7;
+  --fm-gold: #FFD700;
+  --fm-dirt: #8B6914;
+  --fm-stone: #7F8C8D;
+
+  --fm-bg: var(--fm-cream);
+  --fm-fg: var(--fm-coal);
+  --fm-accent: var(--fm-grass);
+
+  --fm-font-body: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --fm-font-pixel: "Press Start 2P", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --fm-radius: 2px;
+  --fm-max-width: 720px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fm-bg: #1a1a1a;
+    --fm-fg: #f5f0e8;
+  }
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--fm-bg);
+  color: var(--fm-fg);
+  font-family: var(--fm-font-body);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+
+body {
+  padding: max(env(safe-area-inset-top), 16px) 16px max(env(safe-area-inset-bottom), 16px) 16px;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.fm-container {
+  max-width: var(--fm-max-width);
+  margin: 0 auto;
+}
+
+a { color: var(--fm-accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+button, .fm-button {
+  background: var(--fm-accent);
+  color: white;
+  border: 2px solid rgba(0,0,0,0.1);
+  border-radius: var(--fm-radius);
+  padding: 10px 16px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow:
+    inset 2px 2px 4px rgba(255,255,255,0.2),
+    inset -2px -2px 4px rgba(0,0,0,0.15),
+    0 2px 8px rgba(0,0,0,0.08);
+  transition: transform 0.15s ease;
+}
+button:active, .fm-button:active { transform: translateY(1px); }
+
+input, textarea, select {
+  font-family: inherit;
+  font-size: 16px; /* prevents iOS zoom */
+  padding: 10px 12px;
+  border: 2px solid rgba(0,0,0,0.1);
+  border-radius: var(--fm-radius);
+  background: white;
+  color: var(--fm-coal);
+  width: 100%;
+}
+
+/* Tiny "back to flickman.co" pill — drop this in any app:
+   <a href="/" class="fm-back">← flickman.co</a> */
+.fm-back {
+  display: inline-block;
+  font-family: var(--fm-font-pixel);
+  font-size: 9px;
+  color: var(--fm-coal);
+  opacity: 0.5;
+  text-decoration: none;
+  padding: 6px 10px;
+  border: 2px solid rgba(0,0,0,0.08);
+  border-radius: var(--fm-radius);
+  background: rgba(255,255,255,0.6);
+  margin-bottom: 16px;
+}
+.fm-back:hover { opacity: 1; text-decoration: none; }

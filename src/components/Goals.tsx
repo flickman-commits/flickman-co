@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useState } from "react";
+import { formatCurrency } from "@/lib/shopify";
 
 interface Goal {
   label: string;
@@ -12,42 +13,62 @@ interface Goal {
   icon: string;
   color: string;
   detail?: string;
+  /** Optional override for the text shown inside the XP bar (defaults to "{progress}%"). */
+  barLabel?: string;
+  /** Optional URL for the `current` value — renders it as a link. */
+  currentHref?: string;
 }
 
-const goals: Goal[] = [
-  {
-    label: "Sub-3 Marathon",
-    description: "Break 3 hours in the marathon",
-    current: "3:15",
-    target: "2:59:59",
-    progress: 42,
-    icon: "🏃",
-    color: "#4FC3F7",
-    detail: "Current PR → Goal",
-  },
-  {
-    label: "Trackstar → $1M ARR",
-    description: "Grow Trackstar to $1M in yearly revenue",
-    current: "$--k",
-    target: "$1M",
-    progress: 15,
-    icon: "📈",
-    color: "#6AAF35",
-    detail: "Current ARR → Goal",
-  },
-  {
-    label: "A Friend in Every City",
-    description: "Have a friend in each of the top 50 cities by population — someone whose couch I'd crash on",
-    current: "0",
-    target: "50",
-    progress: 0,
-    icon: "🌍",
-    color: "#FFD700",
-    detail: "Cities covered → Goal",
-  },
-];
+const TRACKSTAR_ARR_TARGET = 1_000_000;
 
-function XPBar({ progress, color }: { progress: number; color: string }) {
+function buildGoals(trackstarRevenue: number | null): Goal[] {
+  const trackstarCurrent =
+    trackstarRevenue != null ? formatCurrency(trackstarRevenue) : "$--k";
+  const trackstarProgress =
+    trackstarRevenue != null
+      ? Math.min(100, Math.round((trackstarRevenue / TRACKSTAR_ARR_TARGET) * 100))
+      : 0;
+
+  return [
+    {
+      label: "Sub-3 Marathon",
+      description: "Break 3 hours in the marathon",
+      current: "3:03:20",
+      target: "2:59:59",
+      progress: 95,
+      icon: "🏃",
+      color: "#4FC3F7",
+      detail: "Current PR → Goal",
+      barLabel: "3:21 to shave off",
+      currentHref:
+        "https://results.chicagomarathon.com/2025/?content=detail&fpid=search&pid=search&idp=9TGG96382BC520&lang=EN_CAP&event=MAR&event_main_group=runner&search%5Bname%5D=Hickman&search%5Bfirstname%5D=Matt&search_event=MAR",
+    },
+    {
+      label: "Trackstar → $1M / year",
+      description:
+        "Grow Trackstar to $1M in yearly revenue. Year-to-date paid order revenue, pulled live from Shopify (refunds subtracted, refreshed hourly).",
+      current: trackstarCurrent,
+      target: "$1M",
+      progress: trackstarProgress,
+      icon: "📈",
+      color: "#6AAF35",
+      detail: "YTD revenue → Goal",
+    },
+    {
+      label: "A Friend in Every Major City (Top 50)",
+      description:
+        "Have a friend in each of the top 50 cities by population — someone whose couch I'd crash on",
+      current: "19",
+      target: "50",
+      progress: 38,
+      icon: "🌍",
+      color: "#FFD700",
+      detail: "Cities covered → Goal",
+    },
+  ];
+}
+
+function XPBar({ progress, color, label }: { progress: number; color: string; label?: string }) {
   return (
     <div
       className="relative h-4 w-full overflow-hidden rounded-sm"
@@ -80,18 +101,19 @@ function XPBar({ progress, color }: { progress: number; color: string }) {
         }}
       />
 
-      {/* Percentage text */}
+      {/* Bar text (defaults to percentage) */}
       <div className="absolute inset-0 flex items-center justify-center">
         <span className="font-[family-name:var(--font-pixel)] text-[7px] text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
-          {progress}%
+          {label ?? `${progress}%`}
         </span>
       </div>
     </div>
   );
 }
 
-export default function Goals() {
+export default function Goals({ trackstarRevenue = null }: { trackstarRevenue?: number | null }) {
   const [expanded, setExpanded] = useState<number | null>(null);
+  const goals = buildGoals(trackstarRevenue);
 
   return (
     <section className="py-12 bg-cream/50">
@@ -146,7 +168,7 @@ export default function Goals() {
                   </div>
 
                   {/* XP bar */}
-                  <XPBar progress={goal.progress} color={goal.color} />
+                  <XPBar progress={goal.progress} color={goal.color} label={goal.barLabel} />
 
                   {/* Current → Target */}
                   <div className="flex items-center justify-between mt-2">
@@ -154,7 +176,20 @@ export default function Goals() {
                       {goal.detail}
                     </span>
                     <span className="font-[family-name:var(--font-pixel)] text-[8px] text-coal/50">
-                      {goal.current} → {goal.target}
+                      {goal.currentHref ? (
+                        <a
+                          href={goal.currentHref}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="underline decoration-coal/20 hover:decoration-coal/60 hover:text-coal/80"
+                        >
+                          {goal.current}
+                        </a>
+                      ) : (
+                        goal.current
+                      )}{" "}
+                      → {goal.target}
                     </span>
                   </div>
 
