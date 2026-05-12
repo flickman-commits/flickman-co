@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { STORAGE_KEY, type GlyphMap } from "../lib/types";
+import { STORAGE_KEY, getStorage, type GlyphMap } from "../lib/types";
 import { buildFont, downloadFont } from "../lib/fontBuilder";
 
 export default function SuccessDownload() {
@@ -10,7 +10,7 @@ export default function SuccessDownload() {
 
   useEffect(() => {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      const raw = getStorage().getItem(STORAGE_KEY);
       if (!raw) {
         setStatus("missing");
         return;

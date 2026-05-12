@@ -10,7 +10,7 @@ import {
   type Zone,
 } from "./lib/glyphs";
 import type { GlyphMap, Point, Stroke } from "./lib/types";
-import { STORAGE_KEY } from "./lib/types";
+import { STORAGE_KEY, getStorage } from "./lib/types";
 import { buildFont, downloadFont } from "./lib/fontBuilder";
 
 type Step = "onboarding" | "drawing" | "preview" | "checkout";
@@ -39,10 +39,10 @@ export default function HandwritingApp() {
   const [glyphMap, setGlyphMap] = useState<GlyphMap>({});
   const [currentGlyphIdx, setCurrentGlyphIdx] = useState(0);
 
-  // Load saved progress on mount.
+  // Load saved progress on mount (sessionStorage — survives refresh, not tab close).
   useEffect(() => {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      const raw = getStorage().getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw) as GlyphMap;
         setGlyphMap(parsed);
@@ -64,13 +64,25 @@ export default function HandwritingApp() {
           [ch]: { strokes, canvas, baselineY, strokeWidth },
         };
         try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+          getStorage().setItem(STORAGE_KEY, JSON.stringify(next));
         } catch {}
         return next;
       });
     },
     []
   );
+
+  const startOver = useCallback(() => {
+    try {
+      getStorage().removeItem(STORAGE_KEY);
+      // Also clear any legacy localStorage data from older versions of this app.
+      if (typeof window !== "undefined") window.localStorage.removeItem(STORAGE_KEY);
+    } catch {}
+    setGlyphMap({});
+    setCurrentGlyphIdx(0);
+    setOnbIndex(0);
+    setStep("onboarding");
+  }, []);
 
   const completedCount = Object.values(glyphMap).filter(
     (g) => g.strokes.length > 0
@@ -106,6 +118,7 @@ export default function HandwritingApp() {
           glyphMap={glyphMap}
           onSave={saveGlyph}
           onDone={() => setStep("preview")}
+          onStartOver={startOver}
         />
       )}
 
@@ -114,6 +127,7 @@ export default function HandwritingApp() {
           glyphMap={glyphMap}
           onBack={() => setStep("drawing")}
           onCheckout={() => setStep("checkout")}
+          onStartOver={startOver}
         />
       )}
 
@@ -197,6 +211,7 @@ function DrawingFlow({
   glyphMap,
   onSave,
   onDone,
+  onStartOver,
 }: {
   index: number;
   setIndex: (i: number | ((p: number) => number)) => void;
@@ -209,6 +224,7 @@ function DrawingFlow({
     strokeWidth: number
   ) => void;
   onDone: () => void;
+  onStartOver: () => void;
 }) {
   const spec = glyphs[index];
   const [strokes, setStrokes] = useState<Stroke[]>(
@@ -353,14 +369,24 @@ function DrawingFlow({
         })}
       </div>
 
-      {completedCountFor(glyphMap) >= 10 && (
+      <div className="mt-4 flex items-center justify-center gap-4 text-xs">
+        {completedCountFor(glyphMap) >= 10 && (
+          <button
+            onClick={onDone}
+            className="underline opacity-60 hover:opacity-100"
+          >
+            Skip the rest & preview →
+          </button>
+        )}
         <button
-          onClick={onDone}
-          className="mt-4 mx-auto text-sm underline opacity-60 hover:opacity-100"
+          onClick={() => {
+            if (confirm("Erase everything you've drawn and start over?")) onStartOver();
+          }}
+          className="underline opacity-40 hover:opacity-100"
         >
-          Skip the rest & preview my font →
+          Start over
         </button>
-      )}
+      </div>
     </main>
   );
 }
@@ -647,10 +673,12 @@ function PreviewStep({
   glyphMap,
   onBack,
   onCheckout,
+  onStartOver,
 }: {
   glyphMap: GlyphMap;
   onBack: () => void;
   onCheckout: () => void;
+  onStartOver: () => void;
 }) {
   const [text, setText] = useState("Hello, world! This is my own handwriting.");
   const [fontReady, setFontReady] = useState(false);
@@ -744,6 +772,17 @@ function PreviewStep({
           title="Free, lower-quality preview"
         >
           Download preview
+        </button>
+      </div>
+
+      <div className="text-center mt-6">
+        <button
+          onClick={() => {
+            if (confirm("Erase everything you've drawn and start over?")) onStartOver();
+          }}
+          className="text-xs underline opacity-40 hover:opacity-100"
+        >
+          Start over
         </button>
       </div>
     </main>
