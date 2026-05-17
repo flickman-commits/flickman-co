@@ -117,8 +117,22 @@ export default function CrepesPage() {
           </span>
         </header>
 
-        {/* ─── Hero ─────────────────────────────────────────────── */}
-        <section style={{ padding: "32px 0 24px", textAlign: "center" }}>
+        {/* ─── Hero — illustrated cover ────────────────────────── */}
+        <section style={{ padding: "12px 0 8px", textAlign: "center" }}>
+          {/* The cover already contains the wordmark + "with Matt & Nat" subtitle,
+              so we let the artwork carry the hero and skip a redundant text title. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/crepes/cover.png"
+            alt="Crepe Sundays with Matt & Nat — illustrated cover of Matt and Nat at the breakfast table with plates of crepes, bananas, and strawberries"
+            style={{
+              width: "100%",
+              height: "auto",
+              display: "block",
+              borderRadius: 4,
+            }}
+          />
+
           <div
             style={{
               display: "inline-block",
@@ -131,35 +145,11 @@ export default function CrepesPage() {
               fontWeight: 700,
               letterSpacing: 1.5,
               textTransform: "uppercase",
-              marginBottom: 20,
+              margin: "8px 0 20px",
             }}
           >
             🥞 Open Sundays · 11 AM sharp
           </div>
-
-          <h1
-            style={{
-              fontSize: "clamp(40px, 9vw, 84px)",
-              lineHeight: 0.95,
-              fontWeight: 900,
-              margin: "0 0 8px",
-              color: c.ink,
-              letterSpacing: -1,
-            }}
-          >
-            Crepe Sundays
-          </h1>
-          <p
-            style={{
-              fontStyle: "italic",
-              fontSize: "clamp(18px, 3.5vw, 24px)",
-              color: c.red,
-              margin: "0 0 24px",
-              fontWeight: 400,
-            }}
-          >
-            with Matt &amp; Nat
-          </p>
 
           {/* Decorative rule with star */}
           <DividerWithStar />
