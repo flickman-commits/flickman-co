@@ -50,6 +50,15 @@ export const apps: AppEntry[] = [
     description: "Turn your handwriting into a real, downloadable font.",
     createdAt: "2026-05-11",
   },
+  {
+    slug: "crepes",
+    name: "Crepe Sundays",
+    icon: "🥞",
+    description:
+      "Book a seat at Matt & Nat's Sunday morning crepe bar.",
+    url: "/crepes",
+    createdAt: "2026-05-12",
+  },
 ];
 
 export function getApp(slug: string): AppEntry | undefined {
