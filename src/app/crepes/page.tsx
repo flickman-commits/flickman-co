@@ -18,10 +18,10 @@ export const metadata: Metadata = {
 /* Palette — warm mom-and-pop diner.                                */
 /* ──────────────────────────────────────────────────────────────── */
 const c = {
-  // Tuned to match the paper background of the watercolor cover so the
+  // Sampled directly from the watercolor's paper (#FEFFFA–#FFFFFF) so the
   // illustration blends seamlessly into the page.
-  cream: "#F4ECD6",
-  creamDark: "#EADFC1",
+  cream: "#FEFFFA",
+  creamDark: "#EFE6D2",
   red: "#B23A2A",
   redDark: "#8A2A1E",
   mustard: "#D9A441",
