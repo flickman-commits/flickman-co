@@ -18,8 +18,10 @@ export const metadata: Metadata = {
 /* Palette — warm mom-and-pop diner.                                */
 /* ──────────────────────────────────────────────────────────────── */
 const c = {
-  cream: "#F8EFDD",
-  creamDark: "#EFE3C8",
+  // Tuned to match the paper background of the watercolor cover so the
+  // illustration blends seamlessly into the page.
+  cream: "#F4ECD6",
+  creamDark: "#EADFC1",
   red: "#B23A2A",
   redDark: "#8A2A1E",
   mustard: "#D9A441",
@@ -82,43 +84,8 @@ export default function CrepesPage() {
       }}
     >
       <div style={{ maxWidth: 880, margin: "0 auto", padding: "0 20px" }}>
-        {/* Sticky-feel top sign */}
-        <header
-          style={{
-            padding: "20px 0 12px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <a
-            href="/"
-            style={{
-              fontFamily: "ui-sans-serif, system-ui, sans-serif",
-              fontSize: 12,
-              color: c.muted,
-              textDecoration: "none",
-              letterSpacing: 0.4,
-              textTransform: "uppercase",
-            }}
-          >
-            ← flickman.co
-          </a>
-          <span
-            style={{
-              fontFamily: "ui-sans-serif, system-ui, sans-serif",
-              fontSize: 11,
-              color: c.muted,
-              letterSpacing: 1,
-              textTransform: "uppercase",
-            }}
-          >
-            est. 2024 · Brooklyn, NY
-          </span>
-        </header>
-
         {/* ─── Hero — illustrated cover ────────────────────────── */}
-        <section style={{ padding: "12px 0 8px", textAlign: "center" }}>
+        <section style={{ padding: "20px 0 8px", textAlign: "center" }}>
           {/* The cover already contains the wordmark + "with Matt & Nat" subtitle,
               so we let the artwork carry the hero and skip a redundant text title. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -167,7 +134,8 @@ export default function CrepesPage() {
           >
             Every Sunday morning, our kitchen turns into a little neighborhood
             crepe bar. Matt makes the crepes — sweet, savory, off-menu requests
-            welcome. Nat runs the espresso. <strong>One seat available a week.</strong>{" "}
+            welcome. Nat runs the espresso.{" "}
+            <strong>One reservation a week — table for two.</strong>{" "}
             Friends only, and friends of friends if we like you.
           </p>
         </section>
@@ -188,8 +156,8 @@ export default function CrepesPage() {
               margin: "0 auto 28px",
             }}
           >
-            One 11:00 AM seat per Sunday. Tap a date to reach out — Nat will
-            confirm by text.
+            One 11:00 AM reservation per Sunday — seats two. Tap a date to
+            reach out and Nat will confirm by text.
           </p>
           <CalendarSection palette={c} />
         </section>
@@ -262,7 +230,7 @@ export default function CrepesPage() {
             Come hungry. Leave full.
           </div>
           <div style={{ fontSize: 13, color: c.muted }}>
-            Crepe Sundays · run out of a tiny Brooklyn kitchen by{" "}
+            Crepe Sundays · run out of a tiny West Village kitchen by{" "}
             <span style={{ color: c.ink, fontWeight: 600 }}>Matt &amp; Nat</span>
           </div>
         </footer>

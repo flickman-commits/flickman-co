@@ -131,7 +131,7 @@ export default function CalendarSection({ palette }: { palette: Palette }) {
                   textTransform: "uppercase",
                 }}
               >
-                ● 1 seat
+                ● 2 seats
               </div>
             </button>
           );
@@ -183,7 +183,7 @@ export default function CalendarSection({ palette }: { palette: Palette }) {
               marginBottom: 18,
             }}
           >
-            11:00 AM · One seat at the bar
+            11:00 AM · Table for two
           </div>
 
           <a
