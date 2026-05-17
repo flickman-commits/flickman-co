@@ -62,6 +62,33 @@ const REVIEWS = [
   },
 ];
 
+const FAQ = [
+  {
+    q: "What does it cost?",
+    a: "Nothing. We just love feeding people. Bring a small gift only if you really want to — flowers, a bottle, a book you loved. Never required.",
+  },
+  {
+    q: "Where exactly is it?",
+    a: "Our apartment in the West Village, NYC. Nat will send you the address once she confirms your reservation.",
+  },
+  {
+    q: "Can I bring someone?",
+    a: "Yes — every reservation seats two. Tell us who's coming when you reach out so we can say hi by name when you walk in.",
+  },
+  {
+    q: "Any dietary stuff handled?",
+    a: "Almost always. Gluten-free batter on request, savory crepes can go veggie, and Matt can sub coconut milk if dairy's a no. Just mention it when you book.",
+  },
+  {
+    q: "How long does it usually go?",
+    a: "About 90 minutes. We start the first crepe at 11 sharp and most folks head out around 12:30.",
+  },
+  {
+    q: "What should I bring?",
+    a: "An appetite. That's it.",
+  },
+];
+
 const PHOTOS = [
   { caption: "The first crepe of the morning" },
   { caption: "Nat at the espresso bar" },
@@ -83,6 +110,18 @@ export default function CrepesPage() {
         minHeight: "100vh",
       }}
     >
+      {/* Scoped style: smooth in-page scroll + FAQ +/× toggle via rotate. */}
+      <style>{`
+        html { scroll-behavior: smooth; }
+        .fm-faq-toggle {
+          display: inline-block;
+          transition: transform 180ms ease;
+        }
+        details[open] > summary .fm-faq-toggle {
+          transform: rotate(45deg);
+        }
+        details > summary::-webkit-details-marker { display: none; }
+      `}</style>
       <div style={{ maxWidth: 880, margin: "0 auto", padding: "0 20px" }}>
         {/* ─── Hero — illustrated cover ────────────────────────── */}
         <section style={{ padding: "20px 0 8px", textAlign: "center" }}>
@@ -118,6 +157,29 @@ export default function CrepesPage() {
             🥞 Open Sundays · 11 AM sharp
           </div>
 
+          {/* Primary CTA — sits above the fold so users can book in one tap. */}
+          <div style={{ marginBottom: 20 }}>
+            <a
+              href="#reservations"
+              style={{
+                display: "inline-block",
+                fontFamily: "ui-sans-serif, system-ui, sans-serif",
+                background: c.red,
+                color: c.white,
+                border: `2px solid ${c.redDark}`,
+                borderRadius: 4,
+                padding: "14px 32px",
+                fontWeight: 800,
+                fontSize: 17,
+                letterSpacing: 0.3,
+                textDecoration: "none",
+                boxShadow: `0 5px 0 ${c.redDark}`,
+              }}
+            >
+              Book Your Sunday →
+            </a>
+          </div>
+
           {/* Decorative rule with star */}
           <DividerWithStar />
 
@@ -144,7 +206,7 @@ export default function CrepesPage() {
         <MenuStrip />
 
         {/* ─── Booking calendar ────────────────────────────────── */}
-        <section style={{ padding: "48px 0 16px" }}>
+        <section id="reservations" style={{ padding: "48px 0 16px", scrollMarginTop: 16 }}>
           <SectionTitle eyebrow="Reservations" title="Book your Sunday" />
           <p
             style={{
@@ -206,6 +268,39 @@ export default function CrepesPage() {
             {REVIEWS.map((r, i) => (
               <ReviewCard key={i} review={r} />
             ))}
+          </div>
+        </section>
+
+        {/* ─── FAQ ─────────────────────────────────────────────── */}
+        <section style={{ padding: "48px 0" }}>
+          <SectionTitle eyebrow="Before you come" title="Frequently asked" />
+          <div style={{ maxWidth: 640, margin: "28px auto 0" }}>
+            {FAQ.map((item, i) => (
+              <FAQRow key={i} item={item} isLast={i === FAQ.length - 1} />
+            ))}
+          </div>
+
+          {/* Repeated CTA so the page ends with a clear action. */}
+          <div style={{ textAlign: "center", marginTop: 32 }}>
+            <a
+              href="#reservations"
+              style={{
+                display: "inline-block",
+                fontFamily: "ui-sans-serif, system-ui, sans-serif",
+                background: c.red,
+                color: c.white,
+                border: `2px solid ${c.redDark}`,
+                borderRadius: 4,
+                padding: "14px 32px",
+                fontWeight: 800,
+                fontSize: 17,
+                letterSpacing: 0.3,
+                textDecoration: "none",
+                boxShadow: `0 5px 0 ${c.redDark}`,
+              }}
+            >
+              Book Your Sunday →
+            </a>
           </div>
         </section>
 
@@ -419,6 +514,65 @@ function PhotoPlaceholder({
         {caption}
       </div>
     </div>
+  );
+}
+
+function FAQRow({
+  item,
+  isLast,
+}: {
+  item: { q: string; a: string };
+  isLast: boolean;
+}) {
+  return (
+    <details
+      style={{
+        borderTop: `1px solid ${c.hairline}`,
+        borderBottom: isLast ? `1px solid ${c.hairline}` : "none",
+        padding: "16px 4px",
+      }}
+    >
+      <summary
+        style={{
+          listStyle: "none",
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 12,
+          fontSize: 18,
+          fontWeight: 600,
+          color: c.ink,
+          letterSpacing: -0.2,
+        }}
+      >
+        <span>{item.q}</span>
+        <span
+          aria-hidden
+          style={{
+            fontFamily: "ui-sans-serif, system-ui, sans-serif",
+            fontSize: 22,
+            color: c.red,
+            fontWeight: 400,
+            flexShrink: 0,
+          }}
+          className="fm-faq-toggle"
+        >
+          +
+        </span>
+      </summary>
+      <p
+        style={{
+          fontFamily: "ui-sans-serif, system-ui, sans-serif",
+          fontSize: 15,
+          lineHeight: 1.6,
+          color: c.body,
+          margin: "10px 0 0",
+        }}
+      >
+        {item.a}
+      </p>
+    </details>
   );
 }
 
