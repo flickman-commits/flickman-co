@@ -59,6 +59,15 @@ export const apps: AppEntry[] = [
     url: "/crepes",
     createdAt: "2026-05-12",
   },
+  {
+    slug: "long-distance",
+    name: "Long Distance Loves",
+    icon: "💌",
+    description:
+      "Daily rituals to help long-distance couples feel close — and eventually close the gap.",
+    url: "/long-distance",
+    createdAt: "2026-05-21",
+  },
 ];
 
 export function getApp(slug: string): AppEntry | undefined {
