@@ -37,28 +37,11 @@ const c = {
 /* ──────────────────────────────────────────────────────────────── */
 const REVIEWS = [
   {
-    name: "Emma",
-    where: "Brooklyn",
+    name: "Jason & Julia",
+    where: "Beta testers",
     stars: 5,
-    body: "Matt's banana-nutella crepe ruined every other crepe for me. Nat's espresso is no joke either.",
-  },
-  {
-    name: "Diego",
-    where: "Jersey City",
-    stars: 5,
-    body: "It's the best two hours of my Sunday. They make you feel like family the second you walk in.",
-  },
-  {
-    name: "Priya",
-    where: "Manhattan",
-    stars: 5,
-    body: "The savory ham-and-cheese is unreal. I came hungry, left hugged, brought my mom the next week.",
-  },
-  {
-    name: "Sam",
-    where: "Astoria",
-    stars: 5,
-    body: "If you get the invite, GO. Don't ask questions. Just go.",
+    body:
+      "As the beta testers of Crepe Sundays, we were so touched by the thought Matt and Nat put into hosting. From an array of fresh crepe toppings to coordinated outfits and a curated playlist, we can’t think of a better way to spend Sunday morning. Already looking forward to our next visit!",
   },
 ];
 
@@ -89,13 +72,15 @@ const FAQ = [
   },
 ];
 
-const PHOTOS = [
+type Photo = { src?: string; caption: string };
+
+const PHOTOS: Photo[] = [
+  { src: "/crepes/IMG_2808.jpeg", caption: "Fresh strawberries & bananas" },
+  { src: "/crepes/IMG_2813.jpeg", caption: "The hosts" },
   { caption: "The first crepe of the morning" },
   { caption: "Nat at the espresso bar" },
   { caption: "Strawberry & cream" },
   { caption: "Sunday morning regulars" },
-  { caption: "Ham, gruyère, runny egg" },
-  { caption: "The line forms around 10:55" },
 ];
 
 /* ──────────────────────────────────────────────────────────────── */
@@ -236,7 +221,7 @@ export default function CrepesPage() {
             }}
           >
             {PHOTOS.map((p, i) => (
-              <PhotoPlaceholder key={i} index={i} caption={p.caption} />
+              <PhotoPlaceholder key={i} index={i} caption={p.caption} src={p.src} />
             ))}
           </div>
           <p
@@ -465,9 +450,11 @@ function MenuStrip() {
 function PhotoPlaceholder({
   index,
   caption,
+  src,
 }: {
   index: number;
   caption: string;
+  src?: string;
 }) {
   // Subtle palette variation per tile so the strip feels warm even without real images.
   const tints = [c.creamDark, c.mustard + "55", c.red + "22", c.creamDark, c.mustard + "33", c.red + "33"];
@@ -484,18 +471,34 @@ function PhotoPlaceholder({
         boxShadow: `0 3px 0 ${c.ink}11`,
       }}
     >
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: 48,
-        }}
-      >
-        🥞
-      </div>
+      {src ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={src}
+          alt={caption}
+          loading="lazy"
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+          }}
+        />
+      ) : (
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 48,
+          }}
+        >
+          🥞
+        </div>
+      )}
       <div
         style={{
           position: "absolute",
@@ -503,7 +506,7 @@ function PhotoPlaceholder({
           left: 0,
           right: 0,
           padding: "10px 12px",
-          background: "linear-gradient(180deg, transparent, rgba(0,0,0,0.55))",
+          background: "linear-gradient(180deg, transparent, rgba(0,0,0,0.6))",
           color: c.white,
           fontFamily: "ui-sans-serif, system-ui, sans-serif",
           fontSize: 12,
