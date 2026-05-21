@@ -380,11 +380,12 @@ function DividerWithStar() {
 }
 
 function MenuStrip() {
-  const items = [
-    { name: "Strawberry & Cream", price: "—", note: "sweet" },
-    { name: "Banana Nutella", price: "—", note: "house favorite" },
-    { name: "Ham, Gruyère, Egg", price: "—", note: "savory" },
-    { name: "Off-menu", price: "—", note: "just ask" },
+  const toppings = [
+    "Banana",
+    "Strawberry",
+    "Maple syrup",
+    "Whipped cream",
+    "Nutella",
   ];
   return (
     <div
@@ -392,7 +393,7 @@ function MenuStrip() {
         background: c.white,
         border: `2px solid ${c.ink}`,
         borderRadius: 4,
-        padding: "16px 20px",
+        padding: "16px 20px 18px",
         marginTop: 8,
         boxShadow: `0 6px 0 ${c.ink}`,
       }}
@@ -405,43 +406,44 @@ function MenuStrip() {
           letterSpacing: 3,
           textTransform: "uppercase",
           color: c.muted,
-          marginBottom: 8,
+          marginBottom: 10,
         }}
       >
-        — On the menu —
+        — Toppings —
       </div>
       <div
         style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
-          gap: 10,
+          display: "flex",
+          flexWrap: "wrap",
+          justifyContent: "center",
+          alignItems: "center",
+          gap: "6px 14px",
+          fontFamily: "ui-sans-serif, system-ui, sans-serif",
+          fontSize: 15,
+          fontWeight: 700,
+          color: c.ink,
         }}
       >
-        {items.map((it) => (
-          <div key={it.name} style={{ textAlign: "center" }}>
-            <div
-              style={{
-                fontFamily: "ui-sans-serif, system-ui, sans-serif",
-                fontSize: 14,
-                fontWeight: 700,
-                color: c.ink,
-              }}
-            >
-              {it.name}
-            </div>
-            <div
-              style={{
-                fontFamily: "ui-sans-serif, system-ui, sans-serif",
-                fontSize: 11,
-                color: c.muted,
-                fontStyle: "italic",
-                marginTop: 2,
-              }}
-            >
-              {it.note}
-            </div>
-          </div>
+        {toppings.map((t, i) => (
+          <span key={t} style={{ display: "inline-flex", alignItems: "center", gap: 14 }}>
+            {t}
+            {i < toppings.length - 1 && (
+              <span style={{ color: c.mustard, fontSize: 10 }}>★</span>
+            )}
+          </span>
         ))}
+      </div>
+      <div
+        style={{
+          textAlign: "center",
+          fontFamily: "ui-sans-serif, system-ui, sans-serif",
+          fontSize: 13,
+          color: c.muted,
+          fontStyle: "italic",
+          marginTop: 10,
+        }}
+      >
+        …or anything else you request.
       </div>
     </div>
   );
