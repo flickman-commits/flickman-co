@@ -32,7 +32,10 @@ export const tokens = {
     brandTeal: "#1a3a3a",
     brandLavender: "#b8a4ed",
     brandPeach: "#ffb084",
-    brandOchre: "#e8b94a",
+    // Softened from the original Clay ochre (#e8b94a) — too mustard. This is a
+    // gentler pale-gold that still reads as "saturated card" without feeling
+    // dingy on the flight tracker card.
+    brandOchre: "#F5DD8A",
     brandMint: "#a4d4c5",
     brandCoral: "#ff6b5a",
   },

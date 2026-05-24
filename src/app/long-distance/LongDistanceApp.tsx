@@ -21,6 +21,11 @@ import {
   type Place,
 } from "./lib/geocode";
 import { randomQuestion } from "./lib/questions";
+import {
+  useDailyTodos,
+  displayedStreak,
+  type TodoKey,
+} from "./lib/todos";
 
 const c = tokens.color;
 const FONT = tokens.fontFamily;
@@ -44,6 +49,8 @@ type Location = {
 type Settings = {
   yourName: string;
   yourLocation: Location;
+  /** Your home airport IATA code (e.g. "JFK") for the flight tracker. */
+  yourAirport: string;
   partnerName: string;
   partnerLocation: Location;
   nextVisitISO: string;
@@ -74,6 +81,7 @@ function loadSettings(): Settings | null {
       yourCityId?: string;
       partnerCityId?: string;
       waitStartISO?: string;
+      yourAirport?: string;
     };
 
     if (!obj.yourName || !obj.partnerName || !obj.nextVisitISO) return null;
@@ -93,6 +101,8 @@ function loadSettings(): Settings | null {
     return {
       yourName: obj.yourName,
       yourLocation,
+      yourAirport:
+        obj.yourAirport ?? nearestAirport(yourLocation.label),
       partnerName: obj.partnerName,
       partnerLocation,
       nextVisitISO: obj.nextVisitISO,
@@ -557,12 +567,33 @@ function cardColors(variant: CardVariant) {
 function DailyActionsSection({ settings }: { settings: Settings }) {
   const partner = settings.partnerName || "them";
   const [question, setQuestion] = useState<string | null>(null);
+  const { todos, streak, toggle, markDone } = useDailyTodos();
+  const streakCount = displayedStreak(streak);
 
-  const askDeepQuestion = () => setQuestion(randomQuestion(question ?? undefined));
+  const askDeepQuestion = () => {
+    setQuestion(randomQuestion(question ?? undefined));
+    markDone("deepQuestion");
+  };
+
+  const sendVoiceMemo = () => {
+    // Open the native Messages composer. User picks the recipient and taps
+    // the mic to record a voice memo.
+    window.location.href = "sms:";
+    markDone("voiceMemo");
+  };
+
+  const scheduleFaceTime = () => {
+    const body = `When's good for a FaceTime today, love?`;
+    window.location.href = `sms:&body=${encodeURIComponent(body)}`;
+    markDone("faceTime");
+  };
 
   return (
     <section style={{ paddingTop: 16, paddingBottom: 16 }}>
-      <div style={{ marginBottom: 18 }}>
+      {/* Streak pill */}
+      <StreakPill count={streakCount} />
+
+      <div style={{ marginBottom: 14 }}>
         <div
           style={{ ...type.captionUppercase, color: c.muted, marginBottom: 8 }}
         >
@@ -581,29 +612,32 @@ function DailyActionsSection({ settings }: { settings: Settings }) {
         </h2>
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
-          gap: 10,
-        }}
-      >
-        <ActionButton
+      {/* Stacked checkable to-do list */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <TodoCard
           variant="pink"
           icon="💭"
           title={`Ask ${partner} a deep question`}
-          onClick={askDeepQuestion}
+          done={todos.deepQuestion}
+          onAction={askDeepQuestion}
+          onToggle={() => toggle("deepQuestion")}
         />
-        <ActionButton
+        <TodoCard
           variant="lavender"
           icon="🎙"
           title={`Send ${partner} a voice memo`}
+          done={todos.voiceMemo}
+          onAction={sendVoiceMemo}
+          onToggle={() => toggle("voiceMemo")}
         />
-        <ActionButton
+        <TodoCard
           variant="peach"
           icon="📞"
-          title={`FaceTime ${partner}`}
+          title={`Schedule FaceTime with ${partner}`}
           subtitle={`${partner} is most free 5–8 PM today (per their calendar)`}
+          done={todos.faceTime}
+          onAction={scheduleFaceTime}
+          onToggle={() => toggle("faceTime")}
         />
       </div>
 
@@ -611,11 +645,180 @@ function DailyActionsSection({ settings }: { settings: Settings }) {
         <DeepQuestionReveal
           question={question}
           partnerName={partner}
-          onAnother={askDeepQuestion}
+          onAnother={() => {
+            setQuestion(randomQuestion(question ?? undefined));
+          }}
           onClose={() => setQuestion(null)}
         />
       )}
     </section>
+  );
+}
+
+function StreakPill({ count }: { count: number }) {
+  // We show even at 0 — it's a gentle nudge to start the streak today.
+  const alive = count > 0;
+  return (
+    <div
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 6,
+        padding: "5px 12px",
+        borderRadius: tokens.radius.pill,
+        background: alive ? c.brandPink + "22" : c.surfaceCard,
+        color: alive ? c.ink : c.muted,
+        marginBottom: 12,
+        ...type.captionUppercase,
+      }}
+    >
+      <span style={{ fontSize: 14, lineHeight: 1, textTransform: "none" }}>
+        {alive ? "🔥" : "✨"}
+      </span>
+      <span>
+        {alive
+          ? `${count}-day streak`
+          : "Start a streak today"}
+      </span>
+    </div>
+  );
+}
+
+/* Stacked checkable to-do item — circular checkbox on left + tappable card. */
+function TodoCard({
+  variant,
+  icon,
+  title,
+  subtitle,
+  done,
+  onAction,
+  onToggle,
+}: {
+  variant: CardVariant;
+  icon: string;
+  title: string;
+  subtitle?: string;
+  done: boolean;
+  onAction: () => void;
+  onToggle: () => void;
+}) {
+  const { dark, bg, fg, muted } = cardColors(variant);
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={onAction}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onAction();
+        }
+      }}
+      style={{
+        background: bg,
+        color: fg,
+        borderRadius: tokens.radius.lg,
+        padding: "12px 14px",
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        cursor: "pointer",
+        userSelect: "none",
+        transition: "transform 120ms ease, opacity 200ms ease",
+        opacity: done ? 0.55 : 1,
+      }}
+      onPointerDown={(e) => (e.currentTarget.style.transform = "scale(0.985)")}
+      onPointerUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
+      onPointerLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+    >
+      <Checkbox dark={dark} checked={done} onClick={onToggle} />
+      <div style={{ fontSize: 22, lineHeight: 1, flexShrink: 0 }}>{icon}</div>
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <div
+          style={{
+            fontFamily: FONT,
+            fontSize: 15,
+            fontWeight: 600,
+            letterSpacing: -0.2,
+            lineHeight: 1.3,
+            color: fg,
+            textDecoration: done ? "line-through" : "none",
+          }}
+        >
+          {title}
+        </div>
+        {subtitle && (
+          <div
+            style={{
+              ...type.bodySm,
+              color: dark ? muted : c.muted,
+              fontSize: 12,
+              lineHeight: 1.35,
+              marginTop: 2,
+              textDecoration: done ? "line-through" : "none",
+            }}
+          >
+            {subtitle}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Checkbox({
+  dark,
+  checked,
+  onClick,
+}: {
+  dark: boolean;
+  checked: boolean;
+  onClick: () => void;
+}) {
+  const stroke = dark ? c.onDark : c.ink;
+  return (
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
+      aria-label={checked ? "Mark as not done" : "Mark as done"}
+      style={{
+        width: 26,
+        height: 26,
+        borderRadius: tokens.radius.pill,
+        background: checked
+          ? dark
+            ? "rgba(255,255,255,0.95)"
+            : c.ink
+          : "transparent",
+        border: `2px solid ${
+          checked ? (dark ? "rgba(255,255,255,0.95)" : c.ink) : stroke + "66"
+        }`,
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        cursor: "pointer",
+        flexShrink: 0,
+        padding: 0,
+        transition: "background-color 150ms ease, border-color 150ms ease",
+      }}
+    >
+      {checked && (
+        <svg
+          width={12}
+          height={12}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke={dark ? c.ink : c.canvas}
+          strokeWidth={3.5}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+      )}
+    </button>
   );
 }
 
@@ -926,8 +1129,9 @@ function FlightTrackerCard({ settings }: { settings: Settings }) {
   const { bg, fg } = cardColors("ochre");
 
   // Placeholder data — wire to a real flight API later.
-  // Routes are based on user-entered cities so the card feels relevant.
-  const here = nearestAirport(settings.yourLocation.label);
+  // Origin uses the user's saved home airport; destination derives from
+  // their partner's city via the small lookup.
+  const here = settings.yourAirport || nearestAirport(settings.yourLocation.label);
   const there = nearestAirport(settings.partnerLocation.label);
 
   const flights: TrackedFlight[] = [
@@ -1424,10 +1628,22 @@ function Onboarding({
   const [yourLocation, setYourLocation] = useState<Location | null>(
     existing?.yourLocation ?? null
   );
+  const [yourAirport, setYourAirport] = useState<string>(
+    existing?.yourAirport ?? ""
+  );
   const [partnerName, setPartnerName] = useState(existing?.partnerName ?? "");
   const [partnerLocation, setPartnerLocation] = useState<Location | null>(
     existing?.partnerLocation ?? null
   );
+
+  // Auto-suggest a home airport from the picked city if the user hasn't typed
+  // their own yet. They can override.
+  useEffect(() => {
+    if (yourLocation && !yourAirport.trim()) {
+      setYourAirport(nearestAirport(yourLocation.label));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [yourLocation]);
   const [lastVisit, setLastVisit] = useState(
     existing?.lastVisitISO ? toLocalDtValue(new Date(existing.lastVisitISO)) : nowDt
   );
@@ -1443,7 +1659,8 @@ function Onboarding({
     yourLocation !== null &&
     partnerLocation !== null &&
     nextVisit &&
-    lastVisit;
+    lastVisit &&
+    yourAirport.trim().length >= 3;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -1451,6 +1668,7 @@ function Onboarding({
     onSave({
       yourName: yourName.trim(),
       yourLocation: yourLocation!,
+      yourAirport: yourAirport.trim().toUpperCase().slice(0, 4),
       partnerName: partnerName.trim(),
       partnerLocation: partnerLocation!,
       nextVisitISO: new Date(nextVisit).toISOString(),
@@ -1520,6 +1738,40 @@ function Onboarding({
             />
           </Field>
         </Pair>
+
+        <Field label="Your home airport">
+          <input
+            type="text"
+            value={yourAirport}
+            onChange={(e) =>
+              setYourAirport(e.target.value.toUpperCase().slice(0, 4))
+            }
+            placeholder="JFK"
+            maxLength={4}
+            autoCapitalize="characters"
+            spellCheck={false}
+            style={{
+              ...inputStyle,
+              fontFamily: FONT,
+              letterSpacing: 1,
+              fontWeight: 600,
+            }}
+          />
+          <div
+            style={{
+              ...type.bodySm,
+              color: c.muted,
+              marginTop: 6,
+              padding: "10px 12px",
+              borderRadius: tokens.radius.md,
+              background: c.surfaceSoft,
+              border: `1px solid ${c.hairlineSoft}`,
+            }}
+          >
+            ✈️ This is so we can track flight prices and tell you when
+            it&rsquo;s the cheapest to fly to see your partner.
+          </div>
+        </Field>
 
         <Field label="When did you last see each other?">
           <input
