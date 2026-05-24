@@ -1,34 +1,66 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { tokens, type } from "./lib/design";
 import { continentPathStrings, project } from "./lib/geo";
 import {
-  CITIES_SORTED,
+  CITIES,
   resolveCity,
   findCityIdByTimezone,
-  type CityEntry,
 } from "./lib/cities";
+import {
+  searchPlaces,
+  lookupTimezone,
+  type Place,
+} from "./lib/geocode";
 
 const c = tokens.color;
 const FONT = tokens.fontFamily;
 
 /* ──────────────────────────────────────────────────────────────── */
-/* Storage                                                          */
+/* Types & storage                                                  */
 /* ──────────────────────────────────────────────────────────────── */
 const SETTINGS_KEY = "ldl-settings:v1";
 
+type Location = {
+  /** Short display label, e.g. "South Lake Tahoe". */
+  label: string;
+  /** Long display label, e.g. "South Lake Tahoe, California, United States". */
+  fullLabel: string;
+  lat: number;
+  lng: number;
+  /** IANA timezone, e.g. "America/Los_Angeles". */
+  tz: string;
+};
+
 type Settings = {
   yourName: string;
-  yourCityId: string;
+  yourLocation: Location;
   partnerName: string;
-  partnerCityId: string;
+  partnerLocation: Location;
   nextVisitISO: string;
-  /** When you last saw each other in person — anchors the progress bar. */
   lastVisitISO: string;
 };
 
-/** Read whatever's in storage, including older shapes, and normalize. */
+/** Convert a curated city entry into a Location. */
+function locationFromCityId(cityId: string): Location {
+  const c = resolveCity(cityId);
+  return {
+    label: c.city,
+    fullLabel: `${c.city}, ${c.region}`,
+    lat: c.coords[0],
+    lng: c.coords[1],
+    tz: c.tz,
+  };
+}
+
+/** Read whatever's in storage, migrating older shapes to Location-based. */
 function loadSettings(): Settings | null {
   if (typeof window === "undefined") return null;
   try {
@@ -37,18 +69,30 @@ function loadSettings(): Settings | null {
     const obj = JSON.parse(raw) as Partial<Settings> & {
       yourTimezone?: string;
       partnerTimezone?: string;
+      yourCityId?: string;
+      partnerCityId?: string;
       waitStartISO?: string;
     };
 
     if (!obj.yourName || !obj.partnerName || !obj.nextVisitISO) return null;
 
+    const yourLocation: Location = obj.yourLocation
+      ? obj.yourLocation
+      : locationFromCityId(
+          obj.yourCityId ?? findCityIdByTimezone(obj.yourTimezone ?? "")
+        );
+
+    const partnerLocation: Location = obj.partnerLocation
+      ? obj.partnerLocation
+      : locationFromCityId(
+          obj.partnerCityId ?? findCityIdByTimezone(obj.partnerTimezone ?? "")
+        );
+
     return {
       yourName: obj.yourName,
-      yourCityId:
-        obj.yourCityId ?? findCityIdByTimezone(obj.yourTimezone ?? ""),
+      yourLocation,
       partnerName: obj.partnerName,
-      partnerCityId:
-        obj.partnerCityId ?? findCityIdByTimezone(obj.partnerTimezone ?? ""),
+      partnerLocation,
       nextVisitISO: obj.nextVisitISO,
       lastVisitISO:
         obj.lastVisitISO ??
@@ -66,12 +110,20 @@ function saveSettings(s: Settings) {
   } catch {}
 }
 
-function browserTimezone(): string {
-  try {
-    return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
-  } catch {
-    return "UTC";
+/** Closest curated city's tz, used as fallback when the tz API fails. */
+function nearestCuratedTz(lat: number, lng: number): string {
+  let best = CITIES[0];
+  let bestD = Infinity;
+  for (const c of CITIES) {
+    const dLat = c.coords[0] - lat;
+    const dLng = c.coords[1] - lng;
+    const d = dLat * dLat + dLng * dLng;
+    if (d < bestD) {
+      bestD = d;
+      best = c;
+    }
   }
+  return best.tz;
 }
 
 /* ──────────────────────────────────────────────────────────────── */
@@ -150,10 +202,6 @@ function MainView({
     </main>
   );
 }
-
-/* ──────────────────────────────────────────────────────────────── */
-/* Compact top: title → progress bar → map + times                  */
-/* ──────────────────────────────────────────────────────────────── */
 
 function useNow(intervalMs = 1000) {
   const [now, setNow] = useState(() => Date.now());
@@ -243,22 +291,29 @@ function VisitProgress({ settings }: { settings: Settings }) {
 
 function DualTimeMap({ settings }: { settings: Settings }) {
   const now = useNow(1000);
-  const youCity = resolveCity(settings.yourCityId);
-  const partnerCity = resolveCity(settings.partnerCityId);
+  const youLoc = settings.yourLocation;
+  const partnerLoc = settings.partnerLocation;
 
-  // Order so that whoever is behind appears on the left.
-  const youOffset = getOffsetMinutes(youCity.tz, now);
-  const partnerOffset = getOffsetMinutes(partnerCity.tz, now);
+  const youOffset = getOffsetMinutes(youLoc.tz, now);
+  const partnerOffset = getOffsetMinutes(partnerLoc.tz, now);
   const youIsBehind = youOffset <= partnerOffset;
-  const left = youIsBehind
-    ? { name: settings.yourName, city: youCity, time: formatTime(now, youCity.tz) }
-    : { name: settings.partnerName, city: partnerCity, time: formatTime(now, partnerCity.tz) };
-  const right = youIsBehind
-    ? { name: settings.partnerName, city: partnerCity, time: formatTime(now, partnerCity.tz) }
-    : { name: settings.yourName, city: youCity, time: formatTime(now, youCity.tz) };
 
-  // Ahead/behind sentence — always describes the partner from "your" point of view.
-  const aheadLabel = describeAhead(youCity.tz, partnerCity.tz, settings.partnerName);
+  const left = youIsBehind
+    ? { name: settings.yourName, loc: youLoc, time: formatTime(now, youLoc.tz) }
+    : {
+        name: settings.partnerName,
+        loc: partnerLoc,
+        time: formatTime(now, partnerLoc.tz),
+      };
+  const right = youIsBehind
+    ? {
+        name: settings.partnerName,
+        loc: partnerLoc,
+        time: formatTime(now, partnerLoc.tz),
+      }
+    : { name: settings.yourName, loc: youLoc, time: formatTime(now, youLoc.tz) };
+
+  const aheadLabel = describeAhead(youLoc.tz, partnerLoc.tz, settings.partnerName);
 
   return (
     <section
@@ -270,8 +325,8 @@ function DualTimeMap({ settings }: { settings: Settings }) {
       }}
     >
       <MiniWorldMap
-        coordsA={left.city.coords}
-        coordsB={right.city.coords}
+        coordsA={[left.loc.lat, left.loc.lng]}
+        coordsB={[right.loc.lat, right.loc.lng]}
       />
 
       <div
@@ -282,11 +337,11 @@ function DualTimeMap({ settings }: { settings: Settings }) {
           marginTop: 10,
         }}
       >
-        <TimeCol label={left.name} time={left.time.time} city={left.city.city} />
+        <TimeCol label={left.name} time={left.time.time} city={left.loc.label} />
         <TimeCol
           label={right.name}
           time={right.time.time}
-          city={right.city.city}
+          city={right.loc.label}
           align="right"
         />
       </div>
@@ -342,11 +397,11 @@ function TimeCol({
 }
 
 /* ──────────────────────────────────────────────────────────────── */
-/* Mini world map — short + auto-zoom to the two pins               */
+/* Mini world map                                                   */
 /* ──────────────────────────────────────────────────────────────── */
 
-const MAP_ASPECT = 2.6; // width / height
-const MAP_PAD_PCT = 0.6; // padding around bounding box (60% of larger dimension)
+const MAP_ASPECT = 2.6;
+const MAP_PAD_PCT = 0.6;
 
 function MiniWorldMap({
   coordsA,
@@ -358,9 +413,11 @@ function MiniWorldMap({
   const a = project(coordsA[0], coordsA[1]);
   const b = project(coordsB[0], coordsB[1]);
   const paths = useMemo(() => continentPathStrings(), []);
-  const viewBox = useMemo(() => computeViewBox(a, b, MAP_ASPECT, MAP_PAD_PCT), [a, b]);
+  const viewBox = useMemo(
+    () => computeViewBox(a, b, MAP_ASPECT, MAP_PAD_PCT),
+    [a, b]
+  );
 
-  // Curve the connecting line slightly for a great-circle feel.
   const mid = {
     x: (a.x + b.x) / 2,
     y: (a.y + b.y) / 2 - Math.max(8, Math.abs(b.x - a.x) * 0.12),
@@ -422,7 +479,6 @@ function Pin({ x, y }: { x: number; y: number }) {
   );
 }
 
-/** Compute a viewBox string tightly fit around two points, padded, matching aspect. */
 function computeViewBox(
   a: { x: number; y: number },
   b: { x: number; y: number },
@@ -447,7 +503,6 @@ function computeViewBox(
   let w = xMax - xMin;
   let h = yMax - yMin;
 
-  // Expand to match the container's aspect ratio so no letterboxing.
   if (w / h < aspect) {
     const newW = h * aspect;
     const extra = (newW - w) / 2;
@@ -726,7 +781,7 @@ function ResourcesSection() {
 }
 
 /* ──────────────────────────────────────────────────────────────── */
-/* Footer (settings icon + tagline)                                  */
+/* Footer                                                            */
 /* ──────────────────────────────────────────────────────────────── */
 
 function Footer({ onEdit }: { onEdit: () => void }) {
@@ -830,7 +885,11 @@ function getOffsetMinutes(tz: string, ts: number): number {
   return Math.round((asUTC - ts) / 60_000);
 }
 
-function describeAhead(yourTz: string, partnerTz: string, partnerName: string): string {
+function describeAhead(
+  yourTz: string,
+  partnerTz: string,
+  partnerName: string
+): string {
   try {
     const now = Date.now();
     const yourOff = getOffsetMinutes(yourTz, now);
@@ -859,10 +918,6 @@ function Onboarding({
   onCancel?: () => void;
   onSave: (s: Settings) => void;
 }) {
-  const defaultBrowserTz = browserTimezone();
-  const defaultYourCityId = existing?.yourCityId ?? findCityIdByTimezone(defaultBrowserTz);
-  const defaultPartnerCityId = existing?.partnerCityId ?? "uk-lon";
-
   const today = useMemo(() => {
     const d = new Date();
     d.setHours(12, 0, 0, 0);
@@ -876,9 +931,13 @@ function Onboarding({
   }, []);
 
   const [yourName, setYourName] = useState(existing?.yourName ?? "");
-  const [yourCityId, setYourCityId] = useState(defaultYourCityId);
+  const [yourLocation, setYourLocation] = useState<Location | null>(
+    existing?.yourLocation ?? null
+  );
   const [partnerName, setPartnerName] = useState(existing?.partnerName ?? "");
-  const [partnerCityId, setPartnerCityId] = useState(defaultPartnerCityId);
+  const [partnerLocation, setPartnerLocation] = useState<Location | null>(
+    existing?.partnerLocation ?? null
+  );
   const [lastVisitDate, setLastVisitDate] = useState(
     existing?.lastVisitISO
       ? new Date(existing.lastVisitISO).toISOString().slice(0, 10)
@@ -893,8 +952,8 @@ function Onboarding({
   const canSave =
     yourName.trim() &&
     partnerName.trim() &&
-    yourCityId &&
-    partnerCityId &&
+    yourLocation !== null &&
+    partnerLocation !== null &&
     nextVisit &&
     lastVisitDate;
 
@@ -903,9 +962,9 @@ function Onboarding({
     if (!canSave) return;
     onSave({
       yourName: yourName.trim(),
-      yourCityId,
+      yourLocation: yourLocation!,
       partnerName: partnerName.trim(),
-      partnerCityId,
+      partnerLocation: partnerLocation!,
       nextVisitISO: new Date(nextVisit).toISOString(),
       lastVisitISO: new Date(lastVisitDate + "T12:00:00").toISOString(),
     });
@@ -944,17 +1003,19 @@ function Onboarding({
       </div>
 
       <form onSubmit={handleSubmit} style={{ display: "grid", gap: 16 }}>
-        {/* YOU */}
         <Pair>
           <Field label="Your name">
             <Input value={yourName} onChange={setYourName} placeholder="Matt" />
           </Field>
           <Field label="Your city">
-            <CitySelect value={yourCityId} onChange={setYourCityId} />
+            <CityAutocomplete
+              value={yourLocation}
+              onChange={setYourLocation}
+              placeholder="Search any city or town…"
+            />
           </Field>
         </Pair>
 
-        {/* THEM */}
         <Pair>
           <Field label="Their name">
             <Input
@@ -964,7 +1025,11 @@ function Onboarding({
             />
           </Field>
           <Field label="Their city">
-            <CitySelect value={partnerCityId} onChange={setPartnerCityId} />
+            <CityAutocomplete
+              value={partnerLocation}
+              onChange={setPartnerLocation}
+              placeholder="e.g. Lake Tahoe"
+            />
           </Field>
         </Pair>
 
@@ -1016,7 +1081,6 @@ function Onboarding({
   );
 }
 
-/* Pair: 2-column grid on wider screens, stacks on mobile. */
 function Pair({ children }: { children: React.ReactNode }) {
   return (
     <div
@@ -1027,6 +1091,252 @@ function Pair({ children }: { children: React.ReactNode }) {
       }}
     >
       {children}
+    </div>
+  );
+}
+
+/* ──────────────────────────────────────────────────────────────── */
+/* City autocomplete (Nominatim → tz lookup)                         */
+/* ──────────────────────────────────────────────────────────────── */
+
+function CityAutocomplete({
+  value,
+  onChange,
+  placeholder,
+}: {
+  value: Location | null;
+  onChange: (loc: Location) => void;
+  placeholder?: string;
+}) {
+  const [query, setQuery] = useState(value?.fullLabel ?? "");
+  const [results, setResults] = useState<Place[]>([]);
+  const [open, setOpen] = useState(false);
+  const [searching, setSearching] = useState(false);
+  const [resolving, setResolving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const debounceRef = useRef<number | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
+
+  // Close dropdown when clicking outside.
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, []);
+
+  // Debounced search.
+  useEffect(() => {
+    if (!open) return;
+    if (debounceRef.current != null) window.clearTimeout(debounceRef.current);
+    if (abortRef.current) abortRef.current.abort();
+
+    const q = query.trim();
+    if (q.length < 2) {
+      setResults([]);
+      setSearching(false);
+      return;
+    }
+    // If the query exactly matches the current value, skip search.
+    if (value && q === value.fullLabel) {
+      setResults([]);
+      return;
+    }
+
+    setSearching(true);
+    setError(null);
+
+    debounceRef.current = window.setTimeout(async () => {
+      const controller = new AbortController();
+      abortRef.current = controller;
+      try {
+        const places = await searchPlaces(q, controller.signal);
+        setResults(places);
+        setSearching(false);
+      } catch (err) {
+        if ((err as Error).name !== "AbortError") {
+          setError("Search failed — try again");
+          setSearching(false);
+        }
+      }
+    }, 320);
+
+    return () => {
+      if (debounceRef.current != null) window.clearTimeout(debounceRef.current);
+    };
+  }, [query, open, value]);
+
+  const selectPlace = async (place: Place) => {
+    setOpen(false);
+    setResults([]);
+    setQuery(place.label);
+    setResolving(true);
+    setError(null);
+    try {
+      let tz = await lookupTimezone(place.lat, place.lng);
+      if (!tz) tz = nearestCuratedTz(place.lat, place.lng);
+      const loc: Location = {
+        label: place.short,
+        fullLabel: place.label,
+        lat: place.lat,
+        lng: place.lng,
+        tz,
+      };
+      onChange(loc);
+    } catch {
+      // Fallback to nearest curated tz.
+      const tz = nearestCuratedTz(place.lat, place.lng);
+      onChange({
+        label: place.short,
+        fullLabel: place.label,
+        lat: place.lat,
+        lng: place.lng,
+        tz,
+      });
+    } finally {
+      setResolving(false);
+    }
+  };
+
+  return (
+    <div ref={wrapRef} style={{ position: "relative" }}>
+      <input
+        type="text"
+        value={query}
+        placeholder={placeholder}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          setOpen(true);
+        }}
+        onFocus={() => {
+          if (query.trim().length >= 2) setOpen(true);
+        }}
+        autoComplete="off"
+        spellCheck={false}
+        style={inputStyle}
+      />
+
+      {/* Confirmation / status line under the input */}
+      {value && !open && (
+        <div
+          style={{
+            ...type.bodySm,
+            color: c.muted,
+            marginTop: 4,
+            paddingLeft: 2,
+          }}
+        >
+          📍 {value.fullLabel}
+          {value.tz && (
+            <span style={{ color: c.mutedSoft, marginLeft: 6 }}>
+              · {value.tz.replace(/_/g, " ")}
+            </span>
+          )}
+        </div>
+      )}
+      {resolving && (
+        <div
+          style={{
+            ...type.bodySm,
+            color: c.muted,
+            marginTop: 4,
+            paddingLeft: 2,
+          }}
+        >
+          Detecting timezone…
+        </div>
+      )}
+
+      {open && (
+        <div
+          style={{
+            position: "absolute",
+            top: "100%",
+            left: 0,
+            right: 0,
+            marginTop: 4,
+            background: c.canvas,
+            border: `1px solid ${c.hairline}`,
+            borderRadius: tokens.radius.md,
+            boxShadow:
+              "0 4px 16px rgba(10,10,10,0.08), 0 1px 3px rgba(10,10,10,0.06)",
+            zIndex: 20,
+            maxHeight: 280,
+            overflowY: "auto",
+          }}
+        >
+          {searching && (
+            <div
+              style={{
+                padding: "12px 14px",
+                ...type.bodySm,
+                color: c.muted,
+              }}
+            >
+              Searching…
+            </div>
+          )}
+          {!searching && results.length === 0 && query.trim().length >= 2 && (
+            <div
+              style={{
+                padding: "12px 14px",
+                ...type.bodySm,
+                color: c.muted,
+              }}
+            >
+              {error ?? "No matches — try a different spelling"}
+            </div>
+          )}
+          {!searching &&
+            results.map((p, i) => (
+              <button
+                key={`${p.label}-${i}`}
+                type="button"
+                onClick={() => selectPlace(p)}
+                style={{
+                  display: "block",
+                  width: "100%",
+                  textAlign: "left",
+                  padding: "10px 14px",
+                  background: "transparent",
+                  border: "none",
+                  cursor: "pointer",
+                  ...type.bodyMd,
+                  color: c.ink,
+                  fontFamily: FONT,
+                  borderBottom:
+                    i < results.length - 1
+                      ? `1px solid ${c.hairlineSoft}`
+                      : "none",
+                }}
+              >
+                <div style={{ fontWeight: 500 }}>{p.short}</div>
+                {p.short !== p.label && (
+                  <div style={{ ...type.bodySm, color: c.muted, marginTop: 2 }}>
+                    {p.label}
+                  </div>
+                )}
+              </button>
+            ))}
+          {!searching && results.length > 0 && (
+            <div
+              style={{
+                padding: "8px 14px",
+                ...type.bodySm,
+                color: c.mutedSoft,
+                borderTop: `1px solid ${c.hairlineSoft}`,
+                background: c.surfaceSoft,
+              }}
+            >
+              Geocoded by OpenStreetMap
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -1109,27 +1419,5 @@ function Input({
       placeholder={placeholder}
       style={inputStyle}
     />
-  );
-}
-
-function CitySelect({
-  value,
-  onChange,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-}) {
-  return (
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      style={{ ...inputStyle, appearance: "none" }}
-    >
-      {CITIES_SORTED.map((city: CityEntry) => (
-        <option key={city.id} value={city.id}>
-          {city.city}, {city.region}
-        </option>
-      ))}
-    </select>
   );
 }
