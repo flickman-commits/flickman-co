@@ -1130,47 +1130,74 @@ type TrackedFlight = {
   target: number;
 };
 
+type FlightOffer = {
+  airline: string;
+  number: string;
+  origin: string;
+  destination: string;
+  departureDate: string; // YYYY-MM-DD
+  price: number;
+  currency: string;
+  stops: number;
+  deepLink: string;
+};
+
+const TARGET_PRICE = 300;
+
 function FlightTrackerCard({ settings }: { settings: Settings }) {
   const { bg, fg } = cardColors("ochre");
 
-  // Placeholder data — wire to a real flight API later. Both origins are
-  // captured explicitly during onboarding (with sensible defaults).
-  const here = settings.yourAirport || nearestAirport(settings.yourLocation.label);
+  const here =
+    settings.yourAirport || nearestAirport(settings.yourLocation.label);
   const there =
     settings.partnerAirport || nearestAirport(settings.partnerLocation.label);
 
-  const flights: TrackedFlight[] = [
-    {
-      airline: "DL",
-      airlineColor: "#C8102E",
-      number: "245",
-      from: here,
-      to: there,
-      date: "Jun 12",
-      price: 342,
-      target: 300,
-    },
-    {
-      airline: "UA",
-      airlineColor: "#005DAA",
-      number: "1502",
-      from: there,
-      to: here,
-      date: "Jun 28",
-      price: 389,
-      target: 300,
-    },
-    {
-      airline: "B6",
-      airlineColor: "#0033A0",
-      number: "718",
-      from: here,
-      to: there,
-      date: "Jul 4",
-      price: 268,
-      target: 300,
-    },
-  ];
+  const [state, setState] = useState<
+    | { kind: "loading" }
+    | { kind: "real"; flights: FlightOffer[] }
+    | { kind: "placeholder"; flights: TrackedFlight[] }
+    | { kind: "error"; message: string }
+  >({ kind: "loading" });
+
+  useEffect(() => {
+    let cancelled = false;
+    setState({ kind: "loading" });
+
+    fetch(`/api/long-distance/flights?origin=${here}&destination=${there}`)
+      .then(async (r) => {
+        if (!r.ok) throw new Error(`Server ${r.status}`);
+        return r.json();
+      })
+      .then((data: { configured: boolean; flights?: FlightOffer[] }) => {
+        if (cancelled) return;
+        if (!data.configured) {
+          setState({
+            kind: "placeholder",
+            flights: placeholderFlights(here, there),
+          });
+          return;
+        }
+        if (!data.flights || data.flights.length === 0) {
+          setState({
+            kind: "placeholder",
+            flights: placeholderFlights(here, there),
+          });
+          return;
+        }
+        setState({ kind: "real", flights: data.flights });
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setState({
+          kind: "error",
+          message: err instanceof Error ? err.message : "Couldn't fetch flights",
+        });
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [here, there]);
 
   return (
     <article
@@ -1192,7 +1219,7 @@ function FlightTrackerCard({ settings }: { settings: Settings }) {
             letterSpacing: -0.2,
           }}
         >
-          Flight tracker
+          Flight tracker · {here} → {there}
         </h3>
         <p
           style={{
@@ -1202,18 +1229,53 @@ function FlightTrackerCard({ settings }: { settings: Settings }) {
             fontStyle: "italic",
           }}
         >
-          Waiting for it to go below $300.
+          {state.kind === "placeholder"
+            ? "Showing sample flights — connect Amadeus for live prices."
+            : `Waiting for it to go below $${TARGET_PRICE}.`}
         </p>
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {flights.map((f, i) => (
-          <FlightRow key={i} flight={f} />
-        ))}
-      </div>
+      {state.kind === "loading" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {[0, 1, 2, 3].map((i) => (
+            <FlightRowSkeleton key={i} />
+          ))}
+        </div>
+      )}
+
+      {state.kind === "real" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {state.flights.map((f, i) => (
+            <RealFlightRow key={i} flight={f} />
+          ))}
+        </div>
+      )}
+
+      {state.kind === "placeholder" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {state.flights.map((f, i) => (
+            <FlightRow key={i} flight={f} />
+          ))}
+        </div>
+      )}
+
+      {state.kind === "error" && (
+        <div
+          style={{
+            ...type.bodySm,
+            color: c.body,
+            padding: "10px 12px",
+            background: "rgba(255,255,255,0.5)",
+            borderRadius: tokens.radius.md,
+            fontStyle: "italic",
+          }}
+        >
+          Couldn&rsquo;t reach the flight service ({state.message}).
+        </div>
+      )}
 
       <button
-        onClick={() => alert("Coming soon!")}
+        onClick={() => alert("Adding more routes coming soon!")}
         style={{
           ...type.button,
           background: c.primary,
@@ -1230,6 +1292,234 @@ function FlightTrackerCard({ settings }: { settings: Settings }) {
       </button>
     </article>
   );
+}
+
+function placeholderFlights(origin: string, destination: string): TrackedFlight[] {
+  // Used when Amadeus isn't configured. Three made-up rows in the same shape
+  // so the layout/colors don't shift between modes.
+  return [
+    {
+      airline: "DL",
+      airlineColor: "#C8102E",
+      number: "245",
+      from: origin,
+      to: destination,
+      date: "Jun 12",
+      price: 342,
+      target: TARGET_PRICE,
+    },
+    {
+      airline: "UA",
+      airlineColor: "#005DAA",
+      number: "1502",
+      from: origin,
+      to: destination,
+      date: "Jun 19",
+      price: 389,
+      target: TARGET_PRICE,
+    },
+    {
+      airline: "B6",
+      airlineColor: "#0033A0",
+      number: "718",
+      from: origin,
+      to: destination,
+      date: "Jul 4",
+      price: 268,
+      target: TARGET_PRICE,
+    },
+  ];
+}
+
+/* Skeleton row shown while Amadeus is loading. */
+function FlightRowSkeleton() {
+  return (
+    <div
+      style={{
+        background: "rgba(255,255,255,0.5)",
+        borderRadius: tokens.radius.md,
+        padding: "14px 14px",
+        display: "grid",
+        gridTemplateColumns: "32px 1fr 64px",
+        gap: 12,
+        alignItems: "center",
+      }}
+    >
+      <div
+        style={{
+          width: 32,
+          height: 32,
+          borderRadius: tokens.radius.sm,
+          background: "rgba(10,10,10,0.08)",
+        }}
+      />
+      <div>
+        <div
+          style={{
+            height: 12,
+            background: "rgba(10,10,10,0.1)",
+            borderRadius: 4,
+            width: "65%",
+          }}
+        />
+        <div
+          style={{
+            height: 9,
+            background: "rgba(10,10,10,0.06)",
+            borderRadius: 4,
+            width: "30%",
+            marginTop: 6,
+          }}
+        />
+      </div>
+      <div
+        style={{
+          height: 16,
+          background: "rgba(10,10,10,0.1)",
+          borderRadius: 4,
+        }}
+      />
+    </div>
+  );
+}
+
+/** Real (Amadeus-sourced) flight row. */
+function RealFlightRow({ flight }: { flight: FlightOffer }) {
+  const belowTarget = flight.price <= TARGET_PRICE;
+  const airlineColor = airlineBrandColor(flight.airline);
+  const dateLabel = formatFlightDate(flight.departureDate);
+
+  return (
+    <a
+      href={flight.deepLink}
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{
+        background: "rgba(255,255,255,0.55)",
+        borderRadius: tokens.radius.md,
+        padding: "12px 14px",
+        display: "grid",
+        gridTemplateColumns: "auto 1fr auto",
+        alignItems: "center",
+        gap: 12,
+        textDecoration: "none",
+        color: c.ink,
+      }}
+    >
+      <AirlineBadge code={flight.airline} color={airlineColor} />
+      <div style={{ minWidth: 0 }}>
+        <div
+          style={{
+            fontFamily: FONT,
+            fontSize: 14,
+            fontWeight: 600,
+            color: c.ink,
+            letterSpacing: -0.1,
+          }}
+        >
+          {flight.airline} {flight.number}
+          <span style={{ color: c.muted, fontWeight: 500, marginLeft: 8 }}>
+            {flight.origin} → {flight.destination}
+          </span>
+        </div>
+        <div
+          style={{
+            ...type.bodySm,
+            fontSize: 12,
+            color: c.muted,
+            marginTop: 1,
+          }}
+        >
+          {dateLabel}
+          {flight.stops > 0 && (
+            <span style={{ marginLeft: 8 }}>
+              · {flight.stops} {flight.stops === 1 ? "stop" : "stops"}
+            </span>
+          )}
+        </div>
+      </div>
+      <div style={{ textAlign: "right" }}>
+        <div
+          style={{
+            fontFamily: FONT,
+            fontSize: 16,
+            fontWeight: 700,
+            color: belowTarget ? "#16a34a" : c.ink,
+            letterSpacing: -0.3,
+            fontVariantNumeric: "tabular-nums",
+          }}
+        >
+          ${Math.round(flight.price)}
+        </div>
+        <div
+          style={{
+            ...type.bodySm,
+            fontSize: 11,
+            color: belowTarget ? "#16a34a" : c.muted,
+            marginTop: 1,
+            fontWeight: 600,
+          }}
+        >
+          {belowTarget ? "BELOW TARGET" : `↓ to $${TARGET_PRICE}`}
+        </div>
+      </div>
+    </a>
+  );
+}
+
+function formatFlightDate(yyyymmdd: string): string {
+  const [y, m, d] = yyyymmdd.split("-").map(Number);
+  const date = new Date(y, m - 1, d);
+  return new Intl.DateTimeFormat(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  }).format(date);
+}
+
+/** Common-carrier brand colors. Falls back to ink for unknown. */
+function airlineBrandColor(code: string): string {
+  const map: Record<string, string> = {
+    AA: "#0078D2",
+    AC: "#D22630",
+    AF: "#002157",
+    AS: "#01426A",
+    AV: "#E40520",
+    AY: "#0A0",
+    AZ: "#1A1A1A",
+    B6: "#0033A0",
+    BA: "#075AAA",
+    CX: "#006D63",
+    DL: "#C8102E",
+    EK: "#D71921",
+    EY: "#BD8B13",
+    F9: "#00824B",
+    FI: "#0F2D4C",
+    G4: "#03A8E1",
+    HA: "#A6093D",
+    IB: "#D70F3D",
+    JL: "#C8102E",
+    KE: "#00256A",
+    KL: "#00A1DE",
+    LH: "#05164D",
+    LX: "#E30613",
+    NH: "#13448F",
+    NK: "#FFCB05",
+    OS: "#E2231A",
+    OZ: "#D5006D",
+    QF: "#E40000",
+    QR: "#5A1F39",
+    SK: "#003C71",
+    SQ: "#F99F1C",
+    SU: "#1B315E",
+    TK: "#C70A0C",
+    UA: "#005DAA",
+    VS: "#E10A0A",
+    VY: "#FFCB05",
+    WN: "#304CB2",
+    WS: "#0F69C4",
+  };
+  return map[code.toUpperCase()] ?? c.ink;
 }
 
 function FlightRow({ flight }: { flight: TrackedFlight }) {
