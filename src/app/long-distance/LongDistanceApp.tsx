@@ -8,7 +8,8 @@ import {
   useState,
 } from "react";
 import { tokens, type } from "./lib/design";
-import { continentPathStrings, project } from "./lib/geo";
+import { project } from "./lib/geo";
+import { LAND_PATH, BORDER_PATH } from "./lib/worldmap";
 import {
   CITIES,
   resolveCity,
@@ -414,7 +415,6 @@ function MiniWorldMap({
 }) {
   const a = project(coordsA[0], coordsA[1]);
   const b = project(coordsB[0], coordsB[1]);
-  const paths = useMemo(() => continentPathStrings(), []);
   const viewBox = useMemo(
     () => computeViewBox(a, b, MAP_ASPECT, MAP_PAD_PCT),
     [a, b]
@@ -443,19 +443,27 @@ function MiniWorldMap({
         style={{ width: "100%", height: "100%", display: "block" }}
         aria-hidden
       >
-        <g fill={c.surfaceStrong} stroke="none">
-          {paths.map((d, i) => (
-            <path key={i} d={d} />
-          ))}
-        </g>
+        {/* Real geography from Natural Earth (110m). Land first, then
+            hair-thin country borders on top for a touch of realism. */}
+        <path d={LAND_PATH} fill={c.surfaceStrong} stroke="none" />
+        <path
+          d={BORDER_PATH}
+          fill="none"
+          stroke={c.canvas}
+          strokeWidth={0.25}
+          strokeLinejoin="round"
+          opacity={0.85}
+          vectorEffect="non-scaling-stroke"
+        />
 
+        {/* Connecting great-circle-ish curve */}
         <path
           d={curve}
           fill="none"
           stroke={c.brandPink}
           strokeWidth={0.6}
           strokeDasharray="1.4,1.4"
-          opacity={0.75}
+          opacity={0.8}
         />
 
         <Pin x={a.x} y={a.y} />
