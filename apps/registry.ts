@@ -61,10 +61,10 @@ export const apps: AppEntry[] = [
   },
   {
     slug: "long-distance",
-    name: "Long Distance Loves",
+    name: "Long Distance Lovers",
     icon: "💌",
     description:
-      "Daily rituals to help long-distance couples feel close — and eventually close the gap.",
+      "Daily actions to strengthen long-distance relationships — and eventually close the gap.",
     url: "/long-distance",
     createdAt: "2026-05-21",
   },

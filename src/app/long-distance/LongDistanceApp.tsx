@@ -2,7 +2,13 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { tokens, type } from "./lib/design";
-import { coordsFor, continentPathStrings, project } from "./lib/geo";
+import { continentPathStrings, project } from "./lib/geo";
+import {
+  CITIES_SORTED,
+  resolveCity,
+  findCityIdByTimezone,
+  type CityEntry,
+} from "./lib/cities";
 
 const c = tokens.color;
 const FONT = tokens.fontFamily;
@@ -14,20 +20,41 @@ const SETTINGS_KEY = "ldl-settings:v1";
 
 type Settings = {
   yourName: string;
+  yourCityId: string;
   partnerName: string;
-  yourTimezone: string;
-  partnerTimezone: string;
+  partnerCityId: string;
   nextVisitISO: string;
-  /** When the current "wait" started — used to fill the progress bar. */
-  waitStartISO?: string;
+  /** When you last saw each other in person — anchors the progress bar. */
+  lastVisitISO: string;
 };
 
+/** Read whatever's in storage, including older shapes, and normalize. */
 function loadSettings(): Settings | null {
   if (typeof window === "undefined") return null;
   try {
     const raw = window.localStorage.getItem(SETTINGS_KEY);
     if (!raw) return null;
-    return JSON.parse(raw) as Settings;
+    const obj = JSON.parse(raw) as Partial<Settings> & {
+      yourTimezone?: string;
+      partnerTimezone?: string;
+      waitStartISO?: string;
+    };
+
+    if (!obj.yourName || !obj.partnerName || !obj.nextVisitISO) return null;
+
+    return {
+      yourName: obj.yourName,
+      yourCityId:
+        obj.yourCityId ?? findCityIdByTimezone(obj.yourTimezone ?? ""),
+      partnerName: obj.partnerName,
+      partnerCityId:
+        obj.partnerCityId ?? findCityIdByTimezone(obj.partnerTimezone ?? ""),
+      nextVisitISO: obj.nextVisitISO,
+      lastVisitISO:
+        obj.lastVisitISO ??
+        obj.waitStartISO ??
+        new Date(Date.now() - 30 * 86_400_000).toISOString(),
+    };
   } catch {
     return null;
   }
@@ -47,39 +74,6 @@ function browserTimezone(): string {
   }
 }
 
-const TIMEZONE_OPTIONS = [
-  "America/New_York",
-  "America/Chicago",
-  "America/Denver",
-  "America/Los_Angeles",
-  "America/Anchorage",
-  "America/Honolulu",
-  "America/Toronto",
-  "America/Vancouver",
-  "America/Mexico_City",
-  "America/Sao_Paulo",
-  "Europe/London",
-  "Europe/Paris",
-  "Europe/Berlin",
-  "Europe/Madrid",
-  "Europe/Amsterdam",
-  "Europe/Stockholm",
-  "Europe/Athens",
-  "Africa/Cairo",
-  "Africa/Johannesburg",
-  "Asia/Dubai",
-  "Asia/Karachi",
-  "Asia/Kolkata",
-  "Asia/Bangkok",
-  "Asia/Shanghai",
-  "Asia/Hong_Kong",
-  "Asia/Singapore",
-  "Asia/Tokyo",
-  "Asia/Seoul",
-  "Australia/Sydney",
-  "Pacific/Auckland",
-];
-
 /* ──────────────────────────────────────────────────────────────── */
 /* Root                                                              */
 /* ──────────────────────────────────────────────────────────────── */
@@ -94,23 +88,11 @@ export default function LongDistanceApp() {
     setMounted(true);
   }, []);
 
-  const applySettings = useCallback(
-    (s: Settings) => {
-      // If the next-visit date changed (or there's no wait anchor yet),
-      // reset the progress bar's start point to "right now".
-      const next: Settings = { ...s };
-      const visitChanged = !settings || settings.nextVisitISO !== s.nextVisitISO;
-      if (visitChanged || !s.waitStartISO) {
-        next.waitStartISO = new Date().toISOString();
-      } else {
-        next.waitStartISO = s.waitStartISO;
-      }
-      setSettings(next);
-      saveSettings(next);
-      setEditing(false);
-    },
-    [settings]
-  );
+  const applySettings = useCallback((s: Settings) => {
+    setSettings(s);
+    saveSettings(s);
+    setEditing(false);
+  }, []);
 
   if (!mounted) {
     return (
@@ -149,7 +131,7 @@ export default function LongDistanceApp() {
 }
 
 /* ──────────────────────────────────────────────────────────────── */
-/* Main view — compact top + bento daily view + resources           */
+/* Main view                                                         */
 /* ──────────────────────────────────────────────────────────────── */
 
 function MainView({
@@ -162,7 +144,7 @@ function MainView({
   return (
     <main>
       <CompactTop settings={settings} />
-      <DailyViewSection />
+      <DailyActionsSection />
       <ResourcesSection />
       <Footer onEdit={onEdit} />
     </main>
@@ -205,12 +187,9 @@ function CompactTop({ settings }: { settings: Settings }) {
 }
 
 function VisitProgress({ settings }: { settings: Settings }) {
-  const now = useNow(60_000); // minute granularity is enough for the bar
+  const now = useNow(60_000);
   const visit = new Date(settings.nextVisitISO).getTime();
-  const start =
-    settings.waitStartISO != null
-      ? new Date(settings.waitStartISO).getTime()
-      : Date.now() - 30 * 86_400_000;
+  const start = new Date(settings.lastVisitISO).getTime();
 
   const totalMs = Math.max(1, visit - start);
   const elapsed = Math.max(0, Math.min(totalMs, now - start));
@@ -231,14 +210,10 @@ function VisitProgress({ settings }: { settings: Settings }) {
         <div style={{ ...type.captionUppercase, color: c.muted }}>
           Time till next visit
         </div>
-        <div
-          style={{
-            ...type.caption,
-            color: c.ink,
-            fontWeight: 600,
-          }}
-        >
-          {reunited ? "Together now ♥" : `${daysLeft} ${daysLeft === 1 ? "day" : "days"}`}
+        <div style={{ ...type.caption, color: c.ink, fontWeight: 600 }}>
+          {reunited
+            ? "Together now ♥"
+            : `${daysLeft} ${daysLeft === 1 ? "day" : "days"}`}
         </div>
       </div>
 
@@ -268,22 +243,35 @@ function VisitProgress({ settings }: { settings: Settings }) {
 
 function DualTimeMap({ settings }: { settings: Settings }) {
   const now = useNow(1000);
-  const yourTime = formatTime(now, settings.yourTimezone);
-  const partnerTime = formatTime(now, settings.partnerTimezone);
-  const ahead = describeAhead(settings);
+  const youCity = resolveCity(settings.yourCityId);
+  const partnerCity = resolveCity(settings.partnerCityId);
+
+  // Order so that whoever is behind appears on the left.
+  const youOffset = getOffsetMinutes(youCity.tz, now);
+  const partnerOffset = getOffsetMinutes(partnerCity.tz, now);
+  const youIsBehind = youOffset <= partnerOffset;
+  const left = youIsBehind
+    ? { name: settings.yourName, city: youCity, time: formatTime(now, youCity.tz) }
+    : { name: settings.partnerName, city: partnerCity, time: formatTime(now, partnerCity.tz) };
+  const right = youIsBehind
+    ? { name: settings.partnerName, city: partnerCity, time: formatTime(now, partnerCity.tz) }
+    : { name: settings.yourName, city: youCity, time: formatTime(now, youCity.tz) };
+
+  // Ahead/behind sentence — always describes the partner from "your" point of view.
+  const aheadLabel = describeAhead(youCity.tz, partnerCity.tz, settings.partnerName);
 
   return (
     <section
       style={{
         background: c.surfaceCard,
         borderRadius: tokens.radius.lg,
-        padding: 16,
+        padding: 14,
         marginBottom: 24,
       }}
     >
       <MiniWorldMap
-        youCoords={coordsFor(settings.yourTimezone)}
-        partnerCoords={coordsFor(settings.partnerTimezone)}
+        coordsA={left.city.coords}
+        coordsB={right.city.coords}
       />
 
       <div
@@ -291,30 +279,30 @@ function DualTimeMap({ settings }: { settings: Settings }) {
           display: "grid",
           gridTemplateColumns: "1fr 1fr",
           gap: 8,
-          marginTop: 12,
+          marginTop: 10,
         }}
       >
-        <TimeCol label={settings.yourName} time={yourTime.time} city={yourTime.city} />
+        <TimeCol label={left.name} time={left.time.time} city={left.city.city} />
         <TimeCol
-          label={settings.partnerName}
-          time={partnerTime.time}
-          city={partnerTime.city}
+          label={right.name}
+          time={right.time.time}
+          city={right.city.city}
           align="right"
         />
       </div>
 
-      {ahead && (
+      {aheadLabel && (
         <div
           style={{
             ...type.caption,
             color: c.muted,
             textAlign: "center",
-            marginTop: 10,
-            paddingTop: 10,
+            marginTop: 8,
+            paddingTop: 8,
             borderTop: `1px solid ${c.hairline}`,
           }}
         >
-          {ahead}
+          {aheadLabel}
         </div>
       )}
     </section>
@@ -354,56 +342,63 @@ function TimeCol({
 }
 
 /* ──────────────────────────────────────────────────────────────── */
-/* Mini world map                                                    */
+/* Mini world map — short + auto-zoom to the two pins               */
 /* ──────────────────────────────────────────────────────────────── */
 
-function MiniWorldMap({
-  youCoords,
-  partnerCoords,
-}: {
-  youCoords: [number, number];
-  partnerCoords: [number, number];
-}) {
-  const a = project(youCoords[0], youCoords[1]);
-  const b = project(partnerCoords[0], partnerCoords[1]);
-  const paths = useMemo(() => continentPathStrings(), []);
+const MAP_ASPECT = 2.6; // width / height
+const MAP_PAD_PCT = 0.6; // padding around bounding box (60% of larger dimension)
 
-  // Curve the connecting line slightly for visual interest (great-circle vibe).
-  const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 - 18 };
-  const curve = `M ${a.x.toFixed(1)},${a.y.toFixed(1)} Q ${mid.x.toFixed(1)},${mid.y.toFixed(1)} ${b.x.toFixed(1)},${b.y.toFixed(1)}`;
+function MiniWorldMap({
+  coordsA,
+  coordsB,
+}: {
+  coordsA: [number, number];
+  coordsB: [number, number];
+}) {
+  const a = project(coordsA[0], coordsA[1]);
+  const b = project(coordsB[0], coordsB[1]);
+  const paths = useMemo(() => continentPathStrings(), []);
+  const viewBox = useMemo(() => computeViewBox(a, b, MAP_ASPECT, MAP_PAD_PCT), [a, b]);
+
+  // Curve the connecting line slightly for a great-circle feel.
+  const mid = {
+    x: (a.x + b.x) / 2,
+    y: (a.y + b.y) / 2 - Math.max(8, Math.abs(b.x - a.x) * 0.12),
+  };
+  const curve = `M ${a.x.toFixed(2)},${a.y.toFixed(2)} Q ${mid.x.toFixed(2)},${mid.y.toFixed(2)} ${b.x.toFixed(2)},${b.y.toFixed(2)}`;
 
   return (
     <div
       style={{
         background: c.canvas,
         borderRadius: tokens.radius.md,
-        padding: "12px 8px",
+        padding: 8,
+        aspectRatio: `${MAP_ASPECT} / 1`,
+        width: "100%",
+        overflow: "hidden",
       }}
     >
       <svg
-        viewBox="0 0 360 180"
+        viewBox={viewBox}
         preserveAspectRatio="xMidYMid meet"
-        style={{ width: "100%", height: "auto", display: "block" }}
+        style={{ width: "100%", height: "100%", display: "block" }}
         aria-hidden
       >
-        {/* Continents */}
         <g fill={c.surfaceStrong} stroke="none">
           {paths.map((d, i) => (
             <path key={i} d={d} />
           ))}
         </g>
 
-        {/* Connecting curve */}
         <path
           d={curve}
           fill="none"
           stroke={c.brandPink}
-          strokeWidth={1}
-          strokeDasharray="2,2"
-          opacity={0.7}
+          strokeWidth={0.6}
+          strokeDasharray="1.4,1.4"
+          opacity={0.75}
         />
 
-        {/* Pins */}
         <Pin x={a.x} y={a.y} />
         <Pin x={b.x} y={b.y} />
       </svg>
@@ -414,16 +409,64 @@ function MiniWorldMap({
 function Pin({ x, y }: { x: number; y: number }) {
   return (
     <g>
-      {/* Soft glow */}
-      <circle cx={x} cy={y} r={6} fill={c.brandPink} opacity={0.18} />
-      {/* Solid dot with ink ring */}
-      <circle cx={x} cy={y} r={3.2} fill={c.brandPink} stroke={c.ink} strokeWidth={0.6} />
+      <circle cx={x} cy={y} r={3.4} fill={c.brandPink} opacity={0.2} />
+      <circle
+        cx={x}
+        cy={y}
+        r={1.8}
+        fill={c.brandPink}
+        stroke={c.ink}
+        strokeWidth={0.4}
+      />
     </g>
   );
 }
 
+/** Compute a viewBox string tightly fit around two points, padded, matching aspect. */
+function computeViewBox(
+  a: { x: number; y: number },
+  b: { x: number; y: number },
+  aspect: number,
+  padPct: number
+): string {
+  let xMin = Math.min(a.x, b.x);
+  let xMax = Math.max(a.x, b.x);
+  let yMin = Math.min(a.y, b.y);
+  let yMax = Math.max(a.y, b.y);
+
+  const w0 = Math.max(1, xMax - xMin);
+  const h0 = Math.max(1, yMax - yMin);
+  const padX = Math.max(w0 * padPct, 14);
+  const padY = Math.max(h0 * padPct, 14);
+
+  xMin -= padX;
+  xMax += padX;
+  yMin -= padY;
+  yMax += padY;
+
+  let w = xMax - xMin;
+  let h = yMax - yMin;
+
+  // Expand to match the container's aspect ratio so no letterboxing.
+  if (w / h < aspect) {
+    const newW = h * aspect;
+    const extra = (newW - w) / 2;
+    xMin -= extra;
+    xMax += extra;
+    w = newW;
+  } else {
+    const newH = w / aspect;
+    const extra = (newH - h) / 2;
+    yMin -= extra;
+    yMax += extra;
+    h = newH;
+  }
+
+  return `${xMin.toFixed(2)} ${yMin.toFixed(2)} ${w.toFixed(2)} ${h.toFixed(2)}`;
+}
+
 /* ──────────────────────────────────────────────────────────────── */
-/* Daily view — bento cards                                         */
+/* Daily actions — bento                                            */
 /* ──────────────────────────────────────────────────────────────── */
 
 type CardVariant = "pink" | "lavender" | "peach" | "teal" | "ochre" | "cream";
@@ -470,14 +513,14 @@ const BENTO: Array<{
   },
 ];
 
-function DailyViewSection() {
+function DailyActionsSection() {
   return (
     <section style={{ paddingTop: 16, paddingBottom: 16 }}>
-      <div style={{ marginBottom: 24 }}>
+      <div style={{ marginBottom: 18 }}>
         <div
-          style={{ ...type.captionUppercase, color: c.muted, marginBottom: 10 }}
+          style={{ ...type.captionUppercase, color: c.muted, marginBottom: 8 }}
         >
-          Daily view
+          Daily actions
         </div>
         <h2
           style={{
@@ -485,11 +528,10 @@ function DailyViewSection() {
             color: c.ink,
             fontWeight: 500,
             margin: 0,
-            maxWidth: 640,
+            letterSpacing: -0.5,
           }}
         >
-          Most long-distance relationships die because of communication issues.
-          That&rsquo;s not going to happen to you.
+          Strengthen your relationship.
         </h2>
       </div>
 
@@ -501,14 +543,7 @@ function DailyViewSection() {
         }}
       >
         {BENTO.map((card, i) => (
-          <BentoCard
-            key={i}
-            variant={card.variant}
-            problem={card.problem}
-            solution={card.solution}
-            cta={card.cta}
-            span={card.span}
-          />
+          <BentoCard key={i} {...card} />
         ))}
       </div>
     </section>
@@ -628,7 +663,7 @@ function ResourcesSection() {
     <section style={{ paddingTop: 16, paddingBottom: 16 }}>
       <div style={{ marginBottom: 18 }}>
         <div
-          style={{ ...type.captionUppercase, color: c.muted, marginBottom: 10 }}
+          style={{ ...type.captionUppercase, color: c.muted, marginBottom: 8 }}
         >
           Resources
         </div>
@@ -680,13 +715,7 @@ function ResourcesSection() {
             >
               {r.title}
             </h3>
-            <div
-              style={{
-                ...type.bodySm,
-                color: c.muted,
-                marginTop: "auto",
-              }}
-            >
+            <div style={{ ...type.bodySm, color: c.muted, marginTop: "auto" }}>
               {r.source} →
             </div>
           </a>
@@ -732,11 +761,8 @@ function Footer({ onEdit }: { onEdit: () => void }) {
         <GearIcon />
       </button>
       <div style={{ ...type.bodySm, color: c.muted }}>
-        Long Distance Loves · from{" "}
-        <a
-          href="/"
-          style={{ color: c.muted, textDecoration: "underline" }}
-        >
+        Long Distance Lovers · from{" "}
+        <a href="/" style={{ color: c.muted, textDecoration: "underline" }}>
           flickman.co
         </a>
       </div>
@@ -766,17 +792,16 @@ function GearIcon() {
 /* Helpers                                                           */
 /* ──────────────────────────────────────────────────────────────── */
 
-function formatTime(ts: number, tz: string): { time: string; city: string } {
+function formatTime(ts: number, tz: string): { time: string } {
   try {
     const time = new Intl.DateTimeFormat(undefined, {
       hour: "numeric",
       minute: "2-digit",
       timeZone: tz,
     }).format(ts);
-    const city = tz.split("/").pop()?.replace(/_/g, " ") ?? tz;
-    return { time, city };
+    return { time };
   } catch {
-    return { time: "—", city: tz };
+    return { time: "—" };
   }
 }
 
@@ -805,24 +830,24 @@ function getOffsetMinutes(tz: string, ts: number): number {
   return Math.round((asUTC - ts) / 60_000);
 }
 
-function describeAhead(settings: Settings): string {
+function describeAhead(yourTz: string, partnerTz: string, partnerName: string): string {
   try {
     const now = Date.now();
-    const yourOff = getOffsetMinutes(settings.yourTimezone, now);
-    const theirOff = getOffsetMinutes(settings.partnerTimezone, now);
+    const yourOff = getOffsetMinutes(yourTz, now);
+    const theirOff = getOffsetMinutes(partnerTz, now);
     const diff = theirOff - yourOff;
-    if (diff === 0) return `${settings.partnerName} is in the same time zone`;
+    if (diff === 0) return `${partnerName} is in your time zone`;
     const hours = Math.abs(diff) / 60;
     const h = hours % 1 === 0 ? hours.toString() : hours.toFixed(1);
     const dir = diff > 0 ? "ahead" : "behind";
-    return `${settings.partnerName} is ${h} hr ${dir}`;
+    return `${partnerName} is ${h} hr ${dir}`;
   } catch {
     return "";
   }
 }
 
 /* ──────────────────────────────────────────────────────────────── */
-/* Onboarding (same shape as before, Clay primitives)               */
+/* Onboarding                                                        */
 /* ──────────────────────────────────────────────────────────────── */
 
 function Onboarding({
@@ -834,8 +859,16 @@ function Onboarding({
   onCancel?: () => void;
   onSave: (s: Settings) => void;
 }) {
-  const defaultTz = browserTimezone();
-  const tomorrow30 = useMemo(() => {
+  const defaultBrowserTz = browserTimezone();
+  const defaultYourCityId = existing?.yourCityId ?? findCityIdByTimezone(defaultBrowserTz);
+  const defaultPartnerCityId = existing?.partnerCityId ?? "uk-lon";
+
+  const today = useMemo(() => {
+    const d = new Date();
+    d.setHours(12, 0, 0, 0);
+    return d.toISOString().slice(0, 10);
+  }, []);
+  const inThirtyDays = useMemo(() => {
     const d = new Date();
     d.setDate(d.getDate() + 30);
     d.setHours(18, 0, 0, 0);
@@ -843,32 +876,38 @@ function Onboarding({
   }, []);
 
   const [yourName, setYourName] = useState(existing?.yourName ?? "");
+  const [yourCityId, setYourCityId] = useState(defaultYourCityId);
   const [partnerName, setPartnerName] = useState(existing?.partnerName ?? "");
-  const [yourTimezone, setYourTimezone] = useState(
-    existing?.yourTimezone ?? defaultTz
-  );
-  const [partnerTimezone, setPartnerTimezone] = useState(
-    existing?.partnerTimezone ?? "Europe/London"
+  const [partnerCityId, setPartnerCityId] = useState(defaultPartnerCityId);
+  const [lastVisitDate, setLastVisitDate] = useState(
+    existing?.lastVisitISO
+      ? new Date(existing.lastVisitISO).toISOString().slice(0, 10)
+      : today
   );
   const [nextVisit, setNextVisit] = useState(
     existing?.nextVisitISO
       ? new Date(existing.nextVisitISO).toISOString().slice(0, 16)
-      : tomorrow30
+      : inThirtyDays
   );
 
   const canSave =
-    yourName.trim() && partnerName.trim() && yourTimezone && partnerTimezone && nextVisit;
+    yourName.trim() &&
+    partnerName.trim() &&
+    yourCityId &&
+    partnerCityId &&
+    nextVisit &&
+    lastVisitDate;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!canSave) return;
     onSave({
       yourName: yourName.trim(),
+      yourCityId,
       partnerName: partnerName.trim(),
-      yourTimezone,
-      partnerTimezone,
+      partnerCityId,
       nextVisitISO: new Date(nextVisit).toISOString(),
-      waitStartISO: existing?.waitStartISO,
+      lastVisitISO: new Date(lastVisitDate + "T12:00:00").toISOString(),
     });
   };
 
@@ -876,7 +915,7 @@ function Onboarding({
 
   return (
     <main style={{ paddingTop: 48 }}>
-      <div style={{ marginBottom: 40 }}>
+      <div style={{ marginBottom: 32 }}>
         <div
           style={{
             ...type.captionUppercase,
@@ -884,7 +923,7 @@ function Onboarding({
             marginBottom: 12,
           }}
         >
-          Long Distance Loves
+          Long Distance Lovers
         </div>
         <h1
           style={{
@@ -892,6 +931,7 @@ function Onboarding({
             color: c.ink,
             margin: 0,
             fontWeight: 500,
+            letterSpacing: -0.5,
           }}
         >
           {isFirstRun ? "Tell us about the two of you" : "Update the basics"}
@@ -904,18 +944,40 @@ function Onboarding({
       </div>
 
       <form onSubmit={handleSubmit} style={{ display: "grid", gap: 16 }}>
-        <Field label="Your name">
-          <Input value={yourName} onChange={setYourName} placeholder="Matt" />
+        {/* YOU */}
+        <Pair>
+          <Field label="Your name">
+            <Input value={yourName} onChange={setYourName} placeholder="Matt" />
+          </Field>
+          <Field label="Your city">
+            <CitySelect value={yourCityId} onChange={setYourCityId} />
+          </Field>
+        </Pair>
+
+        {/* THEM */}
+        <Pair>
+          <Field label="Their name">
+            <Input
+              value={partnerName}
+              onChange={setPartnerName}
+              placeholder="Nat"
+            />
+          </Field>
+          <Field label="Their city">
+            <CitySelect value={partnerCityId} onChange={setPartnerCityId} />
+          </Field>
+        </Pair>
+
+        <Field label="When did you last see each other?">
+          <input
+            type="date"
+            value={lastVisitDate}
+            max={today}
+            onChange={(e) => setLastVisitDate(e.target.value)}
+            style={inputStyle}
+          />
         </Field>
-        <Field label="Their name">
-          <Input value={partnerName} onChange={setPartnerName} placeholder="Sarah" />
-        </Field>
-        <Field label="Your timezone">
-          <Select value={yourTimezone} onChange={setYourTimezone} options={TIMEZONE_OPTIONS} />
-        </Field>
-        <Field label="Their timezone">
-          <Select value={partnerTimezone} onChange={setPartnerTimezone} options={TIMEZONE_OPTIONS} />
-        </Field>
+
         <Field label="Next time you'll see each other">
           <input
             type="datetime-local"
@@ -927,7 +989,11 @@ function Onboarding({
 
         <div style={{ display: "flex", gap: 12, marginTop: 8 }}>
           {onCancel && (
-            <button type="button" onClick={onCancel} style={{ ...buttonSecondary, flex: 1 }}>
+            <button
+              type="button"
+              onClick={onCancel}
+              style={{ ...buttonSecondary, flex: 1 }}
+            >
               Cancel
             </button>
           )}
@@ -947,6 +1013,21 @@ function Onboarding({
         </div>
       </form>
     </main>
+  );
+}
+
+/* Pair: 2-column grid on wider screens, stacks on mobile. */
+function Pair({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+        gap: 12,
+      }}
+    >
+      {children}
+    </div>
   );
 }
 
@@ -992,10 +1073,18 @@ const buttonSecondary: React.CSSProperties = {
   cursor: "pointer",
 };
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <label style={{ display: "block" }}>
-      <div style={{ ...type.captionUppercase, color: c.muted, marginBottom: 6 }}>
+      <div
+        style={{ ...type.captionUppercase, color: c.muted, marginBottom: 6 }}
+      >
         {label}
       </div>
       {children}
@@ -1023,21 +1112,22 @@ function Input({
   );
 }
 
-function Select({
+function CitySelect({
   value,
   onChange,
-  options,
 }: {
   value: string;
   onChange: (v: string) => void;
-  options: string[];
 }) {
-  const opts = options.includes(value) ? options : [value, ...options];
   return (
-    <select value={value} onChange={(e) => onChange(e.target.value)} style={{ ...inputStyle, appearance: "none" }}>
-      {opts.map((tz) => (
-        <option key={tz} value={tz}>
-          {tz.replace(/_/g, " ")}
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      style={{ ...inputStyle, appearance: "none" }}
+    >
+      {CITIES_SORTED.map((city: CityEntry) => (
+        <option key={city.id} value={city.id}>
+          {city.city}, {city.region}
         </option>
       ))}
     </select>
