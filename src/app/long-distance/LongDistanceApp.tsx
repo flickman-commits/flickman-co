@@ -196,7 +196,7 @@ function MainView({
   return (
     <main>
       <CompactTop settings={settings} />
-      <DailyActionsSection />
+      <DailyActionsSection settings={settings} />
       <ResourcesSection />
       <Footer onEdit={onEdit} />
     </main>
@@ -526,49 +526,26 @@ function computeViewBox(
 
 type CardVariant = "pink" | "lavender" | "peach" | "teal" | "ochre" | "cream";
 
-const BENTO: Array<{
-  variant: CardVariant;
-  span?: "wide";
-  problem: string;
-  solution: string;
-  cta?: string;
-}> = [
-  {
-    variant: "pink",
-    problem: "Feels like you're maintaining but not growing the relationship?",
-    solution: "Ask a deep question of the day.",
-    cta: "Get a question →",
-  },
-  {
-    variant: "lavender",
-    problem: "Feel disconnected from his / her day-to-day?",
-    solution: "Send a morning voice memo with what you're up to.",
-    cta: "Record one →",
-  },
-  {
-    variant: "peach",
-    problem: "Having trouble scheduling time for calls?",
-    solution: "Find the times that work best for both of you.",
-    cta: "Find a time →",
-  },
-  {
-    variant: "teal",
-    span: "wide",
-    problem: "Miss the excitement of a date night?",
-    solution: "Plan a virtual date night together.",
-    cta: "Pick a date →",
-  },
-  {
-    variant: "ochre",
-    span: "wide",
-    problem: "Travel expenses adding up?",
-    solution:
-      "Track flights to each other's cities and get pinged when they're cheap.",
-    cta: "Watch a route →",
-  },
-];
+function cardColors(variant: CardVariant) {
+  const dark = variant === "pink" || variant === "teal";
+  const bg = {
+    pink: c.brandPink,
+    lavender: c.brandLavender,
+    peach: c.brandPeach,
+    teal: c.brandTeal,
+    ochre: c.brandOchre,
+    cream: c.surfaceCard,
+  }[variant];
+  return {
+    dark,
+    bg,
+    fg: dark ? c.onDark : c.ink,
+    muted: dark ? "rgba(255,255,255,0.78)" : c.body,
+  };
+}
 
-function DailyActionsSection() {
+function DailyActionsSection({ settings }: { settings: Settings }) {
+  const partner = settings.partnerName || "them";
   return (
     <section style={{ paddingTop: 16, paddingBottom: 16 }}>
       <div style={{ marginBottom: 18 }}>
@@ -590,45 +567,247 @@ function DailyActionsSection() {
         </h2>
       </div>
 
+      {/* Row 1: small action buttons */}
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-          gap: 12,
+          gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+          gap: 10,
+          marginBottom: 14,
         }}
       >
-        {BENTO.map((card, i) => (
-          <BentoCard key={i} {...card} />
-        ))}
+        <ActionButton
+          variant="pink"
+          icon="💭"
+          title={`Ask ${partner} a deep question`}
+        />
+        <ActionButton
+          variant="lavender"
+          icon="🎙"
+          title={`Send ${partner} a voice memo`}
+        />
+        <ActionButton
+          variant="peach"
+          icon="📞"
+          title={`FaceTime ${partner}`}
+          subtitle={`${partner} is most free 5–8 PM today (per their calendar)`}
+        />
       </div>
+
+      {/* Row 2: date night */}
+      <DateNightCard />
+
+      {/* Row 3: flight tracker */}
+      <FlightTrackerCard settings={settings} />
     </section>
   );
 }
 
-function BentoCard({
+/* Small, snappy action card — compact, like a tap target. */
+function ActionButton({
   variant,
-  problem,
-  solution,
-  cta,
-  span,
+  icon,
+  title,
+  subtitle,
 }: {
   variant: CardVariant;
-  problem: string;
-  solution: string;
-  cta?: string;
-  span?: "wide";
+  icon: string;
+  title: string;
+  subtitle?: string;
 }) {
-  const dark = variant === "pink" || variant === "teal";
-  const bg = {
-    pink: c.brandPink,
-    lavender: c.brandLavender,
-    peach: c.brandPeach,
-    teal: c.brandTeal,
-    ochre: c.brandOchre,
-    cream: c.surfaceCard,
-  }[variant];
-  const fg = dark ? c.onDark : c.ink;
-  const muted = dark ? "rgba(255,255,255,0.78)" : c.body;
+  const { dark, bg, fg, muted } = cardColors(variant);
+  return (
+    <button
+      onClick={() => alert("Coming soon!")}
+      style={{
+        background: bg,
+        color: fg,
+        border: "none",
+        borderRadius: tokens.radius.lg,
+        padding: "14px 14px 16px",
+        cursor: "pointer",
+        textAlign: "left",
+        fontFamily: FONT,
+        display: "flex",
+        flexDirection: "column",
+        gap: 6,
+        minHeight: 96,
+        transition: "transform 120ms ease",
+      }}
+      onPointerDown={(e) => (e.currentTarget.style.transform = "scale(0.985)")}
+      onPointerUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
+      onPointerLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+    >
+      <div style={{ fontSize: 20, lineHeight: 1 }}>{icon}</div>
+      <div
+        style={{
+          fontFamily: FONT,
+          fontSize: 15,
+          fontWeight: 600,
+          letterSpacing: -0.2,
+          lineHeight: 1.3,
+          color: fg,
+        }}
+      >
+        {title}
+      </div>
+      {subtitle && (
+        <div
+          style={{
+            ...type.bodySm,
+            color: dark ? muted : c.muted,
+            fontSize: 12,
+            lineHeight: 1.35,
+          }}
+        >
+          {subtitle}
+        </div>
+      )}
+    </button>
+  );
+}
+
+/* Date night — big teal card with 3 sub-cards inside */
+const DATE_NIGHT_OPTIONS: Array<{ icon: string; name: string }> = [
+  { icon: "🎮", name: "Custom Jeopardy" },
+  { icon: "📸", name: "Photo Roulette" },
+  { icon: "🔎", name: "Scavenger Hunt" },
+];
+
+function DateNightCard() {
+  const { bg, fg } = cardColors("teal");
+  return (
+    <article
+      style={{
+        background: bg,
+        color: fg,
+        borderRadius: tokens.radius.xl,
+        padding: "22px 20px",
+        marginBottom: 14,
+        display: "flex",
+        flexDirection: "column",
+        gap: 16,
+      }}
+    >
+      <div>
+        <div style={{ fontSize: 22, marginBottom: 6 }}>💞</div>
+        <h3
+          style={{
+            ...type.titleMd,
+            color: fg,
+            fontWeight: 600,
+            margin: 0,
+            letterSpacing: -0.2,
+          }}
+        >
+          Reignite the spark with a virtual date night.
+        </h3>
+      </div>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))",
+          gap: 8,
+        }}
+      >
+        {DATE_NIGHT_OPTIONS.map((opt) => (
+          <button
+            key={opt.name}
+            onClick={() => alert("Coming soon!")}
+            style={{
+              background: "rgba(255,255,255,0.1)",
+              color: fg,
+              border: "1px solid rgba(255,255,255,0.18)",
+              borderRadius: tokens.radius.md,
+              padding: "12px 10px",
+              cursor: "pointer",
+              fontFamily: FONT,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 6,
+              transition: "background 120ms ease",
+            }}
+            onPointerEnter={(e) =>
+              (e.currentTarget.style.background = "rgba(255,255,255,0.18)")
+            }
+            onPointerLeave={(e) =>
+              (e.currentTarget.style.background = "rgba(255,255,255,0.1)")
+            }
+          >
+            <span style={{ fontSize: 22, lineHeight: 1 }}>{opt.icon}</span>
+            <span
+              style={{
+                fontFamily: FONT,
+                fontSize: 13,
+                fontWeight: 600,
+                letterSpacing: -0.1,
+                lineHeight: 1.25,
+                textAlign: "center",
+              }}
+            >
+              {opt.name}
+            </span>
+          </button>
+        ))}
+      </div>
+    </article>
+  );
+}
+
+/* Flight tracker — big ochre card with tracked routes inside */
+type TrackedFlight = {
+  airline: string; // 2-letter code
+  airlineColor: string;
+  number: string;
+  from: string;
+  to: string;
+  date: string;
+  price: number;
+  target: number;
+};
+
+function FlightTrackerCard({ settings }: { settings: Settings }) {
+  const { bg, fg } = cardColors("ochre");
+
+  // Placeholder data — wire to a real flight API later.
+  // Routes are based on user-entered cities so the card feels relevant.
+  const here = nearestAirport(settings.yourLocation.label);
+  const there = nearestAirport(settings.partnerLocation.label);
+
+  const flights: TrackedFlight[] = [
+    {
+      airline: "DL",
+      airlineColor: "#C8102E",
+      number: "245",
+      from: here,
+      to: there,
+      date: "Jun 12",
+      price: 342,
+      target: 300,
+    },
+    {
+      airline: "UA",
+      airlineColor: "#005DAA",
+      number: "1502",
+      from: there,
+      to: here,
+      date: "Jun 28",
+      price: 389,
+      target: 300,
+    },
+    {
+      airline: "B6",
+      airlineColor: "#0033A0",
+      number: "718",
+      from: here,
+      to: there,
+      date: "Jul 4",
+      price: 268,
+      target: 300,
+    },
+  ];
 
   return (
     <article
@@ -636,56 +815,202 @@ function BentoCard({
         background: bg,
         color: fg,
         borderRadius: tokens.radius.xl,
-        padding: 20,
-        gridColumn: span === "wide" ? "1 / -1" : undefined,
-        display: "flex",
-        flexDirection: "column",
-        gap: 10,
-        minHeight: 180,
+        padding: "22px 20px",
       }}
     >
-      <p
+      <div style={{ marginBottom: 14 }}>
+        <div style={{ fontSize: 22, marginBottom: 6 }}>✈️</div>
+        <h3
+          style={{
+            ...type.titleMd,
+            color: fg,
+            fontWeight: 600,
+            margin: 0,
+            letterSpacing: -0.2,
+          }}
+        >
+          Flight tracker
+        </h3>
+        <p
+          style={{
+            ...type.bodySm,
+            color: c.body,
+            margin: "4px 0 0",
+            fontStyle: "italic",
+          }}
+        >
+          Waiting for it to go below $300.
+        </p>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {flights.map((f, i) => (
+          <FlightRow key={i} flight={f} />
+        ))}
+      </div>
+
+      <button
+        onClick={() => alert("Coming soon!")}
         style={{
-          ...type.bodySm,
-          color: muted,
-          margin: 0,
-          fontStyle: "italic",
+          ...type.button,
+          background: c.primary,
+          color: c.onPrimary,
+          border: "none",
+          borderRadius: tokens.radius.md,
+          padding: "10px 16px",
+          cursor: "pointer",
+          fontFamily: FONT,
+          marginTop: 14,
         }}
       >
-        {problem}
-      </p>
-      <h3
-        style={{
-          ...type.titleMd,
-          color: fg,
-          margin: 0,
-          letterSpacing: -0.2,
-          fontWeight: 600,
-        }}
-      >
-        {solution}
-      </h3>
-      {cta && (
-        <div style={{ marginTop: "auto" }}>
-          <button
-            onClick={() => alert("Coming soon!")}
-            style={{
-              ...type.button,
-              background: dark ? c.canvas : c.primary,
-              color: dark ? c.ink : c.onPrimary,
-              border: "none",
-              borderRadius: tokens.radius.md,
-              padding: "10px 16px",
-              cursor: "pointer",
-              fontFamily: FONT,
-            }}
-          >
-            {cta}
-          </button>
-        </div>
-      )}
+        Add a route →
+      </button>
     </article>
   );
+}
+
+function FlightRow({ flight }: { flight: TrackedFlight }) {
+  const belowTarget = flight.price <= flight.target;
+  return (
+    <div
+      style={{
+        background: "rgba(255,255,255,0.5)",
+        borderRadius: tokens.radius.md,
+        padding: "12px 14px",
+        display: "grid",
+        gridTemplateColumns: "auto 1fr auto",
+        alignItems: "center",
+        gap: 12,
+      }}
+    >
+      <AirlineBadge code={flight.airline} color={flight.airlineColor} />
+      <div style={{ minWidth: 0 }}>
+        <div
+          style={{
+            fontFamily: FONT,
+            fontSize: 14,
+            fontWeight: 600,
+            color: c.ink,
+            letterSpacing: -0.1,
+          }}
+        >
+          {flight.airline} {flight.number}
+          <span style={{ color: c.muted, fontWeight: 500, marginLeft: 8 }}>
+            {flight.from} → {flight.to}
+          </span>
+        </div>
+        <div
+          style={{
+            ...type.bodySm,
+            fontSize: 12,
+            color: c.muted,
+            marginTop: 1,
+          }}
+        >
+          {flight.date}
+        </div>
+      </div>
+      <div style={{ textAlign: "right" }}>
+        <div
+          style={{
+            fontFamily: FONT,
+            fontSize: 16,
+            fontWeight: 700,
+            color: belowTarget ? "#16a34a" : c.ink,
+            letterSpacing: -0.3,
+            fontVariantNumeric: "tabular-nums",
+          }}
+        >
+          ${flight.price}
+        </div>
+        <div
+          style={{
+            ...type.bodySm,
+            fontSize: 11,
+            color: belowTarget ? "#16a34a" : c.muted,
+            marginTop: 1,
+            fontWeight: 600,
+          }}
+        >
+          {belowTarget ? "BELOW TARGET" : `↓ to $${flight.target}`}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AirlineBadge({ code, color }: { code: string; color: string }) {
+  return (
+    <div
+      style={{
+        width: 32,
+        height: 32,
+        borderRadius: tokens.radius.sm,
+        background: color,
+        color: "white",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontFamily: FONT,
+        fontSize: 11,
+        fontWeight: 700,
+        letterSpacing: 0.4,
+        flexShrink: 0,
+      }}
+    >
+      {code}
+    </div>
+  );
+}
+
+/** Crude city → airport code mapping for the flight card placeholder. */
+function nearestAirport(cityLabel: string): string {
+  const c = cityLabel.toLowerCase();
+  const lookup: Record<string, string> = {
+    "new york": "JFK",
+    brooklyn: "JFK",
+    boston: "BOS",
+    washington: "DCA",
+    miami: "MIA",
+    atlanta: "ATL",
+    chicago: "ORD",
+    austin: "AUS",
+    dallas: "DFW",
+    houston: "IAH",
+    denver: "DEN",
+    "los angeles": "LAX",
+    "san francisco": "SFO",
+    "san diego": "SAN",
+    seattle: "SEA",
+    portland: "PDX",
+    "lake tahoe": "RNO",
+    reno: "RNO",
+    "las vegas": "LAS",
+    toronto: "YYZ",
+    vancouver: "YVR",
+    london: "LHR",
+    paris: "CDG",
+    berlin: "BER",
+    madrid: "MAD",
+    rome: "FCO",
+    amsterdam: "AMS",
+    dublin: "DUB",
+    tokyo: "HND",
+    seoul: "ICN",
+    "hong kong": "HKG",
+    singapore: "SIN",
+    sydney: "SYD",
+    melbourne: "MEL",
+    auckland: "AKL",
+    dubai: "DXB",
+    mumbai: "BOM",
+    delhi: "DEL",
+  };
+  for (const k of Object.keys(lookup)) {
+    if (c.includes(k)) return lookup[k];
+  }
+  // Fall back to the first 3 letters of the city, uppercased.
+  return cityLabel.slice(0, 3).toUpperCase();
 }
 
 /* ──────────────────────────────────────────────────────────────── */
@@ -918,16 +1243,27 @@ function Onboarding({
   onCancel?: () => void;
   onSave: (s: Settings) => void;
 }) {
-  const today = useMemo(() => {
+  // datetime-local needs values formatted as YYYY-MM-DDTHH:mm in *local* time —
+  // toISOString() returns UTC, so we build the string manually to avoid an
+  // off-by-one timezone shift when the user picks today.
+  const toLocalDtValue = (d: Date) => {
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return (
+      `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T` +
+      `${pad(d.getHours())}:${pad(d.getMinutes())}`
+    );
+  };
+
+  const nowDt = useMemo(() => {
     const d = new Date();
-    d.setHours(12, 0, 0, 0);
-    return d.toISOString().slice(0, 10);
+    d.setSeconds(0, 0);
+    return toLocalDtValue(d);
   }, []);
   const inThirtyDays = useMemo(() => {
     const d = new Date();
     d.setDate(d.getDate() + 30);
     d.setHours(18, 0, 0, 0);
-    return d.toISOString().slice(0, 16);
+    return toLocalDtValue(d);
   }, []);
 
   const [yourName, setYourName] = useState(existing?.yourName ?? "");
@@ -938,14 +1274,12 @@ function Onboarding({
   const [partnerLocation, setPartnerLocation] = useState<Location | null>(
     existing?.partnerLocation ?? null
   );
-  const [lastVisitDate, setLastVisitDate] = useState(
-    existing?.lastVisitISO
-      ? new Date(existing.lastVisitISO).toISOString().slice(0, 10)
-      : today
+  const [lastVisit, setLastVisit] = useState(
+    existing?.lastVisitISO ? toLocalDtValue(new Date(existing.lastVisitISO)) : nowDt
   );
   const [nextVisit, setNextVisit] = useState(
     existing?.nextVisitISO
-      ? new Date(existing.nextVisitISO).toISOString().slice(0, 16)
+      ? toLocalDtValue(new Date(existing.nextVisitISO))
       : inThirtyDays
   );
 
@@ -955,7 +1289,7 @@ function Onboarding({
     yourLocation !== null &&
     partnerLocation !== null &&
     nextVisit &&
-    lastVisitDate;
+    lastVisit;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -966,7 +1300,7 @@ function Onboarding({
       partnerName: partnerName.trim(),
       partnerLocation: partnerLocation!,
       nextVisitISO: new Date(nextVisit).toISOString(),
-      lastVisitISO: new Date(lastVisitDate + "T12:00:00").toISOString(),
+      lastVisitISO: new Date(lastVisit).toISOString(),
     });
   };
 
@@ -1035,10 +1369,10 @@ function Onboarding({
 
         <Field label="When did you last see each other?">
           <input
-            type="date"
-            value={lastVisitDate}
-            max={today}
-            onChange={(e) => setLastVisitDate(e.target.value)}
+            type="datetime-local"
+            value={lastVisit}
+            max={nowDt}
+            onChange={(e) => setLastVisit(e.target.value)}
             style={inputStyle}
           />
         </Field>
