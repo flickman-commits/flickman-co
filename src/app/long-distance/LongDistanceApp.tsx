@@ -1230,7 +1230,7 @@ function FlightTrackerCard({ settings }: { settings: Settings }) {
           }}
         >
           {state.kind === "placeholder"
-            ? "Showing sample flights — connect Amadeus for live prices."
+            ? "Showing sample flights — set SERPAPI_KEY for live prices."
             : `Waiting for it to go below $${TARGET_PRICE}.`}
         </p>
       </div>

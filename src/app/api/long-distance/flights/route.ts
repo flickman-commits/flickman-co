@@ -1,25 +1,25 @@
 import { NextResponse, type NextRequest } from "next/server";
 import {
-  cheapestOfferForDate,
-  AmadeusNotConfigured,
+  searchGoogleFlightsOnDate,
+  SerpApiNotConfigured,
   type FlightOfferSummary,
-} from "../../../../app/long-distance/lib/amadeus";
+} from "../../../../app/long-distance/lib/serpapi";
 
 /**
  * GET /api/long-distance/flights?origin=JFK&destination=RNO
  *
  * Returns the cheapest available flight on each of the next four Friday
- * departures from origin → destination, sourced from Amadeus.
+ * departures from origin → destination, sourced from SerpAPI's Google
+ * Flights wrapper.
  *
- * If Amadeus isn't configured we respond 200 with `{ configured: false }`
- * so the UI can fall back to placeholder data without flagging an error.
+ * Responds with `{ configured: false }` (200) when SERPAPI_KEY isn't set,
+ * so the UI can fall back to placeholder data.
  */
 export const dynamic = "force-dynamic";
 
 function nextFridays(count: number): string[] {
   const out: string[] = [];
   const d = new Date();
-  // Days until Friday (5). If today is Friday, jump to next Friday.
   const today = d.getDay();
   const daysUntilFriday = ((5 - today + 7) % 7) || 7;
   d.setDate(d.getDate() + daysUntilFriday);
@@ -53,11 +53,13 @@ export async function GET(req: NextRequest) {
   try {
     const offers = await Promise.all(
       dates.map((date) =>
-        cheapestOfferForDate({ origin, destination, date }).catch((err) => {
-          // Let an individual date fail without taking the whole request down.
-          console.error(`[flights] ${origin}→${destination} ${date}:`, err);
-          return null;
-        })
+        searchGoogleFlightsOnDate({ origin, destination, date }).catch(
+          (err) => {
+            // One date failing shouldn't kill the whole response.
+            console.error(`[flights] ${origin}→${destination} ${date}:`, err);
+            return null;
+          }
+        )
       )
     );
 
@@ -72,7 +74,7 @@ export async function GET(req: NextRequest) {
       flights,
     });
   } catch (err) {
-    if (err instanceof AmadeusNotConfigured) {
+    if (err instanceof SerpApiNotConfigured) {
       return NextResponse.json({ configured: false, flights: [] });
     }
     console.error("[flights] route failed:", err);
