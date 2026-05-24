@@ -19,6 +19,7 @@ import {
   lookupTimezone,
   type Place,
 } from "./lib/geocode";
+import { randomQuestion } from "./lib/questions";
 
 const c = tokens.color;
 const FONT = tokens.fontFamily;
@@ -197,6 +198,7 @@ function MainView({
     <main>
       <CompactTop settings={settings} />
       <DailyActionsSection settings={settings} />
+      <MakeSomeMovesSection settings={settings} />
       <ResourcesSection />
       <Footer onEdit={onEdit} />
     </main>
@@ -215,17 +217,17 @@ function useNow(intervalMs = 1000) {
 function CompactTop({ settings }: { settings: Settings }) {
   return (
     <section style={{ paddingTop: 4 }}>
-      <h2
+      <h1
         style={{
-          ...type.titleLg,
+          ...type.displaySm,
           color: c.ink,
-          margin: "0 0 16px",
-          fontWeight: 500,
-          letterSpacing: -0.5,
+          margin: "0 0 18px",
+          fontWeight: 700,
+          letterSpacing: -0.6,
         }}
       >
         Long Distance Lovers
-      </h2>
+      </h1>
 
       <VisitProgress settings={settings} />
 
@@ -546,6 +548,10 @@ function cardColors(variant: CardVariant) {
 
 function DailyActionsSection({ settings }: { settings: Settings }) {
   const partner = settings.partnerName || "them";
+  const [question, setQuestion] = useState<string | null>(null);
+
+  const askDeepQuestion = () => setQuestion(randomQuestion(question ?? undefined));
+
   return (
     <section style={{ paddingTop: 16, paddingBottom: 16 }}>
       <div style={{ marginBottom: 18 }}>
@@ -567,19 +573,18 @@ function DailyActionsSection({ settings }: { settings: Settings }) {
         </h2>
       </div>
 
-      {/* Row 1: small action buttons */}
       <div
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
           gap: 10,
-          marginBottom: 14,
         }}
       >
         <ActionButton
           variant="pink"
           icon="💭"
           title={`Ask ${partner} a deep question`}
+          onClick={askDeepQuestion}
         />
         <ActionButton
           variant="lavender"
@@ -594,10 +599,149 @@ function DailyActionsSection({ settings }: { settings: Settings }) {
         />
       </div>
 
-      {/* Row 2: date night */}
-      <DateNightCard />
+      {question && (
+        <DeepQuestionReveal
+          question={question}
+          partnerName={partner}
+          onAnother={askDeepQuestion}
+          onClose={() => setQuestion(null)}
+        />
+      )}
+    </section>
+  );
+}
 
-      {/* Row 3: flight tracker */}
+function DeepQuestionReveal({
+  question,
+  partnerName,
+  onAnother,
+  onClose,
+}: {
+  question: string;
+  partnerName: string;
+  onAnother: () => void;
+  onClose: () => void;
+}) {
+  return (
+    <div
+      style={{
+        marginTop: 14,
+        background: c.surfaceCard,
+        border: `1px solid ${c.hairline}`,
+        borderRadius: tokens.radius.xl,
+        padding: 20,
+      }}
+    >
+      <div
+        style={{ ...type.captionUppercase, color: c.muted, marginBottom: 8 }}
+      >
+        Ask {partnerName}
+      </div>
+      <p
+        style={{
+          ...type.titleLg,
+          color: c.ink,
+          margin: 0,
+          fontWeight: 500,
+          letterSpacing: -0.3,
+        }}
+      >
+        “{question}”
+      </p>
+
+      <div
+        style={{
+          display: "flex",
+          gap: 10,
+          marginTop: 16,
+          flexWrap: "wrap",
+        }}
+      >
+        <a
+          href={`sms:&body=${encodeURIComponent(question)}`}
+          style={{
+            ...type.button,
+            background: c.primary,
+            color: c.onPrimary,
+            border: "none",
+            borderRadius: tokens.radius.md,
+            padding: "10px 16px",
+            fontFamily: FONT,
+            textDecoration: "none",
+            display: "inline-flex",
+            alignItems: "center",
+          }}
+        >
+          Text it to {partnerName} →
+        </a>
+        <button
+          onClick={onAnother}
+          style={{
+            ...type.button,
+            background: c.canvas,
+            color: c.ink,
+            border: `1px solid ${c.hairline}`,
+            borderRadius: tokens.radius.md,
+            padding: "10px 16px",
+            cursor: "pointer",
+            fontFamily: FONT,
+          }}
+        >
+          Another →
+        </button>
+        <button
+          onClick={onClose}
+          style={{
+            ...type.button,
+            background: "transparent",
+            color: c.muted,
+            border: "none",
+            padding: "10px 8px",
+            cursor: "pointer",
+            fontFamily: FONT,
+          }}
+        >
+          Close
+        </button>
+      </div>
+
+      <div
+        style={{
+          ...type.bodySm,
+          color: c.mutedSoft,
+          marginTop: 14,
+          fontStyle: "italic",
+        }}
+      >
+        From the Partners are Humans deck.
+      </div>
+    </div>
+  );
+}
+
+function MakeSomeMovesSection({ settings }: { settings: Settings }) {
+  return (
+    <section style={{ paddingTop: 24, paddingBottom: 16 }}>
+      <div style={{ marginBottom: 18 }}>
+        <div
+          style={{ ...type.captionUppercase, color: c.muted, marginBottom: 8 }}
+        >
+          Make some moves
+        </div>
+        <h2
+          style={{
+            ...type.displaySm,
+            color: c.ink,
+            fontWeight: 500,
+            margin: 0,
+            letterSpacing: -0.5,
+          }}
+        >
+          Plan something together.
+        </h2>
+      </div>
+
+      <DateNightCard />
       <FlightTrackerCard settings={settings} />
     </section>
   );
@@ -609,16 +753,18 @@ function ActionButton({
   icon,
   title,
   subtitle,
+  onClick,
 }: {
   variant: CardVariant;
   icon: string;
   title: string;
   subtitle?: string;
+  onClick?: () => void;
 }) {
   const { dark, bg, fg, muted } = cardColors(variant);
   return (
     <button
-      onClick={() => alert("Coming soon!")}
+      onClick={onClick ?? (() => alert("Coming soon!"))}
       style={{
         background: bg,
         color: fg,
