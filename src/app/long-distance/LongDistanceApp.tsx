@@ -24,8 +24,8 @@ import { randomQuestion } from "./lib/questions";
 import {
   useDailyTodos,
   displayedStreak,
-  type TodoKey,
 } from "./lib/todos";
+import { AIRPORTS, searchAirports, resolveAirport } from "./lib/airports";
 
 const c = tokens.color;
 const FONT = tokens.fontFamily;
@@ -53,6 +53,8 @@ type Settings = {
   yourAirport: string;
   partnerName: string;
   partnerLocation: Location;
+  /** Their home airport IATA code (e.g. "RNO"). */
+  partnerAirport: string;
   nextVisitISO: string;
   lastVisitISO: string;
 };
@@ -82,6 +84,7 @@ function loadSettings(): Settings | null {
       partnerCityId?: string;
       waitStartISO?: string;
       yourAirport?: string;
+      partnerAirport?: string;
     };
 
     if (!obj.yourName || !obj.partnerName || !obj.nextVisitISO) return null;
@@ -105,6 +108,8 @@ function loadSettings(): Settings | null {
         obj.yourAirport ?? nearestAirport(yourLocation.label),
       partnerName: obj.partnerName,
       partnerLocation,
+      partnerAirport:
+        obj.partnerAirport ?? nearestAirport(partnerLocation.label),
       nextVisitISO: obj.nextVisitISO,
       lastVisitISO:
         obj.lastVisitISO ??
@@ -1128,11 +1133,11 @@ type TrackedFlight = {
 function FlightTrackerCard({ settings }: { settings: Settings }) {
   const { bg, fg } = cardColors("ochre");
 
-  // Placeholder data — wire to a real flight API later.
-  // Origin uses the user's saved home airport; destination derives from
-  // their partner's city via the small lookup.
+  // Placeholder data — wire to a real flight API later. Both origins are
+  // captured explicitly during onboarding (with sensible defaults).
   const here = settings.yourAirport || nearestAirport(settings.yourLocation.label);
-  const there = nearestAirport(settings.partnerLocation.label);
+  const there =
+    settings.partnerAirport || nearestAirport(settings.partnerLocation.label);
 
   const flights: TrackedFlight[] = [
     {
@@ -1635,15 +1640,24 @@ function Onboarding({
   const [partnerLocation, setPartnerLocation] = useState<Location | null>(
     existing?.partnerLocation ?? null
   );
+  const [partnerAirport, setPartnerAirport] = useState<string>(
+    existing?.partnerAirport ?? ""
+  );
 
-  // Auto-suggest a home airport from the picked city if the user hasn't typed
-  // their own yet. They can override.
+  // Auto-suggest home airports from picked cities if the field is empty.
+  // (Only fires once when location is first set — won't clobber a manual pick.)
   useEffect(() => {
     if (yourLocation && !yourAirport.trim()) {
       setYourAirport(nearestAirport(yourLocation.label));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [yourLocation]);
+  useEffect(() => {
+    if (partnerLocation && !partnerAirport.trim()) {
+      setPartnerAirport(nearestAirport(partnerLocation.label));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [partnerLocation]);
   const [lastVisit, setLastVisit] = useState(
     existing?.lastVisitISO ? toLocalDtValue(new Date(existing.lastVisitISO)) : nowDt
   );
@@ -1653,6 +1667,9 @@ function Onboarding({
       : inThirtyDays
   );
 
+  const yourAirportValid = !!resolveAirport(yourAirport);
+  const partnerAirportValid = !!resolveAirport(partnerAirport);
+
   const canSave =
     yourName.trim() &&
     partnerName.trim() &&
@@ -1660,7 +1677,8 @@ function Onboarding({
     partnerLocation !== null &&
     nextVisit &&
     lastVisit &&
-    yourAirport.trim().length >= 3;
+    yourAirportValid &&
+    partnerAirportValid;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -1668,9 +1686,10 @@ function Onboarding({
     onSave({
       yourName: yourName.trim(),
       yourLocation: yourLocation!,
-      yourAirport: yourAirport.trim().toUpperCase().slice(0, 4),
+      yourAirport: yourAirport.trim().toUpperCase(),
       partnerName: partnerName.trim(),
       partnerLocation: partnerLocation!,
+      partnerAirport: partnerAirport.trim().toUpperCase(),
       nextVisitISO: new Date(nextVisit).toISOString(),
       lastVisitISO: new Date(lastVisit).toISOString(),
     });
@@ -1739,39 +1758,36 @@ function Onboarding({
           </Field>
         </Pair>
 
-        <Field label="Your home airport">
-          <input
-            type="text"
-            value={yourAirport}
-            onChange={(e) =>
-              setYourAirport(e.target.value.toUpperCase().slice(0, 4))
-            }
-            placeholder="JFK"
-            maxLength={4}
-            autoCapitalize="characters"
-            spellCheck={false}
-            style={{
-              ...inputStyle,
-              fontFamily: FONT,
-              letterSpacing: 1,
-              fontWeight: 600,
-            }}
-          />
-          <div
-            style={{
-              ...type.bodySm,
-              color: c.muted,
-              marginTop: 6,
-              padding: "10px 12px",
-              borderRadius: tokens.radius.md,
-              background: c.surfaceSoft,
-              border: `1px solid ${c.hairlineSoft}`,
-            }}
-          >
-            ✈️ This is so we can track flight prices and tell you when
-            it&rsquo;s the cheapest to fly to see your partner.
-          </div>
-        </Field>
+        <Pair>
+          <Field label="Your home airport">
+            <AirportSelect
+              value={yourAirport}
+              onChange={setYourAirport}
+              placeholder="Search airport…"
+            />
+          </Field>
+          <Field label="Their home airport">
+            <AirportSelect
+              value={partnerAirport}
+              onChange={setPartnerAirport}
+              placeholder="Search airport…"
+            />
+          </Field>
+        </Pair>
+        <div
+          style={{
+            ...type.bodySm,
+            color: c.muted,
+            padding: "10px 12px",
+            borderRadius: tokens.radius.md,
+            background: c.surfaceSoft,
+            border: `1px solid ${c.hairlineSoft}`,
+            marginTop: -6,
+          }}
+        >
+          ✈️ This is so we can track flight prices and tell you when
+          it&rsquo;s the cheapest to fly to see your partner.
+        </div>
 
         <Field label="When did you last see each other?">
           <input
@@ -2075,6 +2091,181 @@ function CityAutocomplete({
               Geocoded by OpenStreetMap
             </div>
           )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ──────────────────────────────────────────────────────────────── */
+/* Airport select — local searchable dropdown                       */
+/* ──────────────────────────────────────────────────────────────── */
+
+function AirportSelect({
+  value,
+  onChange,
+  placeholder,
+}: {
+  value: string;
+  onChange: (iata: string) => void;
+  placeholder?: string;
+}) {
+  const resolved = resolveAirport(value);
+  const [query, setQuery] = useState(value);
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  // Keep query synced with external value changes (e.g. auto-fill from city).
+  useEffect(() => {
+    setQuery(value);
+  }, [value]);
+
+  // Close dropdown on outside click.
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
+        setOpen(false);
+        // If query doesn't match a valid IATA, revert to the last good value.
+        if (!resolveAirport(query)) {
+          setQuery(value);
+        }
+      }
+    };
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, [query, value]);
+
+  const results = useMemo(() => {
+    if (!open) return [];
+    return searchAirports(query, 8);
+  }, [query, open]);
+
+  const select = (iata: string) => {
+    setQuery(iata);
+    onChange(iata);
+    setOpen(false);
+  };
+
+  return (
+    <div ref={wrapRef} style={{ position: "relative" }}>
+      <input
+        type="text"
+        value={query}
+        placeholder={placeholder}
+        onChange={(e) => {
+          setQuery(e.target.value.toUpperCase());
+          setOpen(true);
+        }}
+        onFocus={() => setOpen(true)}
+        autoComplete="off"
+        spellCheck={false}
+        style={{ ...inputStyle, letterSpacing: 1, fontWeight: 600 }}
+      />
+
+      {resolved && !open && (
+        <div
+          style={{
+            ...type.bodySm,
+            color: c.muted,
+            marginTop: 4,
+            paddingLeft: 2,
+            lineHeight: 1.35,
+          }}
+        >
+          ✈️ {resolved.name}
+          <span style={{ color: c.mutedSoft, marginLeft: 6 }}>
+            · {resolved.city}, {resolved.country}
+          </span>
+        </div>
+      )}
+
+      {open && (
+        <div
+          style={{
+            position: "absolute",
+            top: "100%",
+            left: 0,
+            right: 0,
+            marginTop: 4,
+            background: c.canvas,
+            border: `1px solid ${c.hairline}`,
+            borderRadius: tokens.radius.md,
+            boxShadow:
+              "0 4px 16px rgba(10,10,10,0.08), 0 1px 3px rgba(10,10,10,0.06)",
+            zIndex: 20,
+            maxHeight: 280,
+            overflowY: "auto",
+          }}
+        >
+          {results.length === 0 && (
+            <div
+              style={{ padding: "12px 14px", ...type.bodySm, color: c.muted }}
+            >
+              No matching airports — try the airport code or a major city
+            </div>
+          )}
+          {results.map((a, i) => (
+            <button
+              key={a.iata}
+              type="button"
+              onClick={() => select(a.iata)}
+              style={{
+                display: "flex",
+                width: "100%",
+                textAlign: "left",
+                padding: "10px 14px",
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+                fontFamily: FONT,
+                gap: 12,
+                alignItems: "center",
+                borderBottom:
+                  i < results.length - 1
+                    ? `1px solid ${c.hairlineSoft}`
+                    : "none",
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: FONT,
+                  fontWeight: 700,
+                  fontSize: 13,
+                  letterSpacing: 1,
+                  background: c.surfaceCard,
+                  borderRadius: tokens.radius.sm,
+                  padding: "4px 8px",
+                  color: c.ink,
+                  flexShrink: 0,
+                }}
+              >
+                {a.iata}
+              </span>
+              <span style={{ minWidth: 0, flex: 1 }}>
+                <span
+                  style={{
+                    fontFamily: FONT,
+                    fontSize: 14,
+                    fontWeight: 600,
+                    color: c.ink,
+                    display: "block",
+                  }}
+                >
+                  {a.city}
+                </span>
+                <span
+                  style={{
+                    ...type.bodySm,
+                    color: c.muted,
+                    fontSize: 12,
+                    display: "block",
+                  }}
+                >
+                  {a.name} · {a.country}
+                </span>
+              </span>
+            </button>
+          ))}
         </div>
       )}
     </div>
