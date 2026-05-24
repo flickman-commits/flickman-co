@@ -1,14 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Playfair_Display } from "next/font/google";
 import LongDistanceApp from "./LongDistanceApp";
-
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  weight: ["400", "600", "700"],
-  style: ["normal", "italic"],
-  variable: "--font-playfair-ldl",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "Long Distance Loves",
@@ -23,9 +14,5 @@ export const viewport: Viewport = {
 };
 
 export default function LongDistancePage() {
-  return (
-    <div className={playfair.variable} style={{ height: "100%" }}>
-      <LongDistanceApp />
-    </div>
-  );
+  return <LongDistanceApp />;
 }

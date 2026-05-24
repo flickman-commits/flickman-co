@@ -2,30 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { questionOfTheDay } from "./lib/questions";
+import { tokens, type } from "./lib/design";
 
-/* ──────────────────────────────────────────────────────────────── */
-/* Palette — warm, dusky, romantic.                                 */
-/* ──────────────────────────────────────────────────────────────── */
-const c = {
-  bg: "#FFF3EB",
-  card: "#FFFFFF",
-  primary: "#E85A77",
-  primaryDark: "#C9415E",
-  accent: "#8E7CC3",
-  heart: "#E85A77",
-  ink: "#3D2E3F",
-  body: "#5D4D60",
-  muted: "#9A8B9D",
-  mutedSoft: "#C2B5C4",
-  hairline: "#F0DDD8",
-  hairlineSoft: "#F8ECE6",
-  surface: "#FBEEE6",
-};
-
-const FONT_DISPLAY =
-  "var(--font-playfair-ldl), 'Playfair Display', 'Cormorant Garamond', Georgia, serif";
-const FONT_BODY =
-  "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
+const c = tokens.color;
+const FONT = tokens.fontFamily;
 
 /* ──────────────────────────────────────────────────────────────── */
 /* Storage                                                          */
@@ -35,9 +15,8 @@ const SETTINGS_KEY = "ldl-settings:v1";
 type Settings = {
   yourName: string;
   partnerName: string;
-  yourTimezone: string; // IANA
-  partnerTimezone: string; // IANA
-  /** ISO datetime (in local time) of next planned reunion. */
+  yourTimezone: string;
+  partnerTimezone: string;
   nextVisitISO: string;
 };
 
@@ -66,7 +45,6 @@ function browserTimezone(): string {
   }
 }
 
-/** A small starter list of common timezones. Expand later if needed. */
 const TIMEZONE_OPTIONS = [
   "America/New_York",
   "America/Chicago",
@@ -101,12 +79,10 @@ const TIMEZONE_OPTIONS = [
 ];
 
 /* ──────────────────────────────────────────────────────────────── */
-/* Component                                                        */
+/* Root                                                              */
 /* ──────────────────────────────────────────────────────────────── */
 
 export default function LongDistanceApp() {
-  // Client-only render: avoids any server/client mismatch with localStorage,
-  // dates, timezones, or browser-detected fields.
   const [mounted, setMounted] = useState(false);
   const [settings, setSettings] = useState<Settings | null>(null);
   const [editing, setEditing] = useState(false);
@@ -123,13 +99,12 @@ export default function LongDistanceApp() {
   }, []);
 
   if (!mounted) {
-    // SSR placeholder — same outer chrome so layout doesn't shift on hydrate.
     return (
       <div
         style={{
           minHeight: "100vh",
-          background: c.bg,
-          fontFamily: FONT_BODY,
+          background: c.canvas,
+          fontFamily: FONT,
         }}
       />
     );
@@ -139,17 +114,14 @@ export default function LongDistanceApp() {
     <div
       style={{
         minHeight: "100vh",
-        background: c.bg,
+        background: c.canvas,
         color: c.ink,
-        fontFamily: FONT_BODY,
-        paddingTop: "max(env(safe-area-inset-top), 12px)",
+        fontFamily: FONT,
+        paddingTop: "max(env(safe-area-inset-top), 16px)",
         paddingBottom: "max(env(safe-area-inset-bottom), 24px)",
       }}
     >
-      {/* Playfair Display is loaded by the server-side page wrapper via
-          next/font — see page.tsx. */}
-
-      <div style={{ maxWidth: 480, margin: "0 auto", padding: "0 20px" }}>
+      <div style={{ maxWidth: 520, margin: "0 auto", padding: "0 20px" }}>
         <TopBar onEdit={() => setEditing(true)} />
 
         {settings && !editing && (
@@ -178,7 +150,7 @@ function TopBar({ onEdit }: { onEdit: () => void }) {
   return (
     <div
       style={{
-        padding: "12px 0 8px",
+        padding: "8px 0 0",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
@@ -187,12 +159,9 @@ function TopBar({ onEdit }: { onEdit: () => void }) {
       <a
         href="/"
         style={{
-          fontSize: 12,
+          ...type.caption,
           color: c.muted,
           textDecoration: "none",
-          letterSpacing: 0.3,
-          textTransform: "uppercase",
-          fontWeight: 600,
         }}
       >
         ← flickman.co
@@ -200,17 +169,14 @@ function TopBar({ onEdit }: { onEdit: () => void }) {
       <button
         onClick={onEdit}
         style={{
-          fontSize: 12,
+          ...type.captionUppercase,
           color: c.muted,
           background: "transparent",
           border: "none",
-          textTransform: "uppercase",
-          letterSpacing: 0.3,
-          fontWeight: 600,
           cursor: "pointer",
           padding: 4,
+          fontFamily: FONT,
         }}
-        aria-label="Settings"
       >
         Settings
       </button>
@@ -236,7 +202,7 @@ function Onboarding({
     const d = new Date();
     d.setDate(d.getDate() + 30);
     d.setHours(18, 0, 0, 0);
-    return d.toISOString().slice(0, 16); // for datetime-local
+    return d.toISOString().slice(0, 16);
   }, []);
 
   const [yourName, setYourName] = useState(existing?.yourName ?? "");
@@ -271,71 +237,72 @@ function Onboarding({
   const isFirstRun = !existing;
 
   return (
-    <main style={{ paddingTop: 24 }}>
-      <div style={{ textAlign: "center", marginBottom: 28 }}>
-        <div style={{ fontSize: 48 }}>💌</div>
+    <main style={{ paddingTop: 48 }}>
+      <div style={{ marginBottom: 40 }}>
+        <div
+          style={{
+            ...type.captionUppercase,
+            color: c.muted,
+            marginBottom: 12,
+          }}
+        >
+          Long Distance Loves
+        </div>
         <h1
           style={{
-            fontFamily: FONT_DISPLAY,
-            fontSize: 32,
-            fontWeight: 600,
+            ...type.displaySm,
             color: c.ink,
-            margin: "8px 0 4px",
-            letterSpacing: -0.3,
+            margin: 0,
+            // The Clay signature: Inter at weight 500 with tight negative
+            // letter-spacing as a Plain Black stand-in.
+            fontWeight: 500,
           }}
         >
           {isFirstRun ? "Tell us about the two of you" : "Update the basics"}
         </h1>
-        <p style={{ color: c.muted, fontSize: 14, margin: 0 }}>
+        <p
+          style={{
+            ...type.bodyMd,
+            color: c.muted,
+            margin: "8px 0 0",
+          }}
+        >
           {isFirstRun
             ? "Everything stays on this device for now."
             : "Saved on this device."}
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} style={{ display: "grid", gap: 14 }}>
+      <form onSubmit={handleSubmit} style={{ display: "grid", gap: 16 }}>
         <Field label="Your name">
           <Input value={yourName} onChange={setYourName} placeholder="Matt" />
         </Field>
         <Field label="Their name">
-          <Input
-            value={partnerName}
-            onChange={setPartnerName}
-            placeholder="Sarah"
-          />
+          <Input value={partnerName} onChange={setPartnerName} placeholder="Sarah" />
         </Field>
         <Field label="Your timezone">
           <Select value={yourTimezone} onChange={setYourTimezone} options={TIMEZONE_OPTIONS} />
         </Field>
         <Field label="Their timezone">
-          <Select
-            value={partnerTimezone}
-            onChange={setPartnerTimezone}
-            options={TIMEZONE_OPTIONS}
-          />
+          <Select value={partnerTimezone} onChange={setPartnerTimezone} options={TIMEZONE_OPTIONS} />
         </Field>
         <Field label="Next time you'll see each other">
           <input
             type="datetime-local"
             value={nextVisit}
             onChange={(e) => setNextVisit(e.target.value)}
-            style={{
-              ...inputStyle,
-              width: "100%",
-            }}
+            style={inputStyle}
           />
         </Field>
 
-        <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
+        <div style={{ display: "flex", gap: 12, marginTop: 8 }}>
           {onCancel && (
             <button
               type="button"
               onClick={onCancel}
               style={{
-                ...buttonBase,
-                background: c.card,
-                color: c.ink,
-                border: `1px solid ${c.hairline}`,
+                ...buttonSecondary,
+                flex: 1,
               }}
             >
               Cancel
@@ -345,11 +312,10 @@ function Onboarding({
             type="submit"
             disabled={!canSave}
             style={{
-              ...buttonBase,
+              ...buttonPrimary,
               flex: 2,
-              background: canSave ? c.primary : c.mutedSoft,
-              color: "#fff",
-              border: "none",
+              background: canSave ? c.primary : c.primaryDisabled,
+              color: canSave ? c.onPrimary : c.muted,
               cursor: canSave ? "pointer" : "not-allowed",
             }}
           >
@@ -367,24 +333,26 @@ function Onboarding({
 
 function MainView({ settings, onEdit }: { settings: Settings; onEdit: () => void }) {
   return (
-    <main style={{ paddingTop: 8, paddingBottom: 8 }}>
+    <main style={{ paddingTop: 12, paddingBottom: 8 }}>
       <Hero settings={settings} />
       <TimeZonesStrip settings={settings} />
-      <SectionHeading>Daily View</SectionHeading>
+      <SectionLabel>Daily View</SectionLabel>
+      {/* Cards cycle through the brand palette: pink → lavender → peach → teal */}
       <VoiceMemoCard partnerName={settings.partnerName} />
       <PartnerCalendarCard settings={settings} />
       <FaceTimeSuggestionCard settings={settings} />
       <QuestionCard partnerName={settings.partnerName} />
-      <div style={{ textAlign: "center", marginTop: 28 }}>
+      <div style={{ textAlign: "center", marginTop: 32 }}>
         <button
           onClick={onEdit}
           style={{
+            ...type.bodySm,
             background: "transparent",
             border: "none",
-            color: c.muted,
+            color: c.ink,
             textDecoration: "underline",
             cursor: "pointer",
-            fontSize: 13,
+            fontFamily: FONT,
           }}
         >
           Update names, timezones, or next visit →
@@ -428,75 +396,70 @@ function Hero({ settings }: { settings: Settings }) {
   }).format(new Date(settings.nextVisitISO));
 
   return (
-    <section
-      style={{
-        textAlign: "center",
-        padding: "28px 0 16px",
-      }}
-    >
+    <section style={{ padding: "32px 0 32px" }}>
       <div
         style={{
-          fontFamily: FONT_DISPLAY,
-          fontSize: 26,
-          fontWeight: 600,
-          color: c.ink,
-          letterSpacing: -0.3,
-          marginBottom: 4,
+          ...type.captionUppercase,
+          color: c.muted,
+          marginBottom: 14,
         }}
       >
-        {settings.yourName} <span style={{ color: c.heart }}>♥</span>{" "}
+        {settings.yourName} <span style={{ color: c.brandPink }}>♥</span>{" "}
         {settings.partnerName}
       </div>
+
       <div
         style={{
-          fontSize: 12,
+          ...type.captionUppercase,
           color: c.muted,
-          textTransform: "uppercase",
-          letterSpacing: 1.5,
-          fontWeight: 700,
-          marginTop: 14,
+          marginBottom: 10,
         }}
       >
-        {reunited ? "You're together right now" : "See each other in"}
+        {reunited ? "You're together right now" : "Next visit in"}
       </div>
 
       {reunited ? (
         <div
           style={{
-            fontFamily: FONT_DISPLAY,
-            fontSize: 36,
-            fontWeight: 600,
-            color: c.primary,
-            marginTop: 6,
-            fontStyle: "italic",
+            ...type.displayMd,
+            color: c.ink,
+            fontWeight: 500,
           }}
         >
           Enjoy every second. 🫶
         </div>
       ) : (
         <>
+          {/* The Clay signature display: huge Inter 500 with negative letter-spacing.
+              Scales down on narrow screens via clamp. */}
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(4, 1fr)",
-              gap: 8,
-              marginTop: 14,
-              maxWidth: 360,
-              marginLeft: "auto",
-              marginRight: "auto",
+              gridTemplateColumns: "repeat(4, auto)",
+              alignItems: "baseline",
+              gap: "0 8px",
+              fontFamily: FONT,
+              fontWeight: 500,
+              fontSize: "clamp(48px, 16vw, 72px)",
+              lineHeight: 1,
+              letterSpacing: "-0.035em",
+              color: c.ink,
+              fontVariantNumeric: "tabular-nums",
             }}
           >
-            <TimeBox value={days} label="days" />
-            <TimeBox value={hours} label="hrs" />
-            <TimeBox value={mins} label="min" />
-            <TimeBox value={secs} label="sec" />
+            <BigUnit value={days} label="d" />
+            <BigSep />
+            <BigUnit value={hours} label="h" />
+            <BigSep />
+            <BigUnit value={mins} label="m" />
+            <BigSep />
+            <BigUnit value={secs} label="s" />
           </div>
           <div
             style={{
-              marginTop: 12,
-              fontSize: 13,
+              ...type.bodyMd,
               color: c.muted,
-              fontFamily: FONT_BODY,
+              marginTop: 14,
             }}
           >
             {fmtVisit}
@@ -507,47 +470,34 @@ function Hero({ settings }: { settings: Settings }) {
   );
 }
 
-function TimeBox({ value, label }: { value: number; label: string }) {
+function BigUnit({ value, label }: { value: number; label: string }) {
   return (
-    <div
-      style={{
-        background: c.card,
-        border: `1px solid ${c.hairline}`,
-        borderRadius: 14,
-        padding: "12px 6px 10px",
-        boxShadow: "0 2px 10px rgba(232,90,119,0.06)",
-      }}
-    >
-      <div
+    <span style={{ display: "inline-flex", alignItems: "baseline", gap: 4 }}>
+      <span>{String(value).padStart(2, "0")}</span>
+      <span
         style={{
-          fontFamily: FONT_DISPLAY,
-          fontSize: 28,
-          fontWeight: 700,
-          color: c.ink,
-          lineHeight: 1,
-          fontVariantNumeric: "tabular-nums",
-        }}
-      >
-        {String(value).padStart(2, "0")}
-      </div>
-      <div
-        style={{
-          fontSize: 10,
+          fontSize: "0.32em",
+          fontWeight: 500,
           color: c.muted,
-          textTransform: "uppercase",
-          letterSpacing: 1,
-          marginTop: 4,
-          fontWeight: 700,
+          letterSpacing: 0,
         }}
       >
         {label}
-      </div>
-    </div>
+      </span>
+    </span>
+  );
+}
+
+function BigSep() {
+  return (
+    <span style={{ color: c.mutedSoft, fontWeight: 500 }} aria-hidden>
+      ·
+    </span>
   );
 }
 
 /* ──────────────────────────────────────────────────────────────── */
-/* Timezones strip                                                  */
+/* Timezones strip — cream card                                      */
 /* ──────────────────────────────────────────────────────────────── */
 
 function TimeZonesStrip({ settings }: { settings: Settings }) {
@@ -559,39 +509,44 @@ function TimeZonesStrip({ settings }: { settings: Settings }) {
   return (
     <section
       style={{
-        background: c.card,
-        border: `1px solid ${c.hairline}`,
-        borderRadius: 18,
-        padding: "16px 18px",
+        background: c.surfaceCard,
+        borderRadius: tokens.radius.lg,
+        padding: "20px 20px",
         marginTop: 16,
-        display: "grid",
-        gridTemplateColumns: "1fr auto 1fr",
-        alignItems: "center",
-        gap: 8,
       }}
     >
-      <TimeColumn label={settings.yourName} time={yourTime.time} city={yourTime.city} />
-      <div style={{ textAlign: "center" }}>
-        <div style={{ fontSize: 18, color: c.heart, lineHeight: 1 }}>♥</div>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr auto 1fr",
+          alignItems: "center",
+          gap: 8,
+        }}
+      >
+        <TimeColumn label={settings.yourName} time={yourTime.time} city={yourTime.city} />
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: 16, color: c.brandPink, lineHeight: 1 }}>♥</div>
+        </div>
+        <TimeColumn
+          label={settings.partnerName}
+          time={partnerTime.time}
+          city={partnerTime.city}
+        />
+      </div>
+      {diffLabel && (
         <div
           style={{
-            fontSize: 9,
+            ...type.captionUppercase,
             color: c.muted,
-            textTransform: "uppercase",
-            letterSpacing: 1,
-            marginTop: 4,
-            fontWeight: 700,
-            whiteSpace: "nowrap",
+            textAlign: "center",
+            marginTop: 12,
+            paddingTop: 12,
+            borderTop: `1px solid ${c.hairline}`,
           }}
         >
           {diffLabel}
         </div>
-      </div>
-      <TimeColumn
-        label={settings.partnerName}
-        time={partnerTime.time}
-        city={partnerTime.city}
-      />
+      )}
     </section>
   );
 }
@@ -601,28 +556,26 @@ function TimeColumn({ label, time, city }: { label: string; time: string; city: 
     <div style={{ textAlign: "center" }}>
       <div
         style={{
-          fontSize: 10,
+          ...type.captionUppercase,
           color: c.muted,
-          textTransform: "uppercase",
-          letterSpacing: 1,
-          fontWeight: 700,
         }}
       >
         {label}
       </div>
       <div
         style={{
-          fontFamily: FONT_DISPLAY,
-          fontSize: 24,
-          fontWeight: 700,
+          fontFamily: FONT,
+          fontSize: 28,
+          fontWeight: 500,
+          letterSpacing: -1,
           color: c.ink,
-          margin: "2px 0",
+          margin: "4px 0 2px",
           fontVariantNumeric: "tabular-nums",
         }}
       >
         {time}
       </div>
-      <div style={{ fontSize: 11, color: c.muted }}>{city}</div>
+      <div style={{ ...type.bodySm, color: c.muted }}>{city}</div>
     </div>
   );
 }
@@ -647,7 +600,7 @@ function describeTimezoneDiff(tzA: string, tzB: string): string {
     const offsetA = getOffsetMinutes(tzA, now);
     const offsetB = getOffsetMinutes(tzB, now);
     const diffMin = offsetB - offsetA;
-    if (diffMin === 0) return "Same time";
+    if (diffMin === 0) return "Same time zone";
     const hours = Math.abs(diffMin) / 60;
     const dir = diffMin > 0 ? "ahead" : "behind";
     const h = hours % 1 === 0 ? hours.toString() : hours.toFixed(1);
@@ -657,7 +610,6 @@ function describeTimezoneDiff(tzA: string, tzB: string): string {
   }
 }
 
-/** Offset of `tz` from UTC in minutes (positive = ahead of UTC). */
 function getOffsetMinutes(tz: string, ts: number): number {
   const dtf = new Intl.DateTimeFormat("en-US", {
     timeZone: tz,
@@ -684,19 +636,16 @@ function getOffsetMinutes(tz: string, ts: number): number {
 }
 
 /* ──────────────────────────────────────────────────────────────── */
-/* Daily view cards                                                 */
+/* Daily-view feature cards (Clay's saturated palette)              */
 /* ──────────────────────────────────────────────────────────────── */
 
-function SectionHeading({ children }: { children: React.ReactNode }) {
+function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <h2
       style={{
-        fontSize: 11,
+        ...type.captionUppercase,
         color: c.muted,
-        textTransform: "uppercase",
-        letterSpacing: 2,
-        fontWeight: 700,
-        margin: "32px 4px 12px",
+        margin: "40px 0 12px",
       }}
     >
       {children}
@@ -704,79 +653,128 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
   );
 }
 
-function Card({
+type CardVariant = "pink" | "lavender" | "peach" | "teal" | "ochre" | "cream";
+
+function FeatureCard({
+  variant,
   icon,
   title,
   children,
   cta,
 }: {
+  variant: CardVariant;
   icon: string;
   title: string;
   children: React.ReactNode;
   cta?: { label: string; href?: string; onClick?: () => void };
 }) {
+  const dark = variant === "pink" || variant === "teal";
+  const bg = {
+    pink: c.brandPink,
+    lavender: c.brandLavender,
+    peach: c.brandPeach,
+    teal: c.brandTeal,
+    ochre: c.brandOchre,
+    cream: c.surfaceCard,
+  }[variant];
+  const fg = dark ? c.onDark : c.ink;
+  const muted = dark ? "rgba(255,255,255,0.78)" : c.body;
+
   return (
     <section
       style={{
-        background: c.card,
-        border: `1px solid ${c.hairline}`,
-        borderRadius: 18,
-        padding: "18px 18px 18px",
+        background: bg,
+        color: fg,
+        borderRadius: tokens.radius.xl,
+        padding: 24,
         marginBottom: 12,
-        boxShadow: "0 2px 12px rgba(232,90,119,0.05)",
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
         <span style={{ fontSize: 22 }}>{icon}</span>
         <h3
           style={{
-            fontFamily: FONT_DISPLAY,
-            fontSize: 19,
-            fontWeight: 600,
-            color: c.ink,
+            ...type.titleMd,
+            color: fg,
             margin: 0,
-            letterSpacing: -0.2,
           }}
         >
           {title}
         </h3>
       </div>
-      <div style={{ color: c.body, fontSize: 14, lineHeight: 1.5 }}>{children}</div>
-      {cta &&
-        (cta.href ? (
-          <a
-            href={cta.href}
-            target={cta.href.startsWith("http") ? "_blank" : undefined}
-            rel={cta.href.startsWith("http") ? "noopener noreferrer" : undefined}
-            style={{ ...pillCta }}
-          >
-            {cta.label}
-          </a>
-        ) : (
-          <button onClick={cta.onClick} style={{ ...pillCta, border: "none", cursor: "pointer" }}>
-            {cta.label}
-          </button>
-        ))}
+      <div style={{ ...type.bodyMd, color: muted }}>{children}</div>
+      {cta && (
+        <div style={{ marginTop: 16 }}>
+          <FeatureCta dark={dark} {...cta} />
+        </div>
+      )}
     </section>
+  );
+}
+
+function FeatureCta({
+  dark,
+  label,
+  href,
+  onClick,
+}: {
+  dark: boolean;
+  label: string;
+  href?: string;
+  onClick?: () => void;
+}) {
+  // On dark/pink cards we invert: white button + ink text.
+  // On light cards we use the standard black primary.
+  const style: React.CSSProperties = dark
+    ? {
+        ...buttonOnColor,
+      }
+    : {
+        ...buttonPrimary,
+      };
+  if (href) {
+    return (
+      <a
+        href={href}
+        target={href.startsWith("http") ? "_blank" : undefined}
+        rel={href.startsWith("http") ? "noopener noreferrer" : undefined}
+        style={{
+          ...style,
+          textDecoration: "none",
+          display: "inline-flex",
+          alignItems: "center",
+        }}
+      >
+        {label}
+      </a>
+    );
+  }
+  return (
+    <button onClick={onClick} style={{ ...style, cursor: "pointer" }}>
+      {label}
+    </button>
   );
 }
 
 function VoiceMemoCard({ partnerName }: { partnerName: string }) {
   return (
-    <Card
+    <FeatureCard
+      variant="pink"
       icon="🎙"
       title="Send a voice memo"
-      cta={{ label: "Record a memo →", onClick: () => alert("Recording flow coming soon — for now, drop a voice note in iMessage.") }}
+      cta={{
+        label: "Record a memo →",
+        onClick: () =>
+          alert("Recording flow coming soon — for now, drop a voice note in iMessage."),
+      }}
     >
       Start the day in {partnerName}&rsquo;s ear. Tell them one tiny thing about
       your morning — what you&rsquo;re wearing, what you ate, what made you laugh.
-    </Card>
+    </FeatureCard>
   );
 }
 
 function PartnerCalendarCard({ settings }: { settings: Settings }) {
-  // Placeholder events. Real implementation: pull from Google/Apple calendar
-  // via OAuth and render today's items in the partner's timezone.
   const events = [
     { time: "9:00 AM", title: "Standup" },
     { time: "12:30 PM", title: "Lunch with Priya" },
@@ -785,8 +783,8 @@ function PartnerCalendarCard({ settings }: { settings: Settings }) {
   ];
 
   return (
-    <Card icon="📅" title={`${settings.partnerName}'s day`}>
-      <div style={{ marginTop: 2 }}>
+    <FeatureCard variant="lavender" icon="📅" title={`${settings.partnerName}'s day`}>
+      <div style={{ marginTop: 4 }}>
         {events.map((e, i) => (
           <div
             key={i}
@@ -795,36 +793,42 @@ function PartnerCalendarCard({ settings }: { settings: Settings }) {
               gap: 12,
               padding: "8px 0",
               borderBottom:
-                i < events.length - 1 ? `1px solid ${c.hairlineSoft}` : "none",
+                i < events.length - 1 ? `1px solid rgba(10,10,10,0.1)` : "none",
             }}
           >
             <div
               style={{
                 fontVariantNumeric: "tabular-nums",
-                color: c.muted,
+                color: c.ink,
                 fontWeight: 600,
-                width: 76,
+                width: 84,
                 flexShrink: 0,
-                fontSize: 13,
+                fontSize: 14,
               }}
             >
               {e.time}
             </div>
-            <div style={{ color: c.ink, fontSize: 14 }}>{e.title}</div>
+            <div style={{ color: c.ink, fontSize: 15 }}>{e.title}</div>
           </div>
         ))}
       </div>
-      <div style={{ color: c.muted, fontSize: 12, marginTop: 10, fontStyle: "italic" }}>
+      <div
+        style={{
+          ...type.bodySm,
+          color: c.ink,
+          opacity: 0.6,
+          marginTop: 12,
+          fontStyle: "italic",
+        }}
+      >
         Calendar integration coming soon — connect Google/Apple Calendar to pull
         their real day.
       </div>
-    </Card>
+    </FeatureCard>
   );
 }
 
 function FaceTimeSuggestionCard({ settings }: { settings: Settings }) {
-  // Suggest a time that's "evening for both" — for the scaffold, pick a slot
-  // a few hours from now that's still daytime for both partners.
   const suggestion = useMemo(() => {
     const now = new Date();
     const candidate = new Date(now);
@@ -843,45 +847,43 @@ function FaceTimeSuggestionCard({ settings }: { settings: Settings }) {
   }, [settings.yourTimezone, settings.partnerTimezone]);
 
   return (
-    <Card
+    <FeatureCard
+      variant="peach"
       icon="📞"
       title="Suggested FaceTime"
-      cta={{
-        label: "Open FaceTime →",
-        href: "facetime://",
-      }}
+      cta={{ label: "Open FaceTime →", href: "facetime://" }}
     >
       Today at <strong style={{ color: c.ink }}>{suggestion.yourFmt}</strong> your time
       &middot; {suggestion.theirFmt} {settings.partnerName}&rsquo;s time. Both of
       you should be free and awake.
-    </Card>
+    </FeatureCard>
   );
 }
 
 function QuestionCard({ partnerName }: { partnerName: string }) {
   const [q] = useState(() => questionOfTheDay());
   return (
-    <Card
+    <FeatureCard
+      variant="teal"
       icon="💭"
       title="One deep question today"
       cta={{
-        label: "Send to " + partnerName + " →",
+        label: `Send to ${partnerName} →`,
         href: `sms:&body=${encodeURIComponent(q)}`,
       }}
     >
       <div
         style={{
-          fontFamily: FONT_DISPLAY,
-          fontStyle: "italic",
-          fontSize: 19,
-          lineHeight: 1.4,
-          color: c.ink,
+          ...type.titleLg,
+          color: c.onDark,
+          fontWeight: 500,
+          letterSpacing: -0.4,
           padding: "4px 0",
         }}
       >
         &ldquo;{q}&rdquo;
       </div>
-    </Card>
+    </FeatureCard>
   );
 }
 
@@ -891,20 +893,29 @@ function QuestionCard({ partnerName }: { partnerName: string }) {
 
 function Footer() {
   return (
-    <footer style={{ textAlign: "center", paddingTop: 32 }}>
+    <footer
+      style={{
+        textAlign: "center",
+        paddingTop: 48,
+        paddingBottom: 16,
+      }}
+    >
       <div
         style={{
-          fontFamily: FONT_DISPLAY,
-          fontStyle: "italic",
-          fontSize: 16,
-          color: c.heart,
+          ...type.displaySm,
+          color: c.ink,
+          fontWeight: 500,
+          marginBottom: 8,
         }}
       >
         Closer than the miles say.
       </div>
-      <div style={{ color: c.muted, fontSize: 12, marginTop: 6 }}>
-        Long Distance Loves · an experiment from{" "}
-        <a href="/" style={{ color: c.muted, textDecoration: "underline" }}>
+      <div style={{ ...type.bodySm, color: c.muted }}>
+        Long Distance Loves · from{" "}
+        <a
+          href="/"
+          style={{ color: c.muted, textDecoration: "underline" }}
+        >
           flickman.co
         </a>
       </div>
@@ -917,37 +928,53 @@ function Footer() {
 /* ──────────────────────────────────────────────────────────────── */
 
 const inputStyle: React.CSSProperties = {
-  padding: "12px 14px",
-  borderRadius: 12,
+  padding: "12px 16px",
+  borderRadius: tokens.radius.md,
   border: `1px solid ${c.hairline}`,
-  background: c.card,
+  background: c.canvas,
   color: c.ink,
   fontSize: 16,
-  fontFamily: FONT_BODY,
+  fontFamily: FONT,
+  height: 44,
   width: "100%",
   outline: "none",
+  boxSizing: "border-box",
 };
 
-const buttonBase: React.CSSProperties = {
-  height: 48,
-  borderRadius: 999,
-  padding: "0 22px",
-  fontSize: 15,
-  fontWeight: 600,
-  fontFamily: FONT_BODY,
-};
-
-const pillCta: React.CSSProperties = {
-  display: "inline-block",
+const buttonPrimary: React.CSSProperties = {
+  height: 44,
+  padding: "0 20px",
+  borderRadius: tokens.radius.md,
   background: c.primary,
-  color: "#fff",
-  fontSize: 13,
-  fontWeight: 600,
-  padding: "8px 16px",
-  borderRadius: 999,
-  textDecoration: "none",
-  marginTop: 12,
-  letterSpacing: 0.2,
+  color: c.onPrimary,
+  border: "none",
+  ...type.button,
+  fontFamily: FONT,
+  cursor: "pointer",
+};
+
+const buttonSecondary: React.CSSProperties = {
+  height: 44,
+  padding: "0 20px",
+  borderRadius: tokens.radius.md,
+  background: c.canvas,
+  color: c.ink,
+  border: `1px solid ${c.hairline}`,
+  ...type.button,
+  fontFamily: FONT,
+  cursor: "pointer",
+};
+
+const buttonOnColor: React.CSSProperties = {
+  height: 44,
+  padding: "0 20px",
+  borderRadius: tokens.radius.md,
+  background: c.canvas,
+  color: c.ink,
+  border: "none",
+  ...type.button,
+  fontFamily: FONT,
+  cursor: "pointer",
 };
 
 function Field({
@@ -961,11 +988,8 @@ function Field({
     <label style={{ display: "block" }}>
       <div
         style={{
-          fontSize: 11,
+          ...type.captionUppercase,
           color: c.muted,
-          textTransform: "uppercase",
-          letterSpacing: 1.2,
-          fontWeight: 700,
           marginBottom: 6,
         }}
       >
@@ -1005,7 +1029,6 @@ function Select({
   onChange: (v: string) => void;
   options: string[];
 }) {
-  // Ensure the current value is present even if not in our static list.
   const opts = options.includes(value) ? options : [value, ...options];
   return (
     <select
