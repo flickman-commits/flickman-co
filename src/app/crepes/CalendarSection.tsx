@@ -26,6 +26,7 @@ type PastGuest = {
 
 const PAST_GUESTS: PastGuest[] = [
   { date: "2026-05-17", guests: "Jason & Julia", party: 2 },
+  { date: "2026-05-31", guests: "Tom & Lex", party: 2 },
 ];
 
 /* ──────────────────────────────────────────────────────────────── */
@@ -48,8 +49,8 @@ function toISODate(d: Date): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
-/** Return the next `count` upcoming Sundays (today counts if Sunday <11 AM). */
-function getUpcomingSundays(count = 6): Date[] {
+/** Return upcoming Sundays within the next `weeks` weeks (today counts if Sunday <11 AM). */
+function getUpcomingSundays(weeks = 4): Date[] {
   const out: Date[] = [];
   const now = new Date();
   const d = new Date(now);
@@ -63,7 +64,10 @@ function getUpcomingSundays(count = 6): Date[] {
   }
   d.setDate(d.getDate() + daysUntilSunday);
 
-  for (let i = 0; i < count; i++) {
+  const cutoff = new Date(now);
+  cutoff.setDate(cutoff.getDate() + weeks * 7);
+
+  while (d.getTime() <= cutoff.getTime()) {
     out.push(new Date(d));
     d.setDate(d.getDate() + 7);
   }
@@ -100,7 +104,7 @@ export default function CalendarSection({ palette }: { palette: Palette }) {
       party: g.party,
     })).sort((a, b) => a.date.getTime() - b.date.getTime());
 
-    const upcoming: Row[] = getUpcomingSundays(6).map((d) => ({
+    const upcoming: Row[] = getUpcomingSundays(4).map((d) => ({
       kind: "open" as const,
       date: d,
     }));
