@@ -168,7 +168,7 @@ export async function sendApprovalToGuest(opts: {
       <strong>${escapeHtml(longDate)}</strong> at 11 AM. Table for ${opts.party}.
     </p>
     <p style="margin: 0 0 14px; color: #4B3A2F; font-size: 15px; line-height: 1.55;">
-      Calendar invite is attached. Nat will text you the address closer to the date.
+      Calendar invite is attached. We&rsquo;ll text you the address closer to the date.
     </p>
     <p style="margin: 0; color: #4B3A2F; font-size: 15px; line-height: 1.55;">
       Come hungry.
@@ -182,7 +182,7 @@ export async function sendApprovalToGuest(opts: {
   const text =
     `You're in, ${opts.name.split(" ")[0]}.\n\n` +
     `${longDate} at 11 AM. Table for ${opts.party}.\n\n` +
-    `Calendar invite is attached. Nat will text you the address closer to the date.\n\n` +
+    `Calendar invite is attached. We'll text you the address closer to the date.\n\n` +
     `Come hungry.\nMatt & Nat`;
 
   return sendViaResend({

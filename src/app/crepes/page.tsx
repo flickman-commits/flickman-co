@@ -48,23 +48,23 @@ const REVIEWS = [
 const FAQ = [
   {
     q: "What's it cost?",
-    a: "Nothing. We just love feeding people. If you really want to bring something, flowers or a bottle or a book you loved are all great. But really, truly, not required.",
+    a: "Nothing. We just love feeding people. If you really want to bring something, flowers or a bottle or a book you loved are all great. But truly, never required.",
   },
   {
     q: "Where is it?",
-    a: "Our apartment in the West Village. Nat will text you the address once she confirms the date.",
+    a: "Our apartment in the West Village. We'll text you the address once we confirm your date.",
   },
   {
     q: "Can I bring someone?",
-    a: "Yes. Every reservation seats two. Tell us who's coming when you book and we'll say hi by name when you walk in.",
+    a: "Yes. Every reservation seats two, so bring one. Tell us who you're bringing when you book and we'll say hi by name when you walk in.",
   },
   {
     q: "Any dietary stuff?",
-    a: "Almost always. Gluten-free batter, savory crepes that go veggie, coconut milk subs for dairy. Mention it when you book and Matt will figure it out.",
+    a: "Almost always. Gluten-free batter, savory crepes that go veggie, coconut milk for the dairy-free crew. Mention it when you book and we'll figure it out.",
   },
   {
     q: "How long does it usually go?",
-    a: "About 90 minutes. First crepe hits the pan at 11 sharp. Most folks head out around 12:30.",
+    a: "About 90 minutes. First crepe hits the pan at 11 sharp. Most folks roll out around 12:30 stuffed and caffeinated.",
   },
   {
     q: "What should I bring?",
@@ -179,10 +179,10 @@ export default function CrepesPage() {
               margin: "24px auto 0",
             }}
           >
-            Every Sunday morning, our kitchen turns into a little crepe bar.
-            Matt runs the pan. Nat runs the espresso. Sweet, savory, off-menu
-            requests welcome. <strong>One reservation a week. Table for two.</strong>{" "}
-            Friends only, and friends of friends if we like you.
+            Every Sunday, our kitchen turns into a little crepe bar. Matt&rsquo;s
+            on the pan, Nat&rsquo;s on espresso. Sweet, savory, off-menu requests
+            welcome. <strong>One reservation a week. Table for two.</strong>{" "}
+            Friends only. Friends of friends count too, if we like you.
           </p>
         </section>
 
@@ -203,7 +203,7 @@ export default function CrepesPage() {
             }}
           >
             One 11:00 AM reservation per Sunday. Seats two. Tap a date to
-            request it. Matt and Nat will confirm by email.
+            request it. We&rsquo;ll confirm by email.
           </p>
           <CalendarSection palette={c} />
         </section>
@@ -296,7 +296,7 @@ export default function CrepesPage() {
             Come hungry. Leave full.
           </div>
           <div style={{ fontSize: 13, color: c.muted }}>
-            Crepe Sundays · run out of a tiny West Village kitchen by{" "}
+            Crepe Sundays · our tiny West Village kitchen ·{" "}
             <span style={{ color: c.ink, fontWeight: 600 }}>Matt &amp; Nat</span>
           </div>
         </footer>

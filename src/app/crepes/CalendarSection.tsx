@@ -543,7 +543,7 @@ function BookingForm({
           fontStyle: "italic",
         }}
       >
-        Matt and Nat approve every reservation. You&rsquo;ll hear back within a day.
+        We approve every reservation. You&rsquo;ll hear back within a day.
       </div>
     </form>
   );
