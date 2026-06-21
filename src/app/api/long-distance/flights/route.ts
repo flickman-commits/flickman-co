@@ -4,17 +4,8 @@ import {
   SerpApiNotConfigured,
   type FlightOfferSummary,
 } from "../../../../app/long-distance/lib/serpapi";
+import { rateLimit } from "../../../../lib/rate-limit";
 
-/**
- * GET /api/long-distance/flights?origin=JFK&destination=RNO
- *
- * Returns the cheapest available flight on each of the next four Friday
- * departures from origin → destination, sourced from SerpAPI's Google
- * Flights wrapper.
- *
- * Responds with `{ configured: false }` (200) when SERPAPI_KEY isn't set,
- * so the UI can fall back to placeholder data.
- */
 export const dynamic = "force-dynamic";
 
 function nextFridays(count: number): string[] {
@@ -31,9 +22,18 @@ function nextFridays(count: number): string[] {
 }
 
 export async function GET(req: NextRequest) {
+  const blocked = rateLimit(req, {
+    windowMs: 60 * 1000,
+    max: 15,
+    prefix: "flights",
+  });
+  if (blocked) return blocked;
+
   const { searchParams } = new URL(req.url);
   const origin = (searchParams.get("origin") ?? "").toUpperCase();
   const destination = (searchParams.get("destination") ?? "").toUpperCase();
+  const weeksRaw = parseInt(searchParams.get("weeks") ?? "12", 10);
+  const weeks = Math.min(Math.max(weeksRaw || 12, 1), 16);
 
   if (!/^[A-Z]{3}$/.test(origin) || !/^[A-Z]{3}$/.test(destination)) {
     return NextResponse.json(
@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const dates = nextFridays(4);
+  const dates = nextFridays(weeks);
 
   try {
     const offers = await Promise.all(
@@ -79,10 +79,7 @@ export async function GET(req: NextRequest) {
     }
     console.error("[flights] route failed:", err);
     return NextResponse.json(
-      {
-        error:
-          err instanceof Error ? err.message : "Unknown error fetching flights",
-      },
+      { error: "Something went wrong fetching flights." },
       { status: 500 }
     );
   }

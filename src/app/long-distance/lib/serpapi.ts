@@ -130,5 +130,8 @@ function buildGoogleFlightsLink(
   destination: string,
   date: string
 ): string {
-  return `https://www.google.com/travel/flights?q=Flights%20from%20${origin}%20to%20${destination}%20on%20${date}`;
+  // Structured hash-fragment URL bypasses Google's NLP parser entirely.
+  // Format: #flt=ORIG.DEST.YYYY-MM-DD;c:USD;e:1;sd:1;t:f
+  //   sd:1 = sort by departure | t:f = one-way | e:1 = 1 adult | c:USD
+  return `https://www.google.com/flights#flt=${origin}.${destination}.${date};c:USD;e:1;sd:1;t:f`;
 }

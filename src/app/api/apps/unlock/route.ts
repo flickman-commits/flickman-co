@@ -1,12 +1,16 @@
+import crypto from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import { getApp } from "../../../../../apps/registry";
+import { rateLimit } from "../../../../lib/rate-limit";
 
-/**
- * Check the submitted password against APP_PW_<SLUG_UPPER>.
- * On success, set an HTTP-only cookie that lasts 30 days and redirect to `next`.
- * On failure, redirect back to the unlock page with ?error=1.
- */
 export async function POST(req: NextRequest) {
+  const blocked = rateLimit(req, {
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    prefix: "unlock",
+  });
+  if (blocked) return blocked;
+
   const form = await req.formData();
   const slug = String(form.get("slug") ?? "");
   const password = String(form.get("password") ?? "");
@@ -20,7 +24,15 @@ export async function POST(req: NextRequest) {
   const envKey = `APP_PW_${slug.toUpperCase().replace(/-/g, "_")}`;
   const expected = process.env[envKey];
 
-  if (!expected || password !== expected) {
+  const passwordMatch =
+    expected !== undefined &&
+    expected.length === password.length &&
+    crypto.timingSafeEqual(
+      Buffer.from(expected, "utf8"),
+      Buffer.from(password, "utf8")
+    );
+
+  if (!passwordMatch) {
     const url = new URL(`/apps/unlock/${slug}`, req.url);
     url.searchParams.set("error", "1");
     url.searchParams.set("next", next);

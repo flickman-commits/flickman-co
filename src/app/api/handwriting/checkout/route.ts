@@ -1,30 +1,41 @@
 import { NextResponse, type NextRequest } from "next/server";
 import Stripe from "stripe";
+import { rateLimit } from "../../../../lib/rate-limit";
 
-/**
- * Create a Stripe Checkout session for the $15 handwriting font.
- *
- * Required env vars (Vercel):
- *   STRIPE_SECRET_KEY    sk_live_... or sk_test_...
- *
- * Optional:
- *   STRIPE_PRICE_HANDWRITING   pre-configured Price ID (e.g. price_xxx).
- *                              If omitted, we create a $15 line item on the fly.
- */
+const ALLOWED_ORIGINS = new Set(
+  (process.env.ALLOWED_ORIGINS ?? "https://flickman.co,https://www.flickman.co")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean)
+);
+
+function trustedOrigin(req: NextRequest): string {
+  const candidate = req.headers.get("origin");
+  if (candidate && ALLOWED_ORIGINS.has(candidate)) return candidate;
+  return new URL(req.url).origin;
+}
+
 export async function POST(req: NextRequest) {
+  const blocked = rateLimit(req, {
+    windowMs: 60 * 1000,
+    max: 5,
+    prefix: "checkout",
+  });
+  if (blocked) return blocked;
+
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) {
     return NextResponse.json(
       {
         error:
-          "Payment isn't set up yet — STRIPE_SECRET_KEY missing on the server. Use the 'Download preview' button on the preview screen for now.",
+          "Payment isn't set up yet. Use the 'Download preview' button on the preview screen for now.",
       },
       { status: 503 }
     );
   }
 
   const stripe = new Stripe(key);
-  const origin = req.headers.get("origin") ?? new URL(req.url).origin;
+  const origin = trustedOrigin(req);
 
   try {
     const session = await stripe.checkout.sessions.create({
@@ -54,7 +65,7 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     console.error("[handwriting] checkout failed:", err);
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Unknown error" },
+      { error: "Something went wrong creating your checkout session." },
       { status: 500 }
     );
   }

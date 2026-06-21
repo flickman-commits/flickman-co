@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 };
 
 /* ──────────────────────────────────────────────────────────────── */
-/* Palette — warm mom-and-pop diner.                                */
+/* Palette: warm mom-and-pop diner.                                  */
 /* ──────────────────────────────────────────────────────────────── */
 const c = {
   // Sampled directly from the watercolor's paper (#FEFFFA–#FFFFFF) so the
@@ -47,24 +47,24 @@ const REVIEWS = [
 
 const FAQ = [
   {
-    q: "What does it cost?",
-    a: "Nothing. We just love feeding people. Bring a small gift only if you really want to — flowers, a bottle, a book you loved. Never required.",
+    q: "What's it cost?",
+    a: "Nothing. We just love feeding people. If you really want to bring something, flowers or a bottle or a book you loved are all great. But really, truly, not required.",
   },
   {
-    q: "Where exactly is it?",
-    a: "Our apartment in the West Village, NYC. Nat will send you the address once she confirms your reservation.",
+    q: "Where is it?",
+    a: "Our apartment in the West Village. Nat will text you the address once she confirms the date.",
   },
   {
     q: "Can I bring someone?",
-    a: "Yes — every reservation seats two. Tell us who's coming when you reach out so we can say hi by name when you walk in.",
+    a: "Yes. Every reservation seats two. Tell us who's coming when you book and we'll say hi by name when you walk in.",
   },
   {
-    q: "Any dietary stuff handled?",
-    a: "Almost always. Gluten-free batter on request, savory crepes can go veggie, and Matt can sub coconut milk if dairy's a no. Just mention it when you book.",
+    q: "Any dietary stuff?",
+    a: "Almost always. Gluten-free batter, savory crepes that go veggie, coconut milk subs for dairy. Mention it when you book and Matt will figure it out.",
   },
   {
     q: "How long does it usually go?",
-    a: "About 90 minutes. We start the first crepe at 11 sharp and most folks head out around 12:30.",
+    a: "About 90 minutes. First crepe hits the pan at 11 sharp. Most folks head out around 12:30.",
   },
   {
     q: "What should I bring?",
@@ -108,14 +108,14 @@ export default function CrepesPage() {
         details > summary::-webkit-details-marker { display: none; }
       `}</style>
       <div style={{ maxWidth: 880, margin: "0 auto", padding: "0 20px" }}>
-        {/* ─── Hero — illustrated cover ────────────────────────── */}
+        {/* ─── Hero: illustrated cover ─────────────────────────── */}
         <section style={{ padding: "20px 0 8px", textAlign: "center" }}>
           {/* The cover already contains the wordmark + "with Matt & Nat" subtitle,
               so we let the artwork carry the hero and skip a redundant text title. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/crepes/cover.png"
-            alt="Crepe Sundays with Matt & Nat — illustrated cover of Matt and Nat at the breakfast table with plates of crepes, bananas, and strawberries"
+            alt="Crepe Sundays with Matt and Nat. Illustrated cover of Matt and Nat at the breakfast table with plates of crepes, bananas, and strawberries."
             style={{
               width: "100%",
               height: "auto",
@@ -142,7 +142,7 @@ export default function CrepesPage() {
             🥞 Open Sundays · 11 AM sharp
           </div>
 
-          {/* Primary CTA — sits above the fold so users can book in one tap. */}
+          {/* Primary CTA above the fold so users can book in one tap. */}
           <div style={{ marginBottom: 20 }}>
             <a
               href="#reservations"
@@ -179,10 +179,9 @@ export default function CrepesPage() {
               margin: "24px auto 0",
             }}
           >
-            Every Sunday morning, our kitchen turns into a little neighborhood
-            crepe bar. Matt makes the crepes — sweet, savory, off-menu requests
-            welcome. Nat runs the espresso.{" "}
-            <strong>One reservation a week — table for two.</strong>{" "}
+            Every Sunday morning, our kitchen turns into a little crepe bar.
+            Matt runs the pan. Nat runs the espresso. Sweet, savory, off-menu
+            requests welcome. <strong>One reservation a week. Table for two.</strong>{" "}
             Friends only, and friends of friends if we like you.
           </p>
         </section>
@@ -203,8 +202,8 @@ export default function CrepesPage() {
               margin: "0 auto 28px",
             }}
           >
-            One 11:00 AM reservation per Sunday — seats two. Tap a date to
-            reach out and Nat will confirm by text.
+            One 11:00 AM reservation per Sunday. Seats two. Tap a date to
+            request it. Matt and Nat will confirm by email.
           </p>
           <CalendarSection palette={c} />
         </section>
@@ -224,19 +223,6 @@ export default function CrepesPage() {
               <PhotoPlaceholder key={i} index={i} caption={p.caption} src={p.src} />
             ))}
           </div>
-          <p
-            style={{
-              fontFamily: "ui-sans-serif, system-ui, sans-serif",
-              fontSize: 12,
-              color: c.muted,
-              textAlign: "center",
-              marginTop: 16,
-              fontStyle: "italic",
-            }}
-          >
-            Drop real photos into <code>public/crepes/</code> and they&rsquo;ll
-            slot right in.
-          </p>
         </section>
 
         {/* ─── Reviews ─────────────────────────────────────────── */}
@@ -409,7 +395,7 @@ function MenuStrip() {
           marginBottom: 10,
         }}
       >
-        — Toppings —
+        TOPPINGS
       </div>
       <div
         style={{
@@ -619,7 +605,7 @@ function ReviewCard({
           color: c.muted,
         }}
       >
-        — <strong style={{ color: c.ink }}>{review.name}</strong>, {review.where}
+        <strong style={{ color: c.ink }}>{review.name}</strong> · {review.where}
       </div>
     </div>
   );

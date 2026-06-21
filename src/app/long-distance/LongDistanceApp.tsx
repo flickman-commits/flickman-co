@@ -55,6 +55,8 @@ type Settings = {
   partnerLocation: Location;
   /** Their home airport IATA code (e.g. "RNO"). */
   partnerAirport: string;
+  /** USD price below which the flight tracker highlights a date in green. */
+  targetPrice: number;
   nextVisitISO: string;
   lastVisitISO: string;
 };
@@ -85,6 +87,7 @@ function loadSettings(): Settings | null {
       waitStartISO?: string;
       yourAirport?: string;
       partnerAirport?: string;
+      targetPrice?: number;
     };
 
     if (!obj.yourName || !obj.partnerName || !obj.nextVisitISO) return null;
@@ -110,6 +113,7 @@ function loadSettings(): Settings | null {
       partnerLocation,
       partnerAirport:
         obj.partnerAirport ?? nearestAirport(partnerLocation.label),
+      targetPrice: typeof obj.targetPrice === "number" ? obj.targetPrice : 300,
       nextVisitISO: obj.nextVisitISO,
       lastVisitISO:
         obj.lastVisitISO ??
@@ -163,6 +167,18 @@ export default function LongDistanceApp() {
     setEditing(false);
   }, []);
 
+  // Lightweight per-field updater so child components (e.g. the flight
+  // tracker target badge) can persist a single setting without re-opening
+  // the full onboarding form.
+  const patchSettings = useCallback((patch: Partial<Settings>) => {
+    setSettings((prev) => {
+      if (!prev) return prev;
+      const next = { ...prev, ...patch };
+      saveSettings(next);
+      return next;
+    });
+  }, []);
+
   if (!mounted) {
     return (
       <div
@@ -184,7 +200,11 @@ export default function LongDistanceApp() {
     >
       <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 20px" }}>
         {settings && !editing && (
-          <MainView settings={settings} onEdit={() => setEditing(true)} />
+          <MainView
+            settings={settings}
+            onEdit={() => setEditing(true)}
+            onPatch={patchSettings}
+          />
         )}
 
         {(!settings || editing) && (
@@ -206,15 +226,17 @@ export default function LongDistanceApp() {
 function MainView({
   settings,
   onEdit,
+  onPatch,
 }: {
   settings: Settings;
   onEdit: () => void;
+  onPatch: (patch: Partial<Settings>) => void;
 }) {
   return (
     <main>
       <CompactTop settings={settings} />
       <DailyActionsSection settings={settings} />
-      <MakeSomeMovesSection settings={settings} />
+      <MakeSomeMovesSection settings={settings} onPatch={onPatch} />
       <ResourcesSection />
       <Footer onEdit={onEdit} />
     </main>
@@ -935,7 +957,13 @@ function DeepQuestionReveal({
   );
 }
 
-function MakeSomeMovesSection({ settings }: { settings: Settings }) {
+function MakeSomeMovesSection({
+  settings,
+  onPatch,
+}: {
+  settings: Settings;
+  onPatch: (patch: Partial<Settings>) => void;
+}) {
   return (
     <section style={{ paddingTop: 24, paddingBottom: 16 }}>
       <div style={{ marginBottom: 18 }}>
@@ -958,7 +986,7 @@ function MakeSomeMovesSection({ settings }: { settings: Settings }) {
       </div>
 
       <DateNightCard />
-      <FlightTrackerCard settings={settings} />
+      <FlightTrackerCard settings={settings} onPatch={onPatch} />
     </section>
   );
 }
@@ -1118,18 +1146,7 @@ function DateNightCard() {
   );
 }
 
-/* Flight tracker — big ochre card with tracked routes inside */
-type TrackedFlight = {
-  airline: string; // 2-letter code
-  airlineColor: string;
-  number: string;
-  from: string;
-  to: string;
-  date: string;
-  price: number;
-  target: number;
-};
-
+/* Flight tracker — big ochre card with a 3-month price calendar inside */
 type FlightOffer = {
   airline: string;
   number: string;
@@ -1142,20 +1159,25 @@ type FlightOffer = {
   deepLink: string;
 };
 
-const TARGET_PRICE = 300;
-
-function FlightTrackerCard({ settings }: { settings: Settings }) {
+function FlightTrackerCard({
+  settings,
+  onPatch,
+}: {
+  settings: Settings;
+  onPatch: (patch: Partial<Settings>) => void;
+}) {
   const { bg, fg } = cardColors("ochre");
 
   const here =
     settings.yourAirport || nearestAirport(settings.yourLocation.label);
   const there =
     settings.partnerAirport || nearestAirport(settings.partnerLocation.label);
+  const target = settings.targetPrice ?? 300;
 
   const [state, setState] = useState<
     | { kind: "loading" }
     | { kind: "real"; flights: FlightOffer[] }
-    | { kind: "placeholder"; flights: TrackedFlight[] }
+    | { kind: "placeholder"; flights: FlightOffer[] }
     | { kind: "error"; message: string }
   >({ kind: "loading" });
 
@@ -1163,24 +1185,19 @@ function FlightTrackerCard({ settings }: { settings: Settings }) {
     let cancelled = false;
     setState({ kind: "loading" });
 
-    fetch(`/api/long-distance/flights?origin=${here}&destination=${there}`)
+    fetch(
+      `/api/long-distance/flights?origin=${here}&destination=${there}&weeks=12`
+    )
       .then(async (r) => {
         if (!r.ok) throw new Error(`Server ${r.status}`);
         return r.json();
       })
       .then((data: { configured: boolean; flights?: FlightOffer[] }) => {
         if (cancelled) return;
-        if (!data.configured) {
+        if (!data.configured || !data.flights || data.flights.length === 0) {
           setState({
             kind: "placeholder",
-            flights: placeholderFlights(here, there),
-          });
-          return;
-        }
-        if (!data.flights || data.flights.length === 0) {
-          setState({
-            kind: "placeholder",
-            flights: placeholderFlights(here, there),
+            flights: placeholderCalendar(here, there),
           });
           return;
         }
@@ -1199,6 +1216,12 @@ function FlightTrackerCard({ settings }: { settings: Settings }) {
     };
   }, [here, there]);
 
+  const flights = state.kind === "real" || state.kind === "placeholder" ? state.flights : [];
+  const cheapest = useMemo(() => {
+    if (flights.length === 0) return null;
+    return [...flights].sort((a, b) => a.price - b.price)[0];
+  }, [flights]);
+
   return (
     <article
       style={{
@@ -1208,57 +1231,67 @@ function FlightTrackerCard({ settings }: { settings: Settings }) {
         padding: "22px 20px",
       }}
     >
-      <div style={{ marginBottom: 14 }}>
-        <div style={{ fontSize: 22, marginBottom: 6 }}>✈️</div>
-        <h3
-          style={{
-            ...type.titleMd,
-            color: fg,
-            fontWeight: 600,
-            margin: 0,
-            letterSpacing: -0.2,
-          }}
-        >
-          Flight tracker · {here} → {there}
-        </h3>
-        <p
-          style={{
-            ...type.bodySm,
-            color: c.body,
-            margin: "4px 0 0",
-            fontStyle: "italic",
-          }}
-        >
-          {state.kind === "placeholder"
-            ? "Showing sample flights — set SERPAPI_KEY for live prices."
-            : `Waiting for it to go below $${TARGET_PRICE}.`}
-        </p>
+      {/* Header row: title + editable target badge */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          gap: 12,
+          marginBottom: 14,
+        }}
+      >
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontSize: 22, marginBottom: 6 }}>✈️</div>
+          <h3
+            style={{
+              ...type.titleMd,
+              color: fg,
+              fontWeight: 600,
+              margin: 0,
+              letterSpacing: -0.2,
+            }}
+          >
+            Flight tracker · {here} → {there}
+          </h3>
+          <p
+            style={{
+              ...type.bodySm,
+              color: c.body,
+              margin: "4px 0 0",
+              fontStyle: "italic",
+            }}
+          >
+            {state.kind === "placeholder"
+              ? "Sample data — set SERPAPI_KEY for live prices."
+              : cheapest
+              ? `Cheapest: $${cheapest.price} on ${formatFlightDate(cheapest.departureDate)}.`
+              : `The best time to fly in the next 3 months.`}
+          </p>
+        </div>
+
+        <TargetPriceBadge
+          target={target}
+          onChange={(n) => onPatch({ targetPrice: n })}
+        />
       </div>
 
       {state.kind === "loading" && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {[0, 1, 2, 3].map((i) => (
-            <FlightRowSkeleton key={i} />
-          ))}
-        </div>
+        <FlightCalendar
+          monthsFromNow={3}
+          flights={[]}
+          target={target}
+          loading
+        />
       )}
-
-      {state.kind === "real" && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {state.flights.map((f, i) => (
-            <RealFlightRow key={i} flight={f} />
-          ))}
-        </div>
+      {(state.kind === "real" || state.kind === "placeholder") && (
+        <FlightCalendar
+          monthsFromNow={3}
+          flights={flights}
+          target={target}
+          cheapestDate={cheapest?.departureDate}
+        />
       )}
-
-      {state.kind === "placeholder" && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {state.flights.map((f, i) => (
-            <FlightRow key={i} flight={f} />
-          ))}
-        </div>
-      )}
-
       {state.kind === "error" && (
         <div
           style={{
@@ -1273,198 +1306,451 @@ function FlightTrackerCard({ settings }: { settings: Settings }) {
           Couldn&rsquo;t reach the flight service ({state.message}).
         </div>
       )}
-
-      <button
-        onClick={() => alert("Adding more routes coming soon!")}
-        style={{
-          ...type.button,
-          background: c.primary,
-          color: c.onPrimary,
-          border: "none",
-          borderRadius: tokens.radius.md,
-          padding: "10px 16px",
-          cursor: "pointer",
-          fontFamily: FONT,
-          marginTop: 14,
-        }}
-      >
-        Add a route →
-      </button>
     </article>
   );
 }
 
-function placeholderFlights(origin: string, destination: string): TrackedFlight[] {
-  // Used when Amadeus isn't configured. Three made-up rows in the same shape
-  // so the layout/colors don't shift between modes.
-  return [
-    {
-      airline: "DL",
-      airlineColor: "#C8102E",
-      number: "245",
-      from: origin,
-      to: destination,
-      date: "Jun 12",
-      price: 342,
-      target: TARGET_PRICE,
-    },
-    {
-      airline: "UA",
-      airlineColor: "#005DAA",
-      number: "1502",
-      from: origin,
-      to: destination,
-      date: "Jun 19",
-      price: 389,
-      target: TARGET_PRICE,
-    },
-    {
-      airline: "B6",
-      airlineColor: "#0033A0",
-      number: "718",
-      from: origin,
-      to: destination,
-      date: "Jul 4",
-      price: 268,
-      target: TARGET_PRICE,
-    },
-  ];
+/* ──────────────────────────────────────────────────────────────── */
+/* Target price badge — inline editable                              */
+/* ──────────────────────────────────────────────────────────────── */
+
+function TargetPriceBadge({
+  target,
+  onChange,
+}: {
+  target: number;
+  onChange: (n: number) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(String(target));
+
+  useEffect(() => setDraft(String(target)), [target]);
+
+  const commit = () => {
+    const n = parseInt(draft, 10);
+    if (!isNaN(n) && n > 0) onChange(n);
+    setEditing(false);
+  };
+
+  if (editing) {
+    return (
+      <div
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 4,
+          background: c.ink,
+          color: c.onPrimary,
+          borderRadius: tokens.radius.pill,
+          padding: "4px 4px 4px 10px",
+          flexShrink: 0,
+        }}
+      >
+        <span style={{ ...type.caption, color: "rgba(255,255,255,0.7)" }}>$</span>
+        <input
+          type="number"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={commit}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") commit();
+            if (e.key === "Escape") {
+              setDraft(String(target));
+              setEditing(false);
+            }
+          }}
+          autoFocus
+          style={{
+            width: 56,
+            border: "none",
+            background: "transparent",
+            color: c.onPrimary,
+            fontFamily: FONT,
+            fontSize: 13,
+            fontWeight: 700,
+            fontVariantNumeric: "tabular-nums",
+            outline: "none",
+            padding: 0,
+            textAlign: "right",
+          }}
+        />
+        <button
+          onClick={commit}
+          style={{
+            background: c.onPrimary,
+            color: c.ink,
+            border: "none",
+            borderRadius: tokens.radius.pill,
+            padding: "4px 10px",
+            fontFamily: FONT,
+            fontSize: 11,
+            fontWeight: 700,
+            cursor: "pointer",
+          }}
+        >
+          Save
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <button
+      onClick={() => setEditing(true)}
+      style={{
+        ...type.caption,
+        background: c.ink,
+        color: c.onPrimary,
+        border: "none",
+        borderRadius: tokens.radius.pill,
+        padding: "6px 12px",
+        cursor: "pointer",
+        fontFamily: FONT,
+        fontWeight: 600,
+        flexShrink: 0,
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 4,
+      }}
+      aria-label="Edit target price"
+    >
+      <span style={{ opacity: 0.7, fontWeight: 500 }}>Target</span>
+      <span style={{ fontVariantNumeric: "tabular-nums" }}>
+        ${target}
+      </span>
+      <span style={{ opacity: 0.6, fontSize: 11, marginLeft: 1 }}>✏︎</span>
+    </button>
+  );
 }
 
-/* Skeleton row shown while Amadeus is loading. */
-function FlightRowSkeleton() {
+/* ──────────────────────────────────────────────────────────────── */
+/* Flight calendar (3 months, prices on Fridays)                    */
+/* ──────────────────────────────────────────────────────────────── */
+
+function FlightCalendar({
+  monthsFromNow,
+  flights,
+  target,
+  loading = false,
+  cheapestDate,
+}: {
+  monthsFromNow: number;
+  flights: FlightOffer[];
+  target: number;
+  loading?: boolean;
+  cheapestDate?: string;
+}) {
+  const flightByDate = useMemo(() => {
+    const m = new Map<string, FlightOffer>();
+    for (const f of flights) m.set(f.departureDate, f);
+    return m;
+  }, [flights]);
+
+  const now = new Date();
+  const months = useMemo(() => {
+    const out: { year: number; month: number }[] = [];
+    for (let i = 0; i < monthsFromNow; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+      out.push({ year: d.getFullYear(), month: d.getMonth() });
+    }
+    return out;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [monthsFromNow]);
+
   return (
-    <div
-      style={{
-        background: "rgba(255,255,255,0.5)",
-        borderRadius: tokens.radius.md,
-        padding: "14px 14px",
-        display: "grid",
-        gridTemplateColumns: "32px 1fr 64px",
-        gap: 12,
-        alignItems: "center",
-      }}
-    >
-      <div
-        style={{
-          width: 32,
-          height: 32,
-          borderRadius: tokens.radius.sm,
-          background: "rgba(10,10,10,0.08)",
-        }}
-      />
-      <div>
-        <div
-          style={{
-            height: 12,
-            background: "rgba(10,10,10,0.1)",
-            borderRadius: 4,
-            width: "65%",
-          }}
+    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      {months.map(({ year, month }) => (
+        <MonthGrid
+          key={`${year}-${month}`}
+          year={year}
+          month={month}
+          flightByDate={flightByDate}
+          target={target}
+          loading={loading}
+          cheapestDate={cheapestDate}
         />
-        <div
-          style={{
-            height: 9,
-            background: "rgba(10,10,10,0.06)",
-            borderRadius: 4,
-            width: "30%",
-            marginTop: 6,
-          }}
-        />
-      </div>
-      <div
-        style={{
-          height: 16,
-          background: "rgba(10,10,10,0.1)",
-          borderRadius: 4,
-        }}
-      />
+      ))}
     </div>
   );
 }
 
-/** Real (Amadeus-sourced) flight row. */
-function RealFlightRow({ flight }: { flight: FlightOffer }) {
-  const belowTarget = flight.price <= TARGET_PRICE;
-  const airlineColor = airlineBrandColor(flight.airline);
-  const dateLabel = formatFlightDate(flight.departureDate);
+const WEEKDAY_LABELS = ["S", "M", "T", "W", "T", "F", "S"];
+const MONTH_NAMES = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
+function MonthGrid({
+  year,
+  month,
+  flightByDate,
+  target,
+  loading,
+  cheapestDate,
+}: {
+  year: number;
+  month: number;
+  flightByDate: Map<string, FlightOffer>;
+  target: number;
+  loading: boolean;
+  cheapestDate?: string;
+}) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const firstOfMonth = new Date(year, month, 1);
+  const lastOfMonth = new Date(year, month + 1, 0);
+  const offset = firstOfMonth.getDay(); // 0 = Sunday
+  const daysInMonth = lastOfMonth.getDate();
+
+  const cells: Array<{ key: string; day: number | null; date?: Date }> = [];
+  for (let i = 0; i < offset; i++) cells.push({ key: `b-${i}`, day: null });
+  for (let d = 1; d <= daysInMonth; d++) {
+    const date = new Date(year, month, d);
+    cells.push({ key: `${year}-${month}-${d}`, day: d, date });
+  }
 
   return (
-    <a
-      href={flight.deepLink}
-      target="_blank"
-      rel="noopener noreferrer"
+    <div
       style={{
         background: "rgba(255,255,255,0.55)",
-        borderRadius: tokens.radius.md,
-        padding: "12px 14px",
-        display: "grid",
-        gridTemplateColumns: "auto 1fr auto",
-        alignItems: "center",
-        gap: 12,
-        textDecoration: "none",
-        color: c.ink,
+        borderRadius: tokens.radius.lg,
+        padding: "14px 12px 10px",
       }}
     >
-      <AirlineBadge code={flight.airline} color={airlineColor} />
-      <div style={{ minWidth: 0 }}>
-        <div
-          style={{
-            fontFamily: FONT,
-            fontSize: 14,
-            fontWeight: 600,
-            color: c.ink,
-            letterSpacing: -0.1,
-          }}
-        >
-          {flight.airline} {flight.number}
-          <span style={{ color: c.muted, fontWeight: 500, marginLeft: 8 }}>
-            {flight.origin} → {flight.destination}
-          </span>
-        </div>
+      <div
+        style={{
+          ...type.captionUppercase,
+          color: c.ink,
+          marginBottom: 10,
+          paddingLeft: 4,
+        }}
+      >
+        {MONTH_NAMES[month]} {year}
+      </div>
+
+      {/* Weekday header */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(7, 1fr)",
+          gap: 4,
+          marginBottom: 4,
+        }}
+      >
+        {WEEKDAY_LABELS.map((d, i) => (
+          <div
+            key={i}
+            style={{
+              ...type.bodySm,
+              fontSize: 10,
+              fontWeight: 700,
+              textAlign: "center",
+              color: c.muted,
+              padding: "2px 0",
+            }}
+          >
+            {d}
+          </div>
+        ))}
+      </div>
+
+      {/* Day cells */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(7, 1fr)",
+          gap: 4,
+        }}
+      >
+        {cells.map((cell) => {
+          if (cell.day == null || !cell.date) {
+            return <div key={cell.key} style={{ aspectRatio: "1 / 1.1" }} />;
+          }
+          const iso = isoDate(cell.date);
+          const flight = flightByDate.get(iso);
+          const isToday = sameDay(cell.date, today);
+          const isPast = cell.date < today;
+          const isCheapest = cheapestDate === iso;
+          return (
+            <DayCell
+              key={cell.key}
+              day={cell.day}
+              flight={flight}
+              target={target}
+              isToday={isToday}
+              isPast={isPast}
+              isCheapest={isCheapest}
+              loading={loading}
+              date={iso}
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function DayCell({
+  day,
+  flight,
+  target,
+  isToday,
+  isPast,
+  isCheapest,
+  loading,
+  date,
+}: {
+  day: number;
+  flight?: FlightOffer;
+  target: number;
+  isToday: boolean;
+  isPast: boolean;
+  isCheapest: boolean;
+  loading: boolean;
+  date: string;
+}) {
+  const belowTarget = flight && flight.price <= target;
+
+  // Visual states:
+  //   · cheapest of the entire window     → green fill, white text
+  //   · below-target (other days)         → green tint, dark green text
+  //   · has price (above target)          → cream tint, ink text
+  //   · empty (no data this day)          → very faint surface
+  //   · past                              → muted
+  //   · today                             → ring around cell
+  let bg = "transparent";
+  let priceColor = c.muted;
+  let dayColor = c.ink;
+
+  if (flight) {
+    if (isCheapest) {
+      bg = "#16a34a";
+      priceColor = "#ffffff";
+      dayColor = "rgba(255,255,255,0.9)";
+    } else if (belowTarget) {
+      bg = "rgba(22, 163, 74, 0.18)";
+      priceColor = "#15803d";
+      dayColor = c.ink;
+    } else {
+      bg = "rgba(10,10,10,0.05)";
+      priceColor = c.body;
+      dayColor = c.ink;
+    }
+  } else if (loading) {
+    bg = "rgba(10,10,10,0.04)";
+  }
+
+  const content = (
+    <>
+      <div
+        style={{
+          ...type.bodySm,
+          fontSize: 11,
+          fontWeight: 600,
+          color: isPast ? c.mutedSoft : dayColor,
+          textDecoration: isPast ? "line-through" : "none",
+          textAlign: "center",
+          lineHeight: 1,
+        }}
+      >
+        {day}
+      </div>
+      {flight && (
         <div
           style={{
             ...type.bodySm,
-            fontSize: 12,
-            color: c.muted,
-            marginTop: 1,
-          }}
-        >
-          {dateLabel}
-          {flight.stops > 0 && (
-            <span style={{ marginLeft: 8 }}>
-              · {flight.stops} {flight.stops === 1 ? "stop" : "stops"}
-            </span>
-          )}
-        </div>
-      </div>
-      <div style={{ textAlign: "right" }}>
-        <div
-          style={{
-            fontFamily: FONT,
-            fontSize: 16,
+            fontSize: 10,
             fontWeight: 700,
-            color: belowTarget ? "#16a34a" : c.ink,
-            letterSpacing: -0.3,
+            color: priceColor,
+            textAlign: "center",
+            lineHeight: 1,
+            marginTop: 3,
             fontVariantNumeric: "tabular-nums",
           }}
         >
-          ${Math.round(flight.price)}
+          ${flight.price}
         </div>
+      )}
+      {loading && !flight && (
         <div
           style={{
-            ...type.bodySm,
-            fontSize: 11,
-            color: belowTarget ? "#16a34a" : c.muted,
-            marginTop: 1,
-            fontWeight: 600,
+            height: 6,
+            width: "60%",
+            background: "rgba(10,10,10,0.12)",
+            borderRadius: 3,
+            marginTop: 4,
           }}
-        >
-          {belowTarget ? "BELOW TARGET" : `↓ to $${TARGET_PRICE}`}
-        </div>
-      </div>
-    </a>
+        />
+      )}
+    </>
   );
+
+  const sharedStyle: React.CSSProperties = {
+    background: bg,
+    aspectRatio: "1 / 1.1",
+    borderRadius: tokens.radius.sm,
+    padding: "5px 3px",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    boxShadow: isToday
+      ? `inset 0 0 0 1.5px ${c.ink}`
+      : "none",
+    fontFamily: FONT,
+  };
+
+  if (flight) {
+    return (
+      <a
+        href={flight.deepLink}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{ ...sharedStyle, textDecoration: "none", cursor: "pointer" }}
+      >
+        {content}
+      </a>
+    );
+  }
+  return <div style={sharedStyle}>{content}</div>;
+}
+
+function isoDate(d: Date): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+function sameDay(a: Date, b: Date): boolean {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
+}
+
+function placeholderCalendar(origin: string, destination: string): FlightOffer[] {
+  // Spread 12 weekly Friday sample prices across the next 3 months so the
+  // calendar has something to render when SerpAPI isn't configured.
+  const out: FlightOffer[] = [];
+  const d = new Date();
+  const offset = ((5 - d.getDay() + 7) % 7) || 7;
+  d.setDate(d.getDate() + offset);
+  const prices = [342, 298, 268, 412, 318, 184, 274, 392, 256, 322, 244, 380];
+  for (let i = 0; i < 12; i++) {
+    out.push({
+      airline: "B6",
+      number: "718",
+      origin,
+      destination,
+      departureDate: isoDate(d),
+      price: prices[i],
+      currency: "USD",
+      stops: 0,
+      deepLink: `https://www.google.com/flights#flt=${origin}.${destination}.${isoDate(d)};c:USD;e:1;sd:1;t:f`,
+    });
+    d.setDate(d.getDate() + 7);
+  }
+  return out;
 }
 
 function formatFlightDate(yyyymmdd: string): string {
@@ -1477,146 +1763,6 @@ function formatFlightDate(yyyymmdd: string): string {
   }).format(date);
 }
 
-/** Common-carrier brand colors. Falls back to ink for unknown. */
-function airlineBrandColor(code: string): string {
-  const map: Record<string, string> = {
-    AA: "#0078D2",
-    AC: "#D22630",
-    AF: "#002157",
-    AS: "#01426A",
-    AV: "#E40520",
-    AY: "#0A0",
-    AZ: "#1A1A1A",
-    B6: "#0033A0",
-    BA: "#075AAA",
-    CX: "#006D63",
-    DL: "#C8102E",
-    EK: "#D71921",
-    EY: "#BD8B13",
-    F9: "#00824B",
-    FI: "#0F2D4C",
-    G4: "#03A8E1",
-    HA: "#A6093D",
-    IB: "#D70F3D",
-    JL: "#C8102E",
-    KE: "#00256A",
-    KL: "#00A1DE",
-    LH: "#05164D",
-    LX: "#E30613",
-    NH: "#13448F",
-    NK: "#FFCB05",
-    OS: "#E2231A",
-    OZ: "#D5006D",
-    QF: "#E40000",
-    QR: "#5A1F39",
-    SK: "#003C71",
-    SQ: "#F99F1C",
-    SU: "#1B315E",
-    TK: "#C70A0C",
-    UA: "#005DAA",
-    VS: "#E10A0A",
-    VY: "#FFCB05",
-    WN: "#304CB2",
-    WS: "#0F69C4",
-  };
-  return map[code.toUpperCase()] ?? c.ink;
-}
-
-function FlightRow({ flight }: { flight: TrackedFlight }) {
-  const belowTarget = flight.price <= flight.target;
-  return (
-    <div
-      style={{
-        background: "rgba(255,255,255,0.5)",
-        borderRadius: tokens.radius.md,
-        padding: "12px 14px",
-        display: "grid",
-        gridTemplateColumns: "auto 1fr auto",
-        alignItems: "center",
-        gap: 12,
-      }}
-    >
-      <AirlineBadge code={flight.airline} color={flight.airlineColor} />
-      <div style={{ minWidth: 0 }}>
-        <div
-          style={{
-            fontFamily: FONT,
-            fontSize: 14,
-            fontWeight: 600,
-            color: c.ink,
-            letterSpacing: -0.1,
-          }}
-        >
-          {flight.airline} {flight.number}
-          <span style={{ color: c.muted, fontWeight: 500, marginLeft: 8 }}>
-            {flight.from} → {flight.to}
-          </span>
-        </div>
-        <div
-          style={{
-            ...type.bodySm,
-            fontSize: 12,
-            color: c.muted,
-            marginTop: 1,
-          }}
-        >
-          {flight.date}
-        </div>
-      </div>
-      <div style={{ textAlign: "right" }}>
-        <div
-          style={{
-            fontFamily: FONT,
-            fontSize: 16,
-            fontWeight: 700,
-            color: belowTarget ? "#16a34a" : c.ink,
-            letterSpacing: -0.3,
-            fontVariantNumeric: "tabular-nums",
-          }}
-        >
-          ${flight.price}
-        </div>
-        <div
-          style={{
-            ...type.bodySm,
-            fontSize: 11,
-            color: belowTarget ? "#16a34a" : c.muted,
-            marginTop: 1,
-            fontWeight: 600,
-          }}
-        >
-          {belowTarget ? "BELOW TARGET" : `↓ to $${flight.target}`}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function AirlineBadge({ code, color }: { code: string; color: string }) {
-  return (
-    <div
-      style={{
-        width: 32,
-        height: 32,
-        borderRadius: tokens.radius.sm,
-        background: color,
-        color: "white",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        fontFamily: FONT,
-        fontSize: 11,
-        fontWeight: 700,
-        letterSpacing: 0.4,
-        flexShrink: 0,
-      }}
-    >
-      {code}
-    </div>
-  );
-}
-
-/** Crude city → airport code mapping for the flight card placeholder. */
 function nearestAirport(cityLabel: string): string {
   const c = cityLabel.toLowerCase();
   const lookup: Record<string, string> = {
@@ -1980,6 +2126,7 @@ function Onboarding({
       partnerName: partnerName.trim(),
       partnerLocation: partnerLocation!,
       partnerAirport: partnerAirport.trim().toUpperCase(),
+      targetPrice: existing?.targetPrice ?? 300,
       nextVisitISO: new Date(nextVisit).toISOString(),
       lastVisitISO: new Date(lastVisit).toISOString(),
     });

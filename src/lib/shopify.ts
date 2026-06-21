@@ -92,14 +92,13 @@ export async function getTrackstarYTDRevenue(): Promise<number | null> {
     const MAX_PAGES = 80; // safety cap → up to 20k orders
 
     while (pages < MAX_PAGES) {
-      const afterClause = cursor ? `, after: "${cursor}"` : "";
       const query = `
-        query {
+        query OrdersPage($filter: String!, $first: Int!, $after: String) {
           orders(
-            query: "created_at:>=${start} created_at:<${end} financial_status:paid"
-            first: 250
+            query: $filter
+            first: $first
             sortKey: CREATED_AT
-            ${afterClause}
+            after: $after
           ) {
             pageInfo { hasNextPage endCursor }
             edges {
@@ -112,6 +111,12 @@ export async function getTrackstarYTDRevenue(): Promise<number | null> {
         }
       `;
 
+      const variables = {
+        filter: `created_at:>=${start} created_at:<${end} financial_status:paid`,
+        first: 250,
+        after: cursor,
+      };
+
       const res = await fetch(
         `https://${store}/admin/api/${API_VERSION}/graphql.json`,
         {
@@ -120,7 +125,7 @@ export async function getTrackstarYTDRevenue(): Promise<number | null> {
             "Content-Type": "application/json",
             "X-Shopify-Access-Token": token,
           },
-          body: JSON.stringify({ query }),
+          body: JSON.stringify({ query, variables }),
           next: { revalidate: 3600 },
         }
       );

@@ -14,7 +14,9 @@ export default async function SuccessPage({
 
   const stripeKey = process.env.STRIPE_SECRET_KEY;
   if (!stripeKey) {
-    // No Stripe configured — let users in anyway (dev fallback).
+    if (process.env.NODE_ENV === "production") {
+      redirect("/apps/handwriting");
+    }
     return <SuccessDownload />;
   }
 
