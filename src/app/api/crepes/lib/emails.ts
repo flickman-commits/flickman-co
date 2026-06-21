@@ -24,11 +24,14 @@ type ResendResponse = { id?: string; error?: { message: string } };
 async function sendViaResend(payload: {
   from: string;
   to: string[];
+  cc?: string[];
   subject: string;
   html: string;
   text: string;
   replyTo?: string;
   attachments?: { filename: string; content: string }[];
+  /** ISO 8601 timestamp (with offset or Z) for delayed send. */
+  scheduledAt?: string;
 }): Promise<ResendResponse> {
   const key = process.env.RESEND_API_KEY;
   if (!key) throw new Error("RESEND_API_KEY not set");
@@ -40,8 +43,10 @@ async function sendViaResend(payload: {
     html: payload.html,
     text: payload.text,
   };
+  if (payload.cc && payload.cc.length > 0) body.cc = payload.cc;
   if (payload.replyTo) body.reply_to = payload.replyTo;
   if (payload.attachments) body.attachments = payload.attachments;
+  if (payload.scheduledAt) body.scheduled_at = payload.scheduledAt;
 
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -58,6 +63,62 @@ async function sendViaResend(payload: {
     );
   }
   return json;
+}
+
+/* ──────────────────────────────────────────────────────────────── */
+/* Reminder scheduling helpers                                       */
+/* ──────────────────────────────────────────────────────────────── */
+
+/**
+ * Build a JS Date that represents "the day before <dateISO> at 10:00 AM ET".
+ * Returns null if that moment is already in the past (or less than 5 minutes
+ * away, since Resend will reject scheduled_at in the past).
+ *
+ * Brute-forces the EDT/EST offset by checking which candidate UTC hour
+ * formats back to 10 AM in America/New_York for that date.
+ */
+function reminderUtcDate(dateISO: string): Date | null {
+  const [y, m, d] = dateISO.split("-").map(Number);
+
+  // Day-before in calendar terms (ET). Compute it as a UTC midnight probe.
+  const probe = new Date(Date.UTC(y, m - 1, d - 1, 0, 0, 0));
+  const dayBefore = {
+    y: probe.getUTCFullYear(),
+    m: probe.getUTCMonth() + 1,
+    d: probe.getUTCDate(),
+  };
+
+  // Try candidate UTC hours 13–16 — covers EDT (-4) and EST (-5).
+  for (const utcHour of [13, 14, 15, 16]) {
+    const candidate = new Date(
+      Date.UTC(dayBefore.y, dayBefore.m - 1, dayBefore.d, utcHour, 0, 0)
+    );
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/New_York",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }).formatToParts(candidate);
+    const map: Record<string, string> = {};
+    parts.forEach((p) => {
+      if (p.type !== "literal") map[p.type] = p.value;
+    });
+    if (parseInt(map.hour, 10) === 10 && parseInt(map.day, 10) === dayBefore.d) {
+      return candidate;
+    }
+  }
+  return null;
+}
+
+export function reminderScheduledAt(dateISO: string): string | null {
+  const candidate = reminderUtcDate(dateISO);
+  if (!candidate) return null;
+  // Resend rejects past-or-imminent timestamps. Skip if less than 5 min away.
+  if (candidate.getTime() < Date.now() + 5 * 60 * 1000) return null;
+  return candidate.toISOString();
 }
 
 function fmtSundayLong(dateISO: string): string {
@@ -202,7 +263,65 @@ export async function sendApprovalToGuest(opts: {
 }
 
 /* ──────────────────────────────────────────────────────────────── */
-/* 3. Guest gets a polite decline                                    */
+/* 3. Guest gets a 1-day-before reminder (scheduled via Resend)      */
+/* ──────────────────────────────────────────────────────────────── */
+
+export async function scheduleReminderToGuest(opts: {
+  name: string;
+  email: string;
+  dateISO: string;
+  party: 1 | 2;
+}): Promise<{ scheduled: boolean; scheduledAt?: string }> {
+  const scheduledAt = reminderScheduledAt(opts.dateISO);
+  if (!scheduledAt) return { scheduled: false };
+
+  const longDate = fmtSundayLong(opts.dateISO);
+  const subject = `Reminder: Crepe Sundays tomorrow at 11`;
+
+  const html = `<!doctype html>
+<html><body style="margin:0; padding:32px 16px; background:#FBF4E2; font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;">
+  <div style="max-width: 520px; margin: 0 auto; background: #FFFCF6; border:2px solid #2A1A14; border-radius:6px; padding:28px 24px 22px; box-shadow: 0 6px 0 #2A1A14;">
+    <div style="font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #B23A2A; margin-bottom: 10px;">Crepe Sundays · Reminder</div>
+    <h1 style="font-family: ui-serif, Georgia, serif; font-size: 26px; margin: 0 0 10px; color: #2A1A14;">
+      See you tomorrow, ${escapeHtml(opts.name.split(" ")[0])}.
+    </h1>
+    <p style="margin: 0 0 14px; color: #4B3A2F; font-size: 16px; line-height: 1.55;">
+      Quick reminder: you&rsquo;re booked for <strong>${escapeHtml(longDate)}</strong> at 11 AM. Table for ${opts.party}.
+    </p>
+    <p style="margin: 0 0 14px; color: #4B3A2F; font-size: 15px; line-height: 1.55;">
+      If anything changed and you can&rsquo;t make it, just reply to this email so we can give the spot to someone else.
+    </p>
+    <p style="margin: 0; color: #4B3A2F; font-size: 15px; line-height: 1.55;">
+      Otherwise, come hungry.
+    </p>
+    <p style="margin: 24px 0 0; color: #7C6A5D; font-size: 13px; font-style: italic;">
+      Matt &amp; Nat
+    </p>
+  </div>
+</body></html>`;
+
+  const text =
+    `See you tomorrow, ${opts.name.split(" ")[0]}.\n\n` +
+    `Quick reminder: you're booked for ${longDate} at 11 AM. Table for ${opts.party}.\n\n` +
+    `If anything changed and you can't make it, just reply to this email so we can give the spot to someone else.\n\n` +
+    `Otherwise, come hungry.\nMatt & Nat`;
+
+  await sendViaResend({
+    from: FROM,
+    to: [opts.email],
+    cc: [NOTIFY],
+    replyTo: NOTIFY,
+    subject,
+    html,
+    text,
+    scheduledAt,
+  });
+
+  return { scheduled: true, scheduledAt };
+}
+
+/* ──────────────────────────────────────────────────────────────── */
+/* 4. Guest gets a polite decline                                    */
 /* ──────────────────────────────────────────────────────────────── */
 
 export async function sendDenialToGuest(opts: {

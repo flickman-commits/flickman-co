@@ -82,9 +82,15 @@ type Row =
   | { kind: "past"; date: Date; guests: string; party: number }
   | { kind: "open"; date: Date };
 
+type View = "receipt" | "form";
+
 export default function CalendarSection({ palette }: { palette: Palette }) {
   const c = palette;
   const [selected, setSelected] = useState<Date | null>(null);
+  const [view, setView] = useState<View>("receipt");
+  // Tracks if user has interacted so we only animate slides AFTER first interaction,
+  // not on initial page render.
+  const [hasNavigated, setHasNavigated] = useState(false);
 
   const rows: Row[] = useMemo(() => {
     const past: Row[] = PAST_GUESTS.map((g) => ({
@@ -102,126 +108,179 @@ export default function CalendarSection({ palette }: { palette: Palette }) {
     return [...past, ...upcoming];
   }, []);
 
+  const goToForm = (d: Date) => {
+    setSelected(d);
+    setHasNavigated(true);
+    setView("form");
+  };
+  const goBack = () => {
+    setHasNavigated(true);
+    setView("receipt");
+  };
+
+  const slideAnim =
+    !hasNavigated
+      ? "none"
+      : view === "form"
+      ? "crepes-slide-from-right 320ms cubic-bezier(0.2, 0.8, 0.2, 1) both"
+      : "crepes-slide-from-left 320ms cubic-bezier(0.2, 0.8, 0.2, 1) both";
+
   return (
     <>
-      {/* ─── Guest check receipt ─────────────────────────────────── */}
+      {/* Inline keyframes for the slide-over animation between receipt and form. */}
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            @keyframes crepes-slide-from-right {
+              from { transform: translateX(14%); opacity: 0; }
+              to   { transform: translateX(0);   opacity: 1; }
+            }
+            @keyframes crepes-slide-from-left {
+              from { transform: translateX(-14%); opacity: 0; }
+              to   { transform: translateX(0);    opacity: 1; }
+            }
+          `,
+        }}
+      />
+
       <div
         style={{
-          background: c.white,
-          border: `2px solid ${c.ink}`,
-          borderRadius: 4,
-          padding: "0",
-          boxShadow: `0 6px 0 ${c.ink}`,
           maxWidth: 520,
           margin: "0 auto",
           overflow: "hidden",
         }}
       >
-        <Perforation color={c.red} />
-
-        <div style={{ padding: "18px 22px 12px", textAlign: "center" }}>
-          <h3
-            style={{
-              fontFamily: "ui-serif, Georgia, 'Times New Roman', serif",
-              fontWeight: 700,
-              fontSize: "clamp(28px, 6vw, 36px)",
-              letterSpacing: 1,
-              color: c.red,
-              margin: 0,
-              lineHeight: 1,
-              textTransform: "uppercase",
-            }}
-          >
-            Guest Check
-          </h3>
-          <div
-            style={{
-              fontFamily: "ui-sans-serif, system-ui, sans-serif",
-              fontSize: 11,
-              fontWeight: 700,
-              letterSpacing: 2,
-              textTransform: "uppercase",
-              color: c.muted,
-              marginTop: 6,
-            }}
-          >
-            Crepe Sundays · West Village · 11 AM
+        {view === "receipt" && (
+          <div key="receipt" style={{ animation: slideAnim }}>
+            <GuestCheckReceipt palette={c} rows={rows} onBook={goToForm} />
           </div>
-        </div>
+        )}
 
-        {/* Column header (3 columns now, no check column) */}
-        <div
+        {view === "form" && selected && (
+          <div key="form" style={{ animation: slideAnim }}>
+            <BookingForm date={selected} palette={c} onBack={goBack} />
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
+/* ──────────────────────────────────────────────────────────────── */
+/* Guest check receipt                                              */
+/* ──────────────────────────────────────────────────────────────── */
+
+function GuestCheckReceipt({
+  palette,
+  rows,
+  onBook,
+}: {
+  palette: Palette;
+  rows: Row[];
+  onBook: (d: Date) => void;
+}) {
+  const c = palette;
+  return (
+    <div
+      style={{
+        background: c.white,
+        border: `2px solid ${c.ink}`,
+        borderRadius: 4,
+        padding: 0,
+        boxShadow: `0 6px 0 ${c.ink}`,
+        overflow: "hidden",
+      }}
+    >
+      <Perforation color={c.red} />
+
+      <div style={{ padding: "18px 22px 12px", textAlign: "center" }}>
+        <h3
           style={{
-            display: "grid",
-            gridTemplateColumns: "1.4fr 0.9fr 0.5fr",
-            gap: 0,
-            padding: "8px 16px 6px",
-            borderTop: `2px solid ${RECEIPT_TEAL_DARK}`,
-            borderBottom: `2px solid ${RECEIPT_TEAL_DARK}`,
-            background: `${RECEIPT_TEAL}22`,
-          }}
-        >
-          {["Guests", "Date", "Party"].map((label, i) => (
-            <div
-              key={label}
-              style={{
-                fontFamily: "ui-sans-serif, system-ui, sans-serif",
-                fontSize: 10,
-                fontWeight: 700,
-                letterSpacing: 1.6,
-                textTransform: "uppercase",
-                color: RECEIPT_TEAL_DARK,
-                textAlign: i === 2 ? "center" : "left",
-              }}
-            >
-              {label}
-            </div>
-          ))}
-        </div>
-
-        <div style={{ padding: "0 16px" }}>
-          {rows.map((row, i) => (
-            <ReceiptRow
-              key={`${row.kind}-${row.date.toISOString()}`}
-              row={row}
-              palette={c}
-              selected={
-                row.kind === "open" &&
-                selected?.toDateString() === row.date.toDateString()
-              }
-              onClick={() => row.kind === "open" && setSelected(row.date)}
-              isLast={i === rows.length - 1}
-            />
-          ))}
-        </div>
-
-        {/* Centered footer */}
-        <div
-          style={{
-            padding: "10px 18px 14px",
-            textAlign: "center",
-            fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
-            fontSize: 10,
-            color: c.red,
-            opacity: 0.85,
+            fontFamily: "ui-serif, Georgia, 'Times New Roman', serif",
+            fontWeight: 700,
+            fontSize: "clamp(28px, 6vw, 36px)",
             letterSpacing: 1,
+            color: c.red,
+            margin: 0,
+            lineHeight: 1,
+            textTransform: "uppercase",
           }}
         >
-          SERVED WITH ♥
+          Guest Check
+        </h3>
+        <div
+          style={{
+            fontFamily: "ui-sans-serif, system-ui, sans-serif",
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: 2,
+            textTransform: "uppercase",
+            color: c.muted,
+            marginTop: 6,
+          }}
+        >
+          Crepe Sundays · West Village · 11 AM
         </div>
-
-        <Perforation color={c.red} />
       </div>
 
-      {/* ─── Selected-date booking form ─────────────────────────── */}
-      {selected && (
-        <BookingForm
-          date={selected}
-          palette={c}
-          onCancel={() => setSelected(null)}
-        />
-      )}
-    </>
+      {/* 2-column header: Date | Guests */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "0.55fr 1fr",
+          gap: 0,
+          padding: "8px 16px 6px",
+          borderTop: `2px solid ${RECEIPT_TEAL_DARK}`,
+          borderBottom: `2px solid ${RECEIPT_TEAL_DARK}`,
+          background: `${RECEIPT_TEAL}22`,
+        }}
+      >
+        {["Date", "Guests"].map((label) => (
+          <div
+            key={label}
+            style={{
+              fontFamily: "ui-sans-serif, system-ui, sans-serif",
+              fontSize: 10,
+              fontWeight: 700,
+              letterSpacing: 1.6,
+              textTransform: "uppercase",
+              color: RECEIPT_TEAL_DARK,
+              textAlign: "left",
+            }}
+          >
+            {label}
+          </div>
+        ))}
+      </div>
+
+      <div style={{ padding: "0 16px" }}>
+        {rows.map((row, i) => (
+          <ReceiptRow
+            key={`${row.kind}-${row.date.toISOString()}`}
+            row={row}
+            palette={c}
+            onBook={() => row.kind === "open" && onBook(row.date)}
+            isLast={i === rows.length - 1}
+          />
+        ))}
+      </div>
+
+      <div
+        style={{
+          padding: "10px 18px 14px",
+          textAlign: "center",
+          fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+          fontSize: 10,
+          color: c.red,
+          opacity: 0.85,
+          letterSpacing: 1,
+        }}
+      >
+        SERVED WITH ♥
+      </div>
+
+      <Perforation color={c.red} />
+    </div>
   );
 }
 
@@ -238,11 +297,11 @@ type SubmitState =
 function BookingForm({
   date,
   palette,
-  onCancel,
+  onBack,
 }: {
   date: Date;
   palette: Palette;
-  onCancel: () => void;
+  onBack: () => void;
 }) {
   const c = palette;
   const [name, setName] = useState("");
@@ -292,20 +351,18 @@ function BookingForm({
   };
 
   const cardStyle: React.CSSProperties = {
-    marginTop: 24,
     background: c.white,
     border: `2px solid ${c.ink}`,
     borderRadius: 6,
-    padding: "22px 22px 18px",
+    padding: "18px 22px 18px",
     boxShadow: `0 6px 0 ${c.ink}`,
-    maxWidth: 520,
-    marginInline: "auto",
   };
 
   if (state.kind === "done") {
     return (
       <div style={{ ...cardStyle, textAlign: "center" }}>
-        <div style={{ fontSize: 40, marginBottom: 8 }}>🥞</div>
+        <BackButton palette={c} onClick={onBack} label="Back to dates" />
+        <div style={{ fontSize: 40, margin: "8px 0 4px" }}>🥞</div>
         <div
           style={{
             fontFamily: "ui-sans-serif, system-ui, sans-serif",
@@ -336,34 +393,20 @@ function BookingForm({
             fontSize: 14,
             color: c.body,
             lineHeight: 1.55,
-            marginBottom: 16,
+            marginBottom: 4,
           }}
         >
-          You&rsquo;ll hear back within a day. If we&rsquo;re a yes,
-          you&rsquo;ll get a confirmation with a calendar invite.
+          You&rsquo;ll hear back within a day. If we&rsquo;re a yes, you&rsquo;ll
+          get a confirmation with a calendar invite.
         </div>
-        <button
-          onClick={onCancel}
-          style={{
-            fontFamily: "ui-sans-serif, system-ui, sans-serif",
-            background: c.white,
-            color: c.ink,
-            border: `2px solid ${c.ink}`,
-            borderRadius: 4,
-            padding: "10px 22px",
-            fontWeight: 700,
-            fontSize: 13,
-            cursor: "pointer",
-          }}
-        >
-          Done
-        </button>
       </div>
     );
   }
 
   return (
     <form onSubmit={handleSubmit} style={cardStyle}>
+      <BackButton palette={c} onClick={onBack} label="Back to dates" />
+
       <div
         style={{
           fontFamily: "ui-sans-serif, system-ui, sans-serif",
@@ -372,7 +415,7 @@ function BookingForm({
           fontWeight: 700,
           letterSpacing: 2,
           textTransform: "uppercase",
-          marginBottom: 8,
+          marginBottom: 6,
           textAlign: "center",
         }}
       >
@@ -488,31 +531,12 @@ function BookingForm({
         </div>
       )}
 
-      <div style={{ display: "flex", gap: 10, marginTop: 18 }}>
-        <button
-          type="button"
-          onClick={onCancel}
-          disabled={state.kind === "submitting"}
-          style={{
-            fontFamily: "ui-sans-serif, system-ui, sans-serif",
-            background: c.white,
-            color: c.ink,
-            border: `2px solid ${c.ink}`,
-            borderRadius: 4,
-            padding: "12px 18px",
-            fontWeight: 700,
-            fontSize: 14,
-            cursor: state.kind === "submitting" ? "not-allowed" : "pointer",
-            opacity: state.kind === "submitting" ? 0.5 : 1,
-          }}
-        >
-          Cancel
-        </button>
+      <div style={{ marginTop: 18 }}>
         <button
           type="submit"
           disabled={!canSubmit || state.kind === "submitting"}
           style={{
-            flex: 1,
+            width: "100%",
             fontFamily: "ui-sans-serif, system-ui, sans-serif",
             background: canSubmit ? c.red : "#D5BFBA",
             color: c.white,
@@ -546,6 +570,44 @@ function BookingForm({
         We approve every reservation. You&rsquo;ll hear back within a day.
       </div>
     </form>
+  );
+}
+
+function BackButton({
+  palette,
+  onClick,
+  label,
+}: {
+  palette: Palette;
+  onClick: () => void;
+  label: string;
+}) {
+  const c = palette;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        background: "transparent",
+        border: "none",
+        cursor: "pointer",
+        color: c.muted,
+        fontFamily: "ui-sans-serif, system-ui, sans-serif",
+        fontSize: 12,
+        fontWeight: 700,
+        letterSpacing: 0.4,
+        textTransform: "uppercase",
+        padding: "4px 0 12px",
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 4,
+      }}
+    >
+      <span aria-hidden style={{ fontSize: 14, lineHeight: 1 }}>
+        ←
+      </span>
+      {label}
+    </button>
   );
 }
 
@@ -600,63 +662,29 @@ function inputStyle(c: Palette): React.CSSProperties {
 function ReceiptRow({
   row,
   palette,
-  selected,
-  onClick,
+  onBook,
   isLast,
 }: {
   row: Row;
   palette: Palette;
-  selected: boolean;
-  onClick: () => void;
+  onBook: () => void;
   isLast: boolean;
 }) {
   const c = palette;
-  const isOpen = row.kind === "open";
   const isPast = row.kind === "past";
-
-  const handleKey = (e: React.KeyboardEvent) => {
-    if (!isOpen) return;
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      onClick();
-    }
-  };
 
   return (
     <div
-      role={isOpen ? "button" : undefined}
-      tabIndex={isOpen ? 0 : undefined}
-      onClick={isOpen ? onClick : undefined}
-      onKeyDown={handleKey}
       style={{
         display: "grid",
-        gridTemplateColumns: "1.4fr 0.9fr 0.5fr",
+        gridTemplateColumns: "0.55fr 1fr",
         gap: 0,
         alignItems: "center",
         padding: "12px 0 10px",
         borderBottom: isLast ? "none" : `1px dashed ${RECEIPT_TEAL}`,
-        background: selected ? `${RECEIPT_TEAL}33` : "transparent",
-        cursor: isOpen ? "pointer" : "default",
-        transition: "background 80ms ease",
-        outline: "none",
       }}
     >
-      <div
-        style={{
-          fontFamily: isPast
-            ? "ui-serif, Georgia, serif"
-            : "ui-sans-serif, system-ui, sans-serif",
-          fontSize: 15,
-          fontWeight: isPast ? 600 : 500,
-          color: isOpen ? c.muted : c.ink,
-          fontStyle: isPast ? "italic" : "normal",
-          letterSpacing: -0.2,
-          paddingRight: 6,
-        }}
-      >
-        {row.kind === "past" ? row.guests : "Open"}
-      </div>
-
+      {/* DATE column */}
       <div
         style={{
           fontFamily:
@@ -670,19 +698,101 @@ function ReceiptRow({
         {fmtDateShort(row.date)}
       </div>
 
-      <div
-        style={{
-          fontFamily:
-            "ui-monospace, 'SF Mono', Menlo, Consolas, monospace",
-          fontSize: 14,
-          fontWeight: 700,
-          color: c.ink,
-          textAlign: "center",
-        }}
-      >
-        {row.kind === "past" ? row.party : "·"}
+      {/* GUESTS column: past name (italic serif) OR "Book Now" button (pen underline) */}
+      <div>
+        {isPast && row.kind === "past" ? (
+          <span
+            style={{
+              fontFamily: "ui-serif, Georgia, serif",
+              fontSize: 15,
+              fontWeight: 600,
+              color: c.ink,
+              fontStyle: "italic",
+              letterSpacing: -0.2,
+            }}
+          >
+            {row.guests}
+            <span
+              style={{
+                fontFamily:
+                  "ui-monospace, 'SF Mono', Menlo, Consolas, monospace",
+                fontSize: 12,
+                fontWeight: 600,
+                fontStyle: "normal",
+                color: c.muted,
+                marginLeft: 8,
+                letterSpacing: 0,
+              }}
+            >
+              party of {row.party}
+            </span>
+          </span>
+        ) : (
+          <BookNowButton palette={c} onClick={onBook} />
+        )}
       </div>
     </div>
+  );
+}
+
+function BookNowButton({
+  palette,
+  onClick,
+}: {
+  palette: Palette;
+  onClick: () => void;
+}) {
+  const c = palette;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        background: "transparent",
+        border: "none",
+        padding: "2px 0 0",
+        cursor: "pointer",
+        display: "inline-flex",
+        flexDirection: "column",
+        alignItems: "flex-start",
+        color: c.red,
+      }}
+      aria-label="Book this Sunday"
+    >
+      <span
+        style={{
+          fontFamily: "ui-serif, Georgia, serif",
+          fontSize: 16,
+          fontWeight: 700,
+          color: c.red,
+          letterSpacing: -0.2,
+          fontStyle: "italic",
+        }}
+      >
+        Book Now
+      </span>
+      {/* Hand-drawn pen-style underline */}
+      <svg
+        aria-hidden
+        viewBox="0 0 72 8"
+        preserveAspectRatio="none"
+        style={{
+          display: "block",
+          width: 72,
+          height: 6,
+          marginTop: 1,
+          overflow: "visible",
+        }}
+      >
+        <path
+          d="M 1.5 5 C 12 2.5, 24 6, 36 4 S 60 3, 70.5 5"
+          stroke={c.red}
+          strokeWidth="1.8"
+          fill="none"
+          strokeLinecap="round"
+        />
+      </svg>
+    </button>
   );
 }
 

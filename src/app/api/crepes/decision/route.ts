@@ -5,6 +5,7 @@ import { buildBookingIcs } from "../lib/ics";
 import {
   sendApprovalToGuest,
   sendDenialToGuest,
+  scheduleReminderToGuest,
 } from "../lib/emails";
 
 /**
@@ -89,10 +90,31 @@ export async function GET(req: NextRequest) {
         party: payload.party,
         icsContent: ics,
       });
+
+      // Fire-and-forget the day-before reminder via Resend's scheduled send.
+      // We never block the approve flow on this — if the schedule fails (e.g.
+      // booking is < 24h away), Matt still gets confirmation that the approval
+      // went through.
+      let reminderNote = "";
+      try {
+        const reminder = await scheduleReminderToGuest({
+          name: payload.name,
+          email: payload.email,
+          dateISO: payload.dateISO,
+          party: payload.party,
+        });
+        reminderNote = reminder.scheduled
+          ? " A 10 AM reminder will go out the day before (you're cc'd)."
+          : " (Booking is too close to schedule a day-before reminder.)";
+      } catch (err) {
+        console.error("[crepes/decision] reminder schedule failed:", err);
+        reminderNote = " (Reminder couldn't be scheduled — but the confirmation went through.)";
+      }
+
       return htmlPage({
         title: "Crepe Sundays — Approved",
         heading: "Done. They're confirmed.",
-        body: `${payload.name} just got a confirmation with a calendar invite. Don't forget to add them to the Past Guests list on the site after the visit.`,
+        body: `${payload.name} just got a confirmation with a calendar invite. Don't forget to add them to the Past Guests list on the site after the visit.${reminderNote}`,
         accent: "#1a8a3c",
       });
     } else {
