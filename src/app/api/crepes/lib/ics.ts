@@ -95,6 +95,8 @@ export function buildBookingIcs(opts: {
     `DESCRIPTION:${escapeText(description)}`,
     `LOCATION:${escapeText(location)}`,
     `ORGANIZER;CN=${escapeText(organizerName)}:mailto:${organizerEmail}`,
+    `ATTENDEE;RSVP=FALSE;CN=${escapeText(organizerName)};PARTSTAT=ACCEPTED:mailto:${organizerEmail}`,
+    `ATTENDEE;RSVP=FALSE;CN=Nat;PARTSTAT=ACCEPTED:mailto:${process.env.CREPES_NAT_EMAIL ?? "natalia.ohanesian@gmail.com"}`,
     `ATTENDEE;RSVP=TRUE;CN=${escapeText(opts.guestName)};PARTSTAT=ACCEPTED:mailto:${opts.guestEmail}`,
     "STATUS:CONFIRMED",
     "TRANSP:OPAQUE",

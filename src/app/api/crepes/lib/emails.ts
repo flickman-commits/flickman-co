@@ -246,9 +246,12 @@ export async function sendApprovalToGuest(opts: {
     `Calendar invite is attached (address included).\n\n` +
     `Come hungry.\nMatt & Nat`;
 
+  const NAT = process.env.CREPES_NAT_EMAIL ?? "natalia.ohanesian@gmail.com";
+
   return sendViaResend({
     from: FROM,
     to: [opts.email],
+    cc: [NOTIFY, NAT],
     replyTo: NOTIFY,
     subject,
     html,
