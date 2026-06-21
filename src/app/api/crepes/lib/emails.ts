@@ -36,6 +36,12 @@ async function sendViaResend(payload: {
   const key = process.env.RESEND_API_KEY;
   if (!key) throw new Error("RESEND_API_KEY not set");
 
+  // Temporary debug: log what we actually see at runtime so we can compare
+  // with the value pulled via the CLI. Safe — only logs first 8 chars.
+  console.log(
+    `[resend] key prefix=${key.slice(0, 8)} length=${key.length} hasWhitespace=${/\s/.test(key)} hasQuotes=${/["']/.test(key)}`
+  );
+
   const body: Record<string, unknown> = {
     from: payload.from,
     to: payload.to,
