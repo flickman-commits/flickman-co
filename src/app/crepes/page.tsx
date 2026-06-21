@@ -59,12 +59,8 @@ const FAQ = [
     a: "Yes. Every reservation seats two, so bring one. Tell us who you're bringing when you book and we'll say hi by name when you walk in.",
   },
   {
-    q: "Any dietary stuff?",
-    a: "Almost always. Gluten-free batter, savory crepes that go veggie, coconut milk for the dairy-free crew. Mention it when you book and we'll figure it out.",
-  },
-  {
     q: "How long does it usually go?",
-    a: "About 90 minutes. First crepe hits the pan at 11 sharp. Most folks roll out around 12:30 stuffed and caffeinated.",
+    a: "About 90 minutes. First crepe hits the pan at 11 sharp. Most folks roll out around 12:30 stuffed.",
   },
   {
     q: "What should I bring?",
@@ -78,7 +74,7 @@ const PHOTOS: Photo[] = [
   { src: "/crepes/IMG_2808.jpeg", caption: "Fresh strawberries & bananas" },
   { src: "/crepes/IMG_2813.jpeg", caption: "The hosts" },
   { caption: "The first crepe of the morning" },
-  { caption: "Nat at the espresso bar" },
+  { caption: "Sunday morning" },
   { caption: "Strawberry & cream" },
   { caption: "Sunday morning regulars" },
 ];
@@ -139,7 +135,7 @@ export default function CrepesPage() {
               margin: "8px 0 20px",
             }}
           >
-            🥞 Open Sundays · 11 AM sharp
+            🥞 Every Sunday at 11am
           </div>
 
           {/* Primary CTA above the fold so users can book in one tap. */}
@@ -179,48 +175,54 @@ export default function CrepesPage() {
               margin: "24px auto 0",
             }}
           >
-            Every Sunday, our kitchen turns into a little crepe bar. Matt&rsquo;s
-            on the pan, Nat&rsquo;s on espresso. Sweet, savory, off-menu requests
-            welcome. <strong>One reservation a week. Table for two.</strong>{" "}
-            Friends only. Friends of friends count too, if we like you.
+            Every Sunday we open our home to 2 lovely guests and treat them to
+            the Crepe Sundays experience. Expect to indulge in crepes with a
+            variety of toppings, some fresh squeezed orange juice &amp; a couple
+            of surprises. Please book your reservation below.
           </p>
         </section>
 
-        {/* ─── Menu strip / "today's specials" ─────────────────── */}
-        <MenuStrip />
-
-        {/* ─── Booking calendar ────────────────────────────────── */}
+        {/* ─── Booking calendar (heading lives inside the receipt) ── */}
         <section id="reservations" style={{ padding: "48px 0 16px", scrollMarginTop: 16 }}>
-          <SectionTitle eyebrow="Reservations" title="Book your Sunday" />
-          <p
-            style={{
-              fontFamily: "ui-sans-serif, system-ui, sans-serif",
-              fontSize: 15,
-              color: c.muted,
-              textAlign: "center",
-              maxWidth: 460,
-              margin: "0 auto 28px",
-            }}
-          >
-            One 11:00 AM reservation per Sunday. Seats two. Tap a date to
-            request it. We&rsquo;ll confirm by email.
-          </p>
           <CalendarSection palette={c} />
         </section>
 
-        {/* ─── Photo strip ─────────────────────────────────────── */}
+        {/* ─── Photo strip (horizontal swipe) ──────────────────── */}
         <section style={{ padding: "48px 0 16px" }}>
-          <SectionTitle eyebrow="On the griddle" title="Past Sundays" />
+          <SectionTitle eyebrow="" title="Past Sundays" />
+          {/* Horizontal swipe carousel. Hide native scrollbar via the global
+              rule injected below; keep keyboard/touch scrolling intact. */}
+          <style
+            dangerouslySetInnerHTML={{
+              __html: `.crepes-photo-swipe::-webkit-scrollbar { display: none; }`,
+            }}
+          />
           <div
+            className="crepes-photo-swipe"
             style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+              display: "flex",
               gap: 12,
+              overflowX: "auto",
+              scrollSnapType: "x mandatory",
+              WebkitOverflowScrolling: "touch",
               marginTop: 24,
+              marginInline: -20, // bleed to viewport edges on mobile
+              paddingInline: 20,
+              paddingBottom: 8,
+              scrollbarWidth: "none",
             }}
           >
             {PHOTOS.map((p, i) => (
-              <PhotoPlaceholder key={i} index={i} caption={p.caption} src={p.src} />
+              <div
+                key={i}
+                style={{
+                  flex: "0 0 80%",
+                  maxWidth: 360,
+                  scrollSnapAlign: "center",
+                }}
+              >
+                <PhotoPlaceholder index={i} caption={p.caption} src={p.src} />
+              </div>
             ))}
           </div>
         </section>
@@ -291,13 +293,21 @@ export default function CrepesPage() {
               fontSize: 22,
               color: c.red,
               marginBottom: 8,
+              lineHeight: 1.3,
             }}
           >
-            Come hungry. Leave full.
+            Come hungry, leave full.
           </div>
-          <div style={{ fontSize: 13, color: c.muted }}>
-            Crepe Sundays · our tiny West Village kitchen ·{" "}
-            <span style={{ color: c.ink, fontWeight: 600 }}>Matt &amp; Nat</span>
+          <div
+            style={{
+              fontStyle: "italic",
+              fontFamily: display.style.fontFamily,
+              fontSize: 16,
+              color: c.ink,
+              fontWeight: 600,
+            }}
+          >
+            With love, Matt + Nat
           </div>
         </footer>
       </div>
@@ -318,19 +328,21 @@ function SectionTitle({
 }) {
   return (
     <div style={{ textAlign: "center" }}>
-      <div
-        style={{
-          fontFamily: "ui-sans-serif, system-ui, sans-serif",
-          fontSize: 11,
-          color: c.red,
-          letterSpacing: 2,
-          textTransform: "uppercase",
-          fontWeight: 700,
-          marginBottom: 6,
-        }}
-      >
-        {eyebrow}
-      </div>
+      {eyebrow && (
+        <div
+          style={{
+            fontFamily: "ui-sans-serif, system-ui, sans-serif",
+            fontSize: 11,
+            color: c.red,
+            letterSpacing: 2,
+            textTransform: "uppercase",
+            fontWeight: 700,
+            marginBottom: 6,
+          }}
+        >
+          {eyebrow}
+        </div>
+      )}
       <h2
         style={{
           fontSize: "clamp(28px, 5vw, 40px)",
@@ -361,76 +373,6 @@ function DividerWithStar() {
       <div style={{ flex: 1, height: 1, background: c.hairline }} />
       <span style={{ fontSize: 16, color: c.mustard }}>★</span>
       <div style={{ flex: 1, height: 1, background: c.hairline }} />
-    </div>
-  );
-}
-
-function MenuStrip() {
-  const toppings = [
-    "Banana",
-    "Strawberry",
-    "Maple syrup",
-    "Whipped cream",
-    "Nutella",
-  ];
-  return (
-    <div
-      style={{
-        background: c.white,
-        border: `2px solid ${c.ink}`,
-        borderRadius: 4,
-        padding: "16px 20px 18px",
-        marginTop: 8,
-        boxShadow: `0 6px 0 ${c.ink}`,
-      }}
-    >
-      <div
-        style={{
-          textAlign: "center",
-          fontFamily: "ui-sans-serif, system-ui, sans-serif",
-          fontSize: 10,
-          letterSpacing: 3,
-          textTransform: "uppercase",
-          color: c.muted,
-          marginBottom: 10,
-        }}
-      >
-        TOPPINGS
-      </div>
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          justifyContent: "center",
-          alignItems: "center",
-          gap: "6px 14px",
-          fontFamily: "ui-sans-serif, system-ui, sans-serif",
-          fontSize: 15,
-          fontWeight: 700,
-          color: c.ink,
-        }}
-      >
-        {toppings.map((t, i) => (
-          <span key={t} style={{ display: "inline-flex", alignItems: "center", gap: 14 }}>
-            {t}
-            {i < toppings.length - 1 && (
-              <span style={{ color: c.mustard, fontSize: 10 }}>★</span>
-            )}
-          </span>
-        ))}
-      </div>
-      <div
-        style={{
-          textAlign: "center",
-          fontFamily: "ui-sans-serif, system-ui, sans-serif",
-          fontSize: 13,
-          color: c.muted,
-          fontStyle: "italic",
-          marginTop: 10,
-        }}
-      >
-        …or anything else you request.
-      </div>
     </div>
   );
 }

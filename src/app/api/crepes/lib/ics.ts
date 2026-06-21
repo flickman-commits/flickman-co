@@ -63,6 +63,7 @@ export function buildBookingIcs(opts: {
   party: 1 | 2;
   organizerName?: string;
   organizerEmail?: string;
+  /** Optional override; otherwise reads CREPES_LOCATION env var. */
   location?: string;
 }): string {
   const organizerName = opts.organizerName ?? "Matt & Nat";
@@ -70,13 +71,13 @@ export function buildBookingIcs(opts: {
     opts.organizerEmail ??
     process.env.BOOKING_NOTIFY_EMAIL ??
     "matt@flickmanmedia.com";
-  const location = opts.location ?? "West Village, New York";
+  const location =
+    opts.location ?? process.env.CREPES_LOCATION ?? "West Village, New York";
 
   const start = fmtLocal(opts.dateISO, 11, 0);   // 11:00 AM ET
   const end = fmtLocal(opts.dateISO, 12, 30);    // 12:30 PM ET
   const description =
-    `Crepe Sundays with Matt & Nat. Table for ${opts.party}. ` +
-    `Nat will text you the address closer to the date. Come hungry.`;
+    `Crepe Sundays with Matt & Nat. Table for ${opts.party}. Come hungry.`;
 
   return [
     "BEGIN:VCALENDAR",
@@ -90,7 +91,7 @@ export function buildBookingIcs(opts: {
     `DTSTAMP:${fmtUtcNow()}`,
     `DTSTART;TZID=America/New_York:${start}`,
     `DTEND;TZID=America/New_York:${end}`,
-    "SUMMARY:Crepe Sundays with Matt & Nat",
+    `SUMMARY:Crepe Sundays - ${escapeText(opts.guestName)}`,
     `DESCRIPTION:${escapeText(description)}`,
     `LOCATION:${escapeText(location)}`,
     `ORGANIZER;CN=${escapeText(organizerName)}:mailto:${organizerEmail}`,

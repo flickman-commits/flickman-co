@@ -193,33 +193,33 @@ function GuestCheckReceipt({
     >
       <Perforation color={c.red} />
 
-      <div style={{ padding: "18px 22px 12px", textAlign: "center" }}>
-        <h3
+      <div style={{ padding: "18px 22px 14px", textAlign: "center" }}>
+        <h2
           style={{
             fontFamily: "ui-serif, Georgia, 'Times New Roman', serif",
             fontWeight: 700,
-            fontSize: "clamp(28px, 6vw, 36px)",
-            letterSpacing: 1,
+            fontSize: "clamp(26px, 5.5vw, 32px)",
+            letterSpacing: 0.5,
             color: c.red,
             margin: 0,
-            lineHeight: 1,
+            lineHeight: 1.05,
             textTransform: "uppercase",
           }}
         >
-          Guest Check
-        </h3>
+          Book Your Sunday
+        </h2>
         <div
           style={{
             fontFamily: "ui-sans-serif, system-ui, sans-serif",
-            fontSize: 11,
-            fontWeight: 700,
-            letterSpacing: 2,
-            textTransform: "uppercase",
-            color: c.muted,
-            marginTop: 6,
+            fontSize: 13,
+            color: c.body,
+            marginTop: 8,
+            lineHeight: 1.45,
+            maxWidth: 360,
+            marginInline: "auto",
           }}
         >
-          Crepe Sundays · West Village · 11 AM
+          Tap &lsquo;Book Now&rsquo; next to the date you&rsquo;d like to reserve.
         </div>
       </div>
 
