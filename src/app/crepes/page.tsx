@@ -38,14 +38,12 @@ const c = {
 const REVIEWS = [
   {
     name: "Jason & Julia",
-    where: "Beta testers",
     stars: 5,
     body:
       "As the beta testers of Crepe Sundays, we were so touched by the thought Matt and Nat put into hosting. From an array of fresh crepe toppings to coordinated outfits and a curated playlist, we can’t think of a better way to spend Sunday morning. Already looking forward to our next visit!",
   },
   {
     name: "Tom & Lex",
-    where: "West Village regulars",
     stars: 5,
     body: "It was such a delight to be hosted by Matt & Nat for crepe sundays. They created a space for generous hospitality and connection right in the heart of the west village. Five stars for these two!",
   },
@@ -518,7 +516,7 @@ function FAQRow({
 function ReviewCard({
   review,
 }: {
-  review: { name: string; where: string; stars: number; body: string };
+  review: { name: string; stars: number; body: string };
 }) {
   return (
     <div
@@ -553,7 +551,7 @@ function ReviewCard({
           color: c.muted,
         }}
       >
-        <strong style={{ color: c.ink }}>{review.name}</strong> · {review.where}
+        <strong style={{ color: c.ink, fontSize: 16 }}>{review.name}</strong>
       </div>
     </div>
   );
