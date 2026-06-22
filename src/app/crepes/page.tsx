@@ -43,6 +43,12 @@ const REVIEWS = [
     body:
       "As the beta testers of Crepe Sundays, we were so touched by the thought Matt and Nat put into hosting. From an array of fresh crepe toppings to coordinated outfits and a curated playlist, we can’t think of a better way to spend Sunday morning. Already looking forward to our next visit!",
   },
+  {
+    name: "Tom & Lex",
+    where: "West Village regulars",
+    stars: 5,
+    body: "It was such a delight to be hosted by Matt & Nat for crepe sundays. They created a space for generous hospitality and connection right in the heart of the west village. Five stars for these two!",
+  },
 ];
 
 const FAQ = [
