@@ -21,6 +21,13 @@ type Example = {
   urlLabel: string;
 };
 
+type Selling = {
+  overview: string;
+  buyers: string;
+  valuation: string;
+  keyDrivers: string[];
+};
+
 type BusinessModel = {
   id: string;
   name: string;
@@ -36,6 +43,7 @@ type BusinessModel = {
   cons: string[];
   goodFor: string;
   examples: Example[];
+  selling: Selling;
 };
 
 const C = {
@@ -116,6 +124,18 @@ const MODELS: BusinessModel[] = [
         urlLabel: "Allbirds 10-K (SEC EDGAR)",
       },
     ],
+    selling: {
+      overview: "Most e-commerce brand exits are asset sales handled through M&A brokers or direct strategic outreach. The buyer acquires the brand, customer list, inventory, supplier relationships, and ad accounts. Deals under $5M are common on marketplaces like Acquire.com. Larger exits use advisors like Quiet Light or FE International.",
+      buyers: "Strategic CPG companies looking to buy brand equity instead of building it, e-commerce aggregators (Thrasio and similar roll-up operators), and PE firms building brand portfolios. Profitable subscription-box brands attract particularly strong buyer interest.",
+      valuation: "Smaller brands typically sell for 2 to 4x annual revenue. Profitable, growing brands with strong repeat purchase rates can get 8 to 15x EBITDA. Subscription revenue commands a significant premium over one-time purchase revenue because of its predictability.",
+      keyDrivers: [
+        "Repeat purchase rate and LTV: buyers pay a lot more when customers come back",
+        "Revenue growth trend: an accelerating brand is worth far more than a flat one",
+        "Ad account health and diversification: over-reliance on one platform is a red flag",
+        "Supplier concentration: one factory that can be cut off tanks a deal",
+        "Owner dependence: if the brand is your face, it is hard to sell",
+      ],
+    },
   },
   {
     id: "restaurant",
@@ -185,6 +205,18 @@ const MODELS: BusinessModel[] = [
         urlLabel: "Sweetgreen Investor Relations",
       },
     ],
+    selling: {
+      overview: "Single-location restaurants usually sell through local business brokers or direct private transactions. Multi-location groups attract M&A advisors and institutional buyers. The process is slow and heavily dependent on lease transferability, since without a good lease there is often nothing to sell.",
+      buyers: "Individual operators and entrepreneurs for single locations, PE firms and restaurant groups for chains, and sometimes a competitor buying you out to take your location. Corporate buyers are rare for independents.",
+      valuation: "Independent restaurants typically sell for 2 to 3x SDE (Seller's Discretionary Earnings, which is profit plus the owner's salary). Profitable multi-unit chains trade at 5 to 8x EBITDA. A strong lease in a great location can be worth more than the business itself.",
+      keyDrivers: [
+        "Lease terms and transferability: a short lease or difficult landlord kills a deal",
+        "Whether the business can run without the founder day-to-day",
+        "Revenue trend: buyers discount a declining business heavily",
+        "Staff stability: a restaurant where everyone leaves with the owner is hard to sell",
+        "Brand attachment to the owner personally vs. the location itself",
+      ],
+    },
   },
   {
     id: "agency",
@@ -253,6 +285,18 @@ const MODELS: BusinessModel[] = [
         urlLabel: "Publicis Financial Results (Investor Relations)",
       },
     ],
+    selling: {
+      overview: "Agencies are sold through M&A advisors or via direct outreach from larger firms. Many exits are acqui-hires where the buyer wants your team and client relationships more than a financial return. The process typically takes 6 to 12 months and involves detailed client contract review.",
+      buyers: "Holding companies (WPP, Publicis, Omnicom, IPG), PE-backed agency roll-ups building geographic or capability coverage, and independent agencies looking to acquire a specialization. Strategic buyers are far more common than financial buyers for agencies under $10M in revenue.",
+      valuation: "Small agencies under $3M in revenue typically sell for 0.5 to 1x revenue. Agencies with strong retainer bases and low client concentration can achieve 4 to 8x EBITDA. The multiple expands significantly when recurring retainer revenue is above 70% of total revenue.",
+      keyDrivers: [
+        "Client concentration: if one client is more than 20% of revenue, buyers discount heavily",
+        "Retainer percentage vs. project work: retainers are far more valuable",
+        "Team retention post-close: if talent walks, the deal falls apart",
+        "Whether client relationships live with the agency or with the founder personally",
+        "Revenue growth trend and pipeline visibility",
+      ],
+    },
   },
   {
     id: "lawn",
@@ -322,6 +366,18 @@ const MODELS: BusinessModel[] = [
         urlLabel: "FirstService Investor Relations",
       },
     ],
+    selling: {
+      overview: "Route-based home service businesses are extremely attractive to PE firms running consolidation plays. Many founders get approached by roll-up buyers without ever listing for sale. Deals under $1M SDE often transact privately or through a business broker. Larger operations use M&A advisors.",
+      buyers: "PE-backed home services roll-ups (one of the most active acquisition sectors in private equity right now), larger regional operators looking to expand territory, and individuals buying a cash-flowing business. Strategic roll-ups often pay premiums because adding routes to an existing operation is almost pure profit.",
+      valuation: "Typically 3 to 6x EBITDA for well-run operations, with top-tier route-dense businesses with high contract penetration hitting 7 to 8x. Recurring contract revenue gets priced at a meaningfully higher multiple than one-off job revenue.",
+      keyDrivers: [
+        "Percentage of revenue on recurring annual contracts vs. one-off jobs",
+        "Route density: more jobs per square mile means higher margins and a more defensible business",
+        "Customer churn rate: low churn signals strong service quality",
+        "Owner dependence: buyers discount heavily if the owner is doing most of the work",
+        "Equipment condition and fleet age",
+      ],
+    },
   },
   {
     id: "franchise",
@@ -392,6 +448,18 @@ const MODELS: BusinessModel[] = [
         urlLabel: "Yum! Brands Investor Relations",
       },
     ],
+    selling: {
+      overview: "You are selling your operating license and the physical assets of your location, not the brand itself. The franchisor must approve any transfer, and most franchise agreements include a right of first refusal giving the franchisor the option to buy the location back before you can sell to a third party. The process typically takes 3 to 9 months.",
+      buyers: "Other franchisees within the same system (multi-unit operators looking to expand), PE firms building multi-location franchise groups, and individuals entering the franchise system for the first time. The franchisor vets all buyers before approving the transfer.",
+      valuation: "Well-run franchise locations typically sell for 3 to 5x EBITDA, though it varies significantly by brand. A McDonald's location commands a major premium over a lower-AUV brand. Buyers are essentially paying for a cash-flowing operating business with a proven brand attached.",
+      keyDrivers: [
+        "Brand strength and AUV: a high-volume brand sells at a higher multiple",
+        "Lease terms and how many years remain",
+        "Whether a mandatory remodel is coming (can cost hundreds of thousands of dollars)",
+        "Franchisee relationship history with the franchisor: violations lower the price",
+        "Health of the overall franchise system (is the brand growing or shrinking systemwide)",
+      ],
+    },
   },
   {
     id: "lawfirm",
@@ -461,6 +529,18 @@ const MODELS: BusinessModel[] = [
         urlLabel: "Am Law 100 Rankings (The American Lawyer)",
       },
     ],
+    selling: {
+      overview: "Law firms almost never sell in the traditional sense. The typical exit is a merger, where two firms combine and partners exchange stakes in the new entity. Individual attorneys exit by moving their book of business to another firm, taking their clients with them. True third-party acquisitions are rare and mostly involve non-law legal services businesses.",
+      buyers: "Larger law firms absorbing smaller ones for geographic expansion, practice area depth, or lateral talent. Private equity has recently started entering legal services through alternative business structures in some states, but this is still early and limited.",
+      valuation: "Merged firms are valued based on revenue per lawyer and profits per partner relative to the acquiring firm's benchmarks. An individual partner's book of business, when moving laterally, is typically worth 1 to 2x annual billings as a guarantee negotiated with the new firm.",
+      keyDrivers: [
+        "Portability of client relationships: how many clients follow the attorney personally vs. staying with the firm",
+        "Practice area demand: transactional work (M&A, finance) commands more than some litigation areas",
+        "Partner age and succession planning: a retiring partner's book is harder to value",
+        "Geographic and practice overlap with the acquirer",
+        "Conflicts of interest between the merging firms' client bases",
+      ],
+    },
   },
   {
     id: "school",
@@ -530,6 +610,18 @@ const MODELS: BusinessModel[] = [
         urlLabel: "Duolingo Investor Relations",
       },
     ],
+    selling: {
+      overview: "Education businesses are sold through M&A advisors or industry-specific brokers. Accreditation status is the single most important factor: losing accreditation can make a school essentially unsellable overnight. Deals typically take 9 to 18 months to close because of regulatory review and enrollment due diligence.",
+      buyers: "PE firms running education roll-ups, larger education companies looking for geographic or program expansion, and individual operators. Strategic buyers pay more because they can eliminate duplicated overhead and cross-sell programs to their existing student base.",
+      valuation: "Established accredited schools with stable enrollment trade at 6 to 12x EBITDA. Enrollment trend matters more than any single year's numbers. A school declining 10% per year trades at a steep discount regardless of current profitability.",
+      keyDrivers: [
+        "Accreditation status and any pending regulatory reviews",
+        "Enrollment growth or decline over the prior 3 years",
+        "Student completion and outcomes data (graduation rates, job placement)",
+        "Regulatory compliance history: violations create legal liability for buyers",
+        "Whether the brand is tied to the founder or to the institution itself",
+      ],
+    },
   },
   {
     id: "media",
@@ -599,6 +691,18 @@ const MODELS: BusinessModel[] = [
         urlLabel: "BuzzFeed 10-K (SEC EDGAR)",
       },
     ],
+    selling: {
+      overview: "Media businesses are often sold to strategic buyers who want the audience, not just the cash flow. Ad-dependent businesses are genuinely difficult to sell because buyers are skeptical of revenue tied to platform algorithms. Subscription-first businesses command a significant premium and attract a much wider buyer pool.",
+      buyers: "Larger media companies looking to add audience or content capabilities, tech platforms buying owned content, PE firms building media portfolios, and occasionally individual buyers or family offices. Creator-led brands sometimes sell to the creator themselves through a management buyout.",
+      valuation: "Ad-supported digital media can sell for just 1 to 2x revenue because of the fragility of the model. Subscription-first businesses get 3 to 6x revenue or 10 to 15x EBITDA. The New York Times trades at a premium multiple because subscriptions are more than 60% of revenue and growing.",
+      keyDrivers: [
+        "Subscription percentage vs. advertising percentage: subscriptions are worth dramatically more",
+        "Audience engagement depth vs. raw scale: 100K highly engaged readers is worth more than 1M passives",
+        "Platform diversification: revenue spread across multiple channels is more defensible",
+        "Whether the brand is tied to one creator or is a true institutional voice",
+        "Email list size and direct audience relationships the buyer inherits",
+      ],
+    },
   },
 ];
 
@@ -1221,7 +1325,158 @@ export default function BusinessModelsPage() {
             <hr className="bm-hr" />
 
             <p className="bm-label">Who it is good for</p>
-            <p className="bm-body" style={{ marginBottom: 0 }}>{open.goodFor}</p>
+            <p className="bm-body">{open.goodFor}</p>
+
+            <hr className="bm-hr" />
+
+            {/* Selling section */}
+            <div
+              style={{
+                background: "#1E1A14",
+                borderRadius: 8,
+                padding: "20px 20px 24px",
+                marginBottom: 0,
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+                  fontSize: 10,
+                  letterSpacing: 2,
+                  color: "#C4A84A",
+                  textTransform: "uppercase",
+                  marginBottom: 16,
+                }}
+              >
+                How this business sells
+              </div>
+
+              <p
+                style={{
+                  fontFamily: "ui-sans-serif, system-ui, sans-serif",
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: 1.6,
+                  textTransform: "uppercase",
+                  color: "#8A7A54",
+                  margin: "0 0 6px",
+                }}
+              >
+                How it typically sells
+              </p>
+              <p
+                style={{
+                  fontFamily: "ui-sans-serif, system-ui, sans-serif",
+                  fontSize: 14,
+                  lineHeight: 1.65,
+                  color: "#D4C8A8",
+                  margin: "0 0 18px",
+                }}
+              >
+                {open.selling.overview}
+              </p>
+
+              <p
+                style={{
+                  fontFamily: "ui-sans-serif, system-ui, sans-serif",
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: 1.6,
+                  textTransform: "uppercase",
+                  color: "#8A7A54",
+                  margin: "0 0 6px",
+                }}
+              >
+                Who buys it
+              </p>
+              <p
+                style={{
+                  fontFamily: "ui-sans-serif, system-ui, sans-serif",
+                  fontSize: 14,
+                  lineHeight: 1.65,
+                  color: "#D4C8A8",
+                  margin: "0 0 18px",
+                }}
+              >
+                {open.selling.buyers}
+              </p>
+
+              <p
+                style={{
+                  fontFamily: "ui-sans-serif, system-ui, sans-serif",
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: 1.6,
+                  textTransform: "uppercase",
+                  color: "#8A7A54",
+                  margin: "0 0 6px",
+                }}
+              >
+                Valuation and multiples
+              </p>
+              <p
+                style={{
+                  fontFamily: "ui-sans-serif, system-ui, sans-serif",
+                  fontSize: 14,
+                  lineHeight: 1.65,
+                  color: "#D4C8A8",
+                  margin: "0 0 18px",
+                }}
+              >
+                {open.selling.valuation}
+              </p>
+
+              <p
+                style={{
+                  fontFamily: "ui-sans-serif, system-ui, sans-serif",
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: 1.6,
+                  textTransform: "uppercase",
+                  color: "#8A7A54",
+                  margin: "0 0 10px",
+                }}
+              >
+                What drives value up or down
+              </p>
+              <ul
+                style={{
+                  margin: 0,
+                  padding: 0,
+                  listStyle: "none",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 6,
+                }}
+              >
+                {open.selling.keyDrivers.map((d, i) => (
+                  <li
+                    key={i}
+                    style={{
+                      fontFamily: "ui-sans-serif, system-ui, sans-serif",
+                      fontSize: 14,
+                      lineHeight: 1.55,
+                      color: "#D4C8A8",
+                      paddingLeft: 18,
+                      position: "relative",
+                    }}
+                  >
+                    <span
+                      style={{
+                        position: "absolute",
+                        left: 0,
+                        color: "#C4A84A",
+                        fontSize: 11,
+                        top: 3,
+                      }}
+                    >
+                      →
+                    </span>
+                    {d}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
       )}
