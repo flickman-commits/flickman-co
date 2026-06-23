@@ -1,12 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+type BreakdownBar = {
+  label: string;
+  pct: number;
+  color: string;
+};
 
 type BusinessModel = {
   id: string;
   name: string;
   emoji: string;
   tagline: string;
+  breakdown: BreakdownBar[];
   howYouMakeMoney: string;
   biggestCosts: string[];
   howYouGetCustomers: string;
@@ -16,12 +23,28 @@ type BusinessModel = {
   goodFor: string;
 };
 
+/* Colors */
+const CLR = {
+  cost1: "#B8703A",   // dark sienna — biggest cost
+  cost2: "#C49A4A",   // gold — mid cost
+  cost3: "#D4B870",   // light gold — smaller cost
+  cost4: "#DDD0A8",   // pale — minor cost
+  profit: "#5C8A5C",  // muted green — profit
+};
+
 const MODELS: BusinessModel[] = [
   {
     id: "ecommerce",
     name: "E-commerce Brand",
     emoji: "📦",
     tagline: "You buy products, mark them up, and sell them online.",
+    breakdown: [
+      { label: "Cost of Goods", pct: 30, color: CLR.cost1 },
+      { label: "Paid Advertising", pct: 28, color: CLR.cost2 },
+      { label: "Fulfillment & Shipping", pct: 12, color: CLR.cost3 },
+      { label: "Platform & Ops", pct: 10, color: CLR.cost4 },
+      { label: "Profit", pct: 20, color: CLR.profit },
+    ],
     howYouMakeMoney:
       "You buy something for $15 and sell it for $45. That $30 spread is your gross profit. From there you pay for ads, shipping, and overhead. If your numbers are tight, it works. If your ads are inefficient or your margins are thin, it doesn't.",
     biggestCosts: [
@@ -54,6 +77,13 @@ const MODELS: BusinessModel[] = [
     name: "Restaurant",
     emoji: "🍽️",
     tagline: "You cook food, serve people, and hope the math works out.",
+    breakdown: [
+      { label: "Labor", pct: 33, color: CLR.cost1 },
+      { label: "Food Cost", pct: 32, color: CLR.cost2 },
+      { label: "Rent", pct: 9, color: CLR.cost3 },
+      { label: "Utilities & Other", pct: 20, color: CLR.cost4 },
+      { label: "Profit", pct: 6, color: CLR.profit },
+    ],
     howYouMakeMoney:
       "Customers pay for food and drinks. A plate that costs you $8 to make sells for $28 — that's your gross margin. The problem is after rent, labor, and everything else, most restaurants keep 3–9% of revenue as profit. It's a hard business, but when it works, it's a beautiful one.",
     biggestCosts: [
@@ -86,6 +116,13 @@ const MODELS: BusinessModel[] = [
     name: "Marketing Agency",
     emoji: "💡",
     tagline: "You help other businesses market themselves, and charge for it.",
+    breakdown: [
+      { label: "Labor & Contractors", pct: 55, color: CLR.cost1 },
+      { label: "Overhead & Admin", pct: 8, color: CLR.cost2 },
+      { label: "Tools & Software", pct: 5, color: CLR.cost3 },
+      { label: "Biz Dev & Sales", pct: 5, color: CLR.cost4 },
+      { label: "Profit", pct: 27, color: CLR.profit },
+    ],
     howYouMakeMoney:
       "Clients pay you a monthly retainer (say $5,000–$20,000/month) or a project fee to run their ads, manage their social media, build their brand, or create content. Your main cost is the people doing the work. If you keep your team lean and your clients happy, margins can be great.",
     biggestCosts: [
@@ -117,6 +154,13 @@ const MODELS: BusinessModel[] = [
     name: "Lawn Mowing Company",
     emoji: "🌿",
     tagline: "You mow lawns. People pay you every week to do it.",
+    breakdown: [
+      { label: "Labor", pct: 30, color: CLR.cost1 },
+      { label: "Equipment & Fuel", pct: 15, color: CLR.cost2 },
+      { label: "Vehicle & Transport", pct: 7, color: CLR.cost3 },
+      { label: "Insurance & Admin", pct: 8, color: CLR.cost4 },
+      { label: "Profit", pct: 40, color: CLR.profit },
+    ],
     howYouMakeMoney:
       "You charge $50–$150 per lawn, or sell monthly subscriptions. The magic is density — if you can get 10 lawns on the same street, your drive time drops to zero and profit per hour goes way up. A tight route with loyal customers is a genuinely good small business.",
     biggestCosts: [
@@ -149,6 +193,14 @@ const MODELS: BusinessModel[] = [
     name: "Food Franchise",
     emoji: "🏪",
     tagline: "You buy the right to run a proven restaurant brand.",
+    breakdown: [
+      { label: "Labor", pct: 30, color: CLR.cost1 },
+      { label: "Food Cost", pct: 30, color: CLR.cost2 },
+      { label: "Rent", pct: 10, color: CLR.cost3 },
+      { label: "Royalties & Fees", pct: 8, color: CLR.cost4 },
+      { label: "Other Ops", pct: 10, color: CLR.cost4 },
+      { label: "Profit", pct: 12, color: CLR.profit },
+    ],
     howYouMakeMoney:
       "You operate a location of an established brand (Chick-fil-A, Subway, Dunkin', etc.) and keep the profits after paying royalties. Revenue comes from food sales just like any restaurant, but you're running a proven playbook instead of inventing one.",
     biggestCosts: [
@@ -181,6 +233,13 @@ const MODELS: BusinessModel[] = [
     name: "Law Firm",
     emoji: "⚖️",
     tagline: "You sell legal expertise by the hour — or by the outcome.",
+    breakdown: [
+      { label: "Attorney Salaries", pct: 45, color: CLR.cost1 },
+      { label: "Office & Admin", pct: 12, color: CLR.cost2 },
+      { label: "Malpractice Insurance", pct: 8, color: CLR.cost3 },
+      { label: "Marketing", pct: 5, color: CLR.cost4 },
+      { label: "Profit", pct: 30, color: CLR.profit },
+    ],
     howYouMakeMoney:
       "Three main models: hourly billing (you charge $200–$800/hour for your time), flat fees (a set price for a specific service like drafting a contract), or contingency (you get paid a percentage — typically 33% — only if you win the case). Most firms do a mix.",
     biggestCosts: [
@@ -213,6 +272,13 @@ const MODELS: BusinessModel[] = [
     name: "School",
     emoji: "🎓",
     tagline: "You build a place where people learn something valuable.",
+    breakdown: [
+      { label: "Teacher Salaries", pct: 50, color: CLR.cost1 },
+      { label: "Facilities", pct: 15, color: CLR.cost2 },
+      { label: "Marketing & Enrollment", pct: 10, color: CLR.cost3 },
+      { label: "Curriculum & Tech", pct: 8, color: CLR.cost4 },
+      { label: "Profit", pct: 17, color: CLR.profit },
+    ],
     howYouMakeMoney:
       "Tuition. Students (or their parents) pay to attend. This can be a traditional school, a coding bootcamp, a music academy, an online course business, or anything in between. The model is the same: you create a learning experience, and people pay to access it.",
     biggestCosts: [
@@ -245,6 +311,13 @@ const MODELS: BusinessModel[] = [
     name: "Media Company",
     emoji: "🎙️",
     tagline: "You build an audience and then monetize their attention.",
+    breakdown: [
+      { label: "Content Creation", pct: 40, color: CLR.cost1 },
+      { label: "Sales & Marketing", pct: 15, color: CLR.cost2 },
+      { label: "Distribution & Tech", pct: 10, color: CLR.cost3 },
+      { label: "Admin & Overhead", pct: 8, color: CLR.cost4 },
+      { label: "Profit", pct: 27, color: CLR.profit },
+    ],
     howYouMakeMoney:
       "Multiple streams: advertising (brands pay to reach your audience), sponsorships (a brand pays to be associated with your content), subscriptions (readers or viewers pay directly), and licensing (others pay to use your content). Most media companies mix several of these.",
     biggestCosts: [
@@ -273,6 +346,61 @@ const MODELS: BusinessModel[] = [
       "Creative, patient people who are comfortable with ambiguity and genuinely enjoy the content they're making. The best media operators are obsessed with their audience — they think about what their readers or viewers actually need. If you're doing it just for the money, the audience will sense it.",
   },
 ];
+
+/* ── Animated bar chart ─────────────────────────────────────────── */
+
+function BarChart({ items }: { items: BreakdownBar[] }) {
+  const [go, setGo] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setGo(true), 60);
+    return () => clearTimeout(t);
+  }, []);
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      {items.map((item, i) => (
+        <div key={i}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              marginBottom: 4,
+              fontFamily: "ui-sans-serif, system-ui, sans-serif",
+            }}
+          >
+            <span style={{ fontSize: 12, color: "#5C3D00", fontWeight: 500 }}>
+              {item.label}
+            </span>
+            <span style={{ fontSize: 12, fontWeight: 700, color: "#2C1A00" }}>
+              {item.pct}%
+            </span>
+          </div>
+          <div
+            style={{
+              height: 12,
+              background: "#EDE0BE",
+              borderRadius: 3,
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                height: "100%",
+                width: go ? `${item.pct}%` : "0%",
+                background: item.color,
+                borderRadius: 3,
+                transition: `width 520ms cubic-bezier(0.4, 0, 0.2, 1) ${i * 70}ms`,
+              }}
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ── Page ───────────────────────────────────────────────────────── */
 
 export default function BusinessModelsPage() {
   const [open, setOpen] = useState<BusinessModel | null>(null);
@@ -481,13 +609,7 @@ export default function BusinessModelsPage() {
               marginBottom: 28,
             }}
           >
-            <div
-              style={{
-                flex: 1,
-                height: 1,
-                background: "rgba(255,255,255,0.1)",
-              }}
-            />
+            <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.1)" }} />
             <div
               style={{
                 fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
@@ -499,13 +621,7 @@ export default function BusinessModelsPage() {
             >
               Click a folder to open it
             </div>
-            <div
-              style={{
-                flex: 1,
-                height: 1,
-                background: "rgba(255,255,255,0.1)",
-              }}
-            />
+            <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.1)" }} />
           </div>
 
           {/* Folders grid */}
@@ -524,7 +640,6 @@ export default function BusinessModelsPage() {
                 onClick={() => setOpen(model)}
                 style={{ padding: "18px 20px 18px" }}
               >
-                {/* Tab label text */}
                 <div
                   style={{
                     position: "absolute",
@@ -545,7 +660,6 @@ export default function BusinessModelsPage() {
                   {model.name.toUpperCase()}
                 </div>
 
-                {/* Folder body */}
                 <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
                   <div style={{ fontSize: 28, lineHeight: 1, marginTop: 2, flexShrink: 0 }}>
                     {model.emoji}
@@ -576,7 +690,6 @@ export default function BusinessModelsPage() {
                   </div>
                 </div>
 
-                {/* Bottom clip line */}
                 <div
                   style={{
                     marginTop: 14,
@@ -608,7 +721,7 @@ export default function BusinessModelsPage() {
       {open && (
         <div className="bm-modal-overlay" onClick={() => setOpen(null)}>
           <div className="bm-modal" onClick={(e) => e.stopPropagation()}>
-            {/* Modal header */}
+            {/* Header */}
             <div
               style={{
                 display: "flex",
@@ -671,6 +784,25 @@ export default function BusinessModelsPage() {
               >
                 ×
               </button>
+            </div>
+
+            <hr className="bm-divider" />
+
+            {/* Bar chart */}
+            <p className="bm-section-label">Where the money goes (% of revenue)</p>
+            <div style={{ marginBottom: 8 }}>
+              <BarChart items={open.breakdown} />
+            </div>
+            {/* Legend */}
+            <div style={{ display: "flex", gap: 14, marginBottom: 24, flexWrap: "wrap" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                <div style={{ width: 10, height: 10, borderRadius: 2, background: CLR.cost1 }} />
+                <span style={{ fontSize: 11, color: "#7A5A2A", fontFamily: "ui-sans-serif, system-ui, sans-serif" }}>Costs</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                <div style={{ width: 10, height: 10, borderRadius: 2, background: CLR.profit }} />
+                <span style={{ fontSize: 11, color: "#7A5A2A", fontFamily: "ui-sans-serif, system-ui, sans-serif" }}>Profit</span>
+              </div>
             </div>
 
             <hr className="bm-divider" />
