@@ -8,12 +8,26 @@ type BreakdownBar = {
   color: string;
 };
 
+type KeyTerm = {
+  term: string;
+  definition: string;
+};
+
+type Example = {
+  name: string;
+  stat: string;
+  summary: string;
+  url: string;
+  urlLabel: string;
+};
+
 type BusinessModel = {
   id: string;
   name: string;
   emoji: string;
   tagline: string;
   breakdown: BreakdownBar[];
+  keyTerms: KeyTerm[];
   howYouMakeMoney: string;
   biggestCosts: string[];
   howYouGetCustomers: string;
@@ -21,15 +35,16 @@ type BusinessModel = {
   pros: string[];
   cons: string[];
   goodFor: string;
+  examples: Example[];
 };
 
-/* Colors */
-const CLR = {
-  cost1: "#B8703A",   // dark sienna — biggest cost
-  cost2: "#C49A4A",   // gold — mid cost
-  cost3: "#D4B870",   // light gold — smaller cost
-  cost4: "#DDD0A8",   // pale — minor cost
-  profit: "#5C8A5C",  // muted green — profit
+const C = {
+  a: "#B8703A",
+  b: "#C49A4A",
+  c: "#8B7355",
+  d: "#D4B870",
+  e: "#A09070",
+  profit: "#5C8A5C",
 };
 
 const MODELS: BusinessModel[] = [
@@ -39,38 +54,68 @@ const MODELS: BusinessModel[] = [
     emoji: "📦",
     tagline: "You buy products, mark them up, and sell them online.",
     breakdown: [
-      { label: "Cost of Goods", pct: 30, color: CLR.cost1 },
-      { label: "Paid Advertising", pct: 28, color: CLR.cost2 },
-      { label: "Fulfillment & Shipping", pct: 12, color: CLR.cost3 },
-      { label: "Platform & Ops", pct: 10, color: CLR.cost4 },
-      { label: "Profit", pct: 20, color: CLR.profit },
+      { label: "Cost of Goods", pct: 30, color: C.a },
+      { label: "Paid Advertising", pct: 28, color: C.b },
+      { label: "Fulfillment & Shipping", pct: 12, color: C.c },
+      { label: "Platform & Ops", pct: 10, color: C.d },
+      { label: "Profit", pct: 20, color: C.profit },
+    ],
+    keyTerms: [
+      { term: "Gross Margin", definition: "Revenue minus cost of goods, before operating expenses. A 60% gross margin means you keep $60 of every $100 sold before paying for ads and overhead." },
+      { term: "Customer Acquisition Cost (CAC)", definition: "How much you spend to get one new customer. If you spend $10,000 on ads and get 200 customers, your CAC is $50." },
+      { term: "Lifetime Value (LTV)", definition: "Total revenue a customer generates over their entire relationship with you. If CAC is $50 and LTV is $200, you have a healthy business." },
+      { term: "Return on Ad Spend (ROAS)", definition: "Revenue generated for every dollar spent on advertising. A 3x ROAS means you made $3 in revenue for every $1 in ads." },
+      { term: "Conversion Rate", definition: "The percentage of website visitors who actually buy. A 2% conversion rate means 2 out of every 100 visitors make a purchase." },
     ],
     howYouMakeMoney:
-      "You buy something for $15 and sell it for $45. That $30 spread is your gross profit. From there you pay for ads, shipping, and overhead. If your numbers are tight, it works. If your ads are inefficient or your margins are thin, it doesn't.",
+      "You buy something for $15 and sell it for $45. That $30 spread is your gross profit. From there you pay for ads, shipping, and overhead. If your numbers are tight, it works. If your ads are inefficient or your margins are thin, it does not.",
     biggestCosts: [
-      "Paid advertising (usually your #1 cost — Facebook, Instagram, Google)",
+      "Paid advertising (usually the number one cost: Facebook, Instagram, Google)",
       "Cost of goods (what you pay to make or source the product)",
       "Fulfillment and shipping",
       "Platform fees (Shopify, Amazon, etc.)",
     ],
     howYouGetCustomers:
-      "Mostly paid ads — you put a product in front of someone on Instagram or Google and hope they buy. Some brands build organic audiences through content, influencers, or SEO, but almost everyone starts with paid. Customer acquisition cost (CAC) is the number you obsess over.",
+      "Mostly paid ads. You put a product in front of someone on Instagram or Google and hope they buy. Some brands build organic audiences through content, influencers, or SEO, but almost everyone starts with paid. Customer acquisition cost (CAC) is the number you obsess over.",
     flywheel:
-      "More sales → better supplier pricing → higher margins → more ad budget → more sales. If you can get a customer to buy twice, your economics get way better. The best e-commerce brands turn one-time buyers into repeat customers through email, subscriptions, or just being really good.",
+      "More sales lead to better supplier pricing, which means higher margins, which means more ad budget, which means more sales. If you can get a customer to buy twice, your economics get way better. The best brands turn one-time buyers into repeat customers through email, subscriptions, or just being really good.",
     pros: [
-      "No physical location needed — run it from anywhere",
+      "No physical location needed: run it from anywhere",
       "Scales fast once you find a product that works",
       "Tons of data to help you make decisions",
       "Global customer base from day one",
     ],
     cons: [
       "Ads are expensive and getting more expensive every year",
-      "Very competitive — someone can copy your product overnight",
-      "Inventory risk — you can get stuck holding stuff that won't sell",
-      "Thin margins if you're not careful",
+      "Very competitive: someone can copy your product overnight",
+      "Inventory risk: you can get stuck holding stuff that will not sell",
+      "Thin margins if you are not careful",
     ],
     goodFor:
-      "People who are analytical, patient, and comfortable with uncertainty. You need to love testing, iterating, and staring at spreadsheets. It also helps to have a genuine interest in the product category — passion often leads to better marketing.",
+      "People who are analytical, patient, and comfortable with uncertainty. You need to love testing, iterating, and staring at spreadsheets. It also helps to have a genuine interest in the product category, because passion often leads to better marketing.",
+    examples: [
+      {
+        name: "Warby Parker",
+        stat: "$670M revenue, 54.5% gross margin, -$63M net income (2023)",
+        summary: "Warby Parker shows how strong a DTC brand's gross margin can be (54.5%), while also showing that physical store expansion and ongoing investment can keep even a $670M brand unprofitable at the bottom line.",
+        url: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=WRBY&type=10-K",
+        urlLabel: "Warby Parker 10-K (SEC EDGAR)",
+      },
+      {
+        name: "Chewy",
+        stat: "$11.15B revenue, 28.4% gross margin, $39.6M net income (FY2023)",
+        summary: "Chewy does $11B in online pet supply sales but keeps only 28% gross margin, squeezed by low-margin consumables and shipping costs. It took enormous scale to turn even a small net profit, illustrating why margin quality matters more than revenue size.",
+        url: "https://investor.chewy.com/news-and-events/news/news-details/2024/Chewy-Announces-Fiscal-Fourth-Quarter-and-Full-Year-2023-Financial-Results/default.aspx",
+        urlLabel: "Chewy FY2023 Earnings (Investor Relations)",
+      },
+      {
+        name: "Allbirds",
+        stat: "$254M revenue, 45% gross margin, -$100M net loss (2022)",
+        summary: "Allbirds is a cautionary example of what happens when customer acquisition costs exceed lifetime value. Despite a 45% gross margin, aggressive expansion burned through cash fast. The company has been restructuring ever since.",
+        url: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=BIRD&type=10-K",
+        urlLabel: "Allbirds 10-K (SEC EDGAR)",
+      },
+    ],
   },
   {
     id: "restaurant",
@@ -78,76 +123,136 @@ const MODELS: BusinessModel[] = [
     emoji: "🍽️",
     tagline: "You cook food, serve people, and hope the math works out.",
     breakdown: [
-      { label: "Labor", pct: 33, color: CLR.cost1 },
-      { label: "Food Cost", pct: 32, color: CLR.cost2 },
-      { label: "Rent", pct: 9, color: CLR.cost3 },
-      { label: "Utilities & Other", pct: 20, color: CLR.cost4 },
-      { label: "Profit", pct: 6, color: CLR.profit },
+      { label: "Labor", pct: 33, color: C.a },
+      { label: "Food Cost", pct: 32, color: C.b },
+      { label: "Rent", pct: 9, color: C.c },
+      { label: "Utilities & Other", pct: 20, color: C.d },
+      { label: "Profit", pct: 6, color: C.profit },
+    ],
+    keyTerms: [
+      { term: "Food Cost Percentage", definition: "Cost of ingredients divided by menu price. Target is 28 to 35%. If your $28 plate costs $10 to make, your food cost is 35.7%." },
+      { term: "Prime Cost", definition: "Food cost plus labor combined. This should be under 65% of revenue for a restaurant to survive. Most struggling restaurants have prime costs above 70%." },
+      { term: "Average Check", definition: "The average amount a customer spends per visit. Increasing average check size (through upsells, specials, drinks) is one of the best ways to improve restaurant economics." },
+      { term: "Table Turns", definition: "How many times a table is used during a single service. A table that turns 3 times at dinner generates 3x the revenue of one that sits all night." },
+      { term: "Break-Even Point", definition: "The minimum monthly revenue needed to cover all fixed and variable costs. Knowing this number keeps you from running out of cash slowly without realizing it." },
     ],
     howYouMakeMoney:
-      "Customers pay for food and drinks. A plate that costs you $8 to make sells for $28 — that's your gross margin. The problem is after rent, labor, and everything else, most restaurants keep 3–9% of revenue as profit. It's a hard business, but when it works, it's a beautiful one.",
+      "Customers pay for food and drinks. A plate that costs you $8 to make sells for $28. That gap is your gross margin. The problem is after rent, labor, and everything else, most restaurants keep 3 to 9% of revenue as profit. It is a hard business, but when it works, it is a beautiful one.",
     biggestCosts: [
-      "Food cost (28–35% of revenue is the target)",
-      "Labor (30–35% of revenue, often the #1 cost)",
-      "Rent (8–10% of revenue is the goal)",
+      "Food cost (28 to 35% of revenue is the target)",
+      "Labor (30 to 35% of revenue, often the number one cost)",
+      "Rent (8 to 10% of revenue is the goal)",
       "Equipment, utilities, insurance",
     ],
     howYouGetCustomers:
-      "Location is everything. People walk by, they come in. After that: Google Maps reviews, Yelp, Instagram, word of mouth. The best restaurants have regulars who come back every week. Once you're established, the community feeds itself.",
+      "Location is everything. People walk by and come in. After that: Google Maps reviews, Yelp, Instagram, word of mouth. The best restaurants have regulars who come back every week. Once you are established, the community feeds itself.",
     flywheel:
-      "Great food and service → good reviews → more foot traffic → you can invest in better ingredients and staff → even better food and service. The compounding here is slow but powerful. Bad reviews work the same way in reverse.",
+      "Great food and service lead to good reviews, which bring more foot traffic, which lets you invest in better ingredients and staff, which leads to even better food and service. The compounding here is slow but powerful. Bad reviews work the same way in reverse.",
     pros: [
-      "Cash business — money hits your register every day",
+      "Cash business: money hits your register every day",
       "Strong community ties and loyal regulars",
-      "Creative and expressive — your menu is your art",
+      "Creative and expressive: your menu is your art",
       "Real, tangible thing you build in a neighborhood",
     ],
     cons: [
-      "Brutally thin margins — one bad month can sink you",
+      "Brutally thin margins: one bad month can sink you",
       "Labor-intensive and hard to manage at scale",
       "Completely location-dependent",
       "High failure rate, especially in the first two years",
     ],
     goodFor:
-      "People who are genuinely hospitality-driven — you have to love feeding people, not just running a business. Great operators are organized, calm under pressure, and have high standards. If you're doing it for the love of food and people, it can be one of the most rewarding businesses there is.",
+      "People who are genuinely hospitality-driven. You have to love feeding people, not just running a business. Great operators are organized, calm under pressure, and hold high standards. If you are doing it for the love of food and people, it can be one of the most rewarding businesses there is.",
+    examples: [
+      {
+        name: "Chipotle",
+        stat: "$9.9B revenue, 26.2% restaurant-level margin, $1.23B net income (2023)",
+        summary: "Chipotle's 3,437 locations averaged over $3M in annual sales each in 2023, with restaurant-level margins of 26.2%, among the best in fast casual. A great example of what happens when operations are obsessively standardized.",
+        url: "https://ir.chipotle.com/2024-02-06-CHIPOTLE-ANNOUNCES-FOURTH-QUARTER-AND-FULL-YEAR-2023-RESULTS",
+        urlLabel: "Chipotle FY2023 Results (Investor Relations)",
+      },
+      {
+        name: "Shake Shack",
+        stat: "$1.09B revenue, 19.9% shack-level margin, $19.8M net income (2023)",
+        summary: "Shake Shack crossed $1B in revenue for the first time in 2023 and turned a small profit after years of losses. Its 19.9% shack-level margin is solid but trails Chipotle by 6+ points, showing how brand and format affect unit economics.",
+        url: "https://investor.shakeshack.com/press-releases/press-release-details/2024/Shake-Shack-Announces-Fourth-Quarter-and-Fiscal-Year-2023-Financial-Results/default.aspx",
+        urlLabel: "Shake Shack FY2023 Earnings (Investor Relations)",
+      },
+      {
+        name: "Sweetgreen",
+        stat: "$727M revenue, 18.2% restaurant-level margin, -$155M net loss (2023)",
+        summary: "Sweetgreen shows the challenge of growing a premium fast-casual concept. Despite a fast-growing brand and improving unit economics, the company still lost $155M in 2023, mostly due to corporate overhead and expansion costs that outpace restaurant-level profits.",
+        url: "https://investors.sweetgreen.com/news-releases",
+        urlLabel: "Sweetgreen Investor Relations",
+      },
+    ],
   },
   {
     id: "agency",
     name: "Marketing Agency",
     emoji: "💡",
-    tagline: "You help other businesses market themselves, and charge for it.",
+    tagline: "You help other businesses market themselves and charge for it.",
     breakdown: [
-      { label: "Labor & Contractors", pct: 55, color: CLR.cost1 },
-      { label: "Overhead & Admin", pct: 8, color: CLR.cost2 },
-      { label: "Tools & Software", pct: 5, color: CLR.cost3 },
-      { label: "Biz Dev & Sales", pct: 5, color: CLR.cost4 },
-      { label: "Profit", pct: 27, color: CLR.profit },
+      { label: "Labor & Contractors", pct: 55, color: C.a },
+      { label: "Overhead & Admin", pct: 8, color: C.b },
+      { label: "Tools & Software", pct: 5, color: C.c },
+      { label: "Biz Dev & Sales", pct: 5, color: C.d },
+      { label: "Profit", pct: 27, color: C.profit },
+    ],
+    keyTerms: [
+      { term: "Retainer", definition: "A fixed monthly fee a client pays for ongoing services. Retainers are the gold standard in agency economics because they create predictable, recurring revenue." },
+      { term: "Utilization Rate", definition: "The percentage of total staff hours that are actually billable to clients. A 75% utilization rate means your team spends 75% of their time on client work and 25% on internal stuff." },
+      { term: "Scope Creep", definition: "When client work expands beyond what was originally agreed without additional compensation. This is the number one margin killer at agencies." },
+      { term: "Client Churn", definition: "When a client ends their contract. A single client canceling a large retainer can meaningfully hurt monthly revenue, which is why retention is more important than new business." },
+      { term: "Revenue Per Head", definition: "Total agency revenue divided by headcount. Healthy boutique agencies typically target $150K to $250K+ in revenue per employee as a measure of team efficiency." },
     ],
     howYouMakeMoney:
-      "Clients pay you a monthly retainer (say $5,000–$20,000/month) or a project fee to run their ads, manage their social media, build their brand, or create content. Your main cost is the people doing the work. If you keep your team lean and your clients happy, margins can be great.",
+      "Clients pay you a monthly retainer (say $5,000 to $20,000 per month) or a project fee to run their ads, manage their social media, build their brand, or create content. Your main cost is the people doing the work. If you keep your team lean and your clients happy, margins can be great.",
     biggestCosts: [
-      "Salaries and contractor fees (usually 50–70% of revenue)",
+      "Salaries and contractor fees (usually 50 to 70% of revenue)",
       "Software tools (design, analytics, scheduling platforms)",
-      "Overhead (office if you have one, insurance, admin)",
+      "Overhead: office if you have one, insurance, admin",
     ],
     howYouGetCustomers:
-      "Almost always referrals in the beginning. You do good work for one client, they tell a friend. Over time: LinkedIn, cold outreach, a strong case study portfolio, speaking at events, or running ads for yourself (which doubles as proof you know what you're doing).",
+      "Almost always referrals in the beginning. You do good work for one client and they tell a friend. Over time: LinkedIn, cold outreach, a strong case study portfolio, speaking at events, or running ads for yourself (which doubles as proof you know what you are doing).",
     flywheel:
-      "Great results for clients → case studies → easier to sell to new clients → you can afford better talent → even better results. The trap is chasing new clients instead of retaining existing ones. Retention is everything.",
+      "Great results for clients lead to case studies, which make it easier to sell to new clients. With more revenue you can afford better talent, which produces even better results. The trap is chasing new clients instead of retaining existing ones. Retention is everything.",
     pros: [
-      "Low startup costs — you can start with a laptop and one client",
+      "Low startup costs: you can start with a laptop and one client",
       "High margins if you keep the team lean",
       "Recurring revenue from monthly retainers",
       "You build skills and a network fast",
     ],
     cons: [
-      "Feast-or-famine — losing one big client can hurt badly",
+      "Feast or famine: losing one big client can hurt badly",
       "Clients can be demanding and churn unexpectedly",
-      "Hard to scale because it's people-dependent",
-      "You're always trading time for money unless you productize",
+      "Hard to scale because it is people-dependent",
+      "You are always trading time for money unless you productize",
     ],
     goodFor:
-      "Relationship-builders who are good communicators and genuinely curious about business. You need to enjoy problem-solving for others and be comfortable with ambiguity. If you love strategy, storytelling, and variety — different client, different challenge every day — this can be a great fit.",
+      "Relationship-builders who are good communicators and genuinely curious about business. You need to enjoy problem-solving for others and be comfortable with ambiguity. If you love strategy, storytelling, and variety, this can be a great fit.",
+    examples: [
+      {
+        name: "Omnicom Group",
+        stat: "$14.69B revenue, 14.3% operating margin, 4.1% organic growth (2023)",
+        summary: "Omnicom is one of the world's largest agency holding companies. Its 14.3% operating margin on nearly $15B in revenue shows the structural ceiling for large agency businesses: you can scale but margins stay in the low-to-mid teens because the product is human talent.",
+        url: "https://investor.omnicomgroup.com/news/news-details/2024/Omnicom-Reports-Fourth-Quarter-and-Full-Year-2023-Results/default.aspx",
+        urlLabel: "Omnicom FY2023 Earnings (Investor Relations)",
+      },
+      {
+        name: "WPP",
+        stat: "~14.8B GBP revenue, ~15% operating margin (2023)",
+        summary: "WPP, the world's largest agency group by revenue, has spent years restructuring to improve margins. Even at massive scale, its operating margin hovers around 15%, a reminder that agencies do not get more profitable just by getting bigger.",
+        url: "https://www.wpp.com/investors/results-reports-presentations",
+        urlLabel: "WPP Annual Results (Investor Relations)",
+      },
+      {
+        name: "Publicis Groupe",
+        stat: "14.77B EUR revenue, ~18% operating margin, 6.3% organic growth (2023)",
+        summary: "Publicis is the outlier among big agency holding companies, consistently posting 18%+ operating margins by investing early in data and technology platforms. It shows that agencies can improve economics when they productize part of their offering.",
+        url: "https://www.publicisgroupe.com/en/investors/financial-results",
+        urlLabel: "Publicis Financial Results (Investor Relations)",
+      },
+    ],
   },
   {
     id: "lawn",
@@ -155,38 +260,68 @@ const MODELS: BusinessModel[] = [
     emoji: "🌿",
     tagline: "You mow lawns. People pay you every week to do it.",
     breakdown: [
-      { label: "Labor", pct: 30, color: CLR.cost1 },
-      { label: "Equipment & Fuel", pct: 15, color: CLR.cost2 },
-      { label: "Vehicle & Transport", pct: 7, color: CLR.cost3 },
-      { label: "Insurance & Admin", pct: 8, color: CLR.cost4 },
-      { label: "Profit", pct: 40, color: CLR.profit },
+      { label: "Labor", pct: 30, color: C.a },
+      { label: "Equipment & Fuel", pct: 15, color: C.b },
+      { label: "Vehicle & Transport", pct: 7, color: C.c },
+      { label: "Insurance & Admin", pct: 8, color: C.d },
+      { label: "Profit", pct: 40, color: C.profit },
+    ],
+    keyTerms: [
+      { term: "Route Density", definition: "How many jobs you have clustered in one geographic area. High density means less driving between jobs, which is the core variable that separates profitable lawn companies from ones that just break even." },
+      { term: "Recurring Revenue", definition: "Income that comes in automatically on a set schedule. Weekly mowing contracts are the holy grail because you do not have to re-sell the same customer every week." },
+      { term: "Upsell", definition: "Offering additional services to existing clients: fertilizing, aeration, holiday lighting, snow removal. Upsells dramatically improve revenue per customer without any new acquisition cost." },
+      { term: "Seasonal Cash Flow", definition: "The natural ebb and flow of income tied to the time of year. Lawn businesses peak in spring and summer and slow in winter, which means you need to plan cash reserves or add off-season services." },
+      { term: "Customer Lifetime Value", definition: "Total revenue from one customer across all years they use you. A customer paying $150 per week for 20 weeks over 5 years is worth $15,000 in lifetime revenue." },
     ],
     howYouMakeMoney:
-      "You charge $50–$150 per lawn, or sell monthly subscriptions. The magic is density — if you can get 10 lawns on the same street, your drive time drops to zero and profit per hour goes way up. A tight route with loyal customers is a genuinely good small business.",
+      "You charge $50 to $150 per lawn, or sell monthly subscriptions. The magic is density: if you can get 10 lawns on the same street, your drive time drops to zero and profit per hour goes way up. A tight route with loyal customers is a genuinely good small business.",
     biggestCosts: [
-      "Equipment (mowers, trimmers, trailer — big upfront but lasts)",
+      "Equipment (mowers, trimmers, trailer: big upfront but lasts)",
       "Fuel and vehicle costs",
       "Labor if you hire",
       "Insurance",
     ],
     howYouGetCustomers:
-      "Door-to-door flyers in neighborhoods you want to work. Yard signs in customers' yards. Nextdoor and local Facebook groups. Word of mouth from neighbors who see you every week. It's a local game — visibility in the right zip codes is everything.",
+      "Door-to-door flyers in neighborhoods you want to work. Yard signs in customers' yards. Nextdoor and local Facebook groups. Word of mouth from neighbors who see you every week. It is a local game, and visibility in the right zip codes is everything.",
     flywheel:
-      "More customers in the same neighborhood → less driving between jobs → more lawns per day → higher revenue with the same time → you can offer competitive pricing → more customers. Geographic concentration compounds over time.",
+      "More customers in the same neighborhood means less driving between jobs, which means more lawns per day, which means higher revenue with the same time investment, which lets you offer competitive pricing, which brings in more customers in that neighborhood.",
     pros: [
-      "Simple business — no complicated product or technology",
+      "Simple business: no complicated product or technology",
       "Recurring revenue (lawns grow back every week)",
-      "Low barrier to entry — you can start with one mower",
+      "Low barrier to entry: you can start with one mower",
       "Predictable, seasonal cash flow",
     ],
     cons: [
-      "Seasonal — winters can be slow unless you add snow removal",
+      "Seasonal: winters can be slow unless you add snow removal",
       "Physical and weather-dependent",
       "Hard to scale without hiring, and hiring adds complexity",
-      "Low status, which can affect your motivation long-term",
+      "Low perceived status, which can affect motivation long-term",
     ],
     goodFor:
-      "Reliable, self-motivated people who enjoy physical work and being outside. Great for someone who wants simple ownership — no complicated tech, no inventory, just show up and do the work. Also a fantastic first business for a teenager or someone learning the basics of operations.",
+      "Reliable, self-motivated people who enjoy physical work and being outside. Great for someone who wants simple ownership with no complicated tech or inventory. Also a fantastic first business for a teenager or someone learning the basics of operations.",
+    examples: [
+      {
+        name: "Rollins, Inc. (Orkin)",
+        stat: "$3.07B revenue, 22.7% EBITDA margin, $435M net income (2023)",
+        summary: "Rollins (which owns Orkin) is the publicly traded benchmark for recurring home services. Pest control and lawn care share the same economics: regular visits, loyal customers, and route density. Rollins has compounded at 15%+ annually for decades.",
+        url: "https://www.prnewswire.com/news-releases/rollins-inc-reports-fourth-quarter-and-full-year-2023-financial-results-302062269.html",
+        urlLabel: "Rollins FY2023 Earnings Release",
+      },
+      {
+        name: "BrightView Holdings",
+        stat: "$2.77B revenue, ~$45M operating income (FY2023)",
+        summary: "BrightView is the largest commercial landscaping company in the US and the closest public comp to a scaled lawn mowing operation. Despite $2.8B in revenue, thin operating margins show how labor-intensive this business remains even at scale.",
+        url: "https://ir.brightviewlandscapes.com/financial-information/press-releases",
+        urlLabel: "BrightView Investor Relations",
+      },
+      {
+        name: "FirstService Corporation",
+        stat: "~$4.3B CAD revenue, ~$385M adjusted EBITDA (2023)",
+        summary: "FirstService provides residential property services across North America. It is a good example of what recurring home services look like at scale, with disciplined acquisition of local operators and strong retention economics.",
+        url: "https://ir.firstservice.com/news-releases",
+        urlLabel: "FirstService Investor Relations",
+      },
+    ],
   },
   {
     id: "franchise",
@@ -194,78 +329,138 @@ const MODELS: BusinessModel[] = [
     emoji: "🏪",
     tagline: "You buy the right to run a proven restaurant brand.",
     breakdown: [
-      { label: "Labor", pct: 30, color: CLR.cost1 },
-      { label: "Food Cost", pct: 30, color: CLR.cost2 },
-      { label: "Rent", pct: 10, color: CLR.cost3 },
-      { label: "Royalties & Fees", pct: 8, color: CLR.cost4 },
-      { label: "Other Ops", pct: 10, color: CLR.cost4 },
-      { label: "Profit", pct: 12, color: CLR.profit },
+      { label: "Labor", pct: 30, color: C.a },
+      { label: "Food Cost", pct: 30, color: C.b },
+      { label: "Rent", pct: 10, color: C.c },
+      { label: "Royalties & Fees", pct: 8, color: C.d },
+      { label: "Other Ops", pct: 10, color: C.e },
+      { label: "Profit", pct: 12, color: C.profit },
+    ],
+    keyTerms: [
+      { term: "Franchise Fee", definition: "The upfront payment you make for the right to use the brand and operating system. This is separate from royalties and is paid once when you sign the franchise agreement." },
+      { term: "Royalty", definition: "An ongoing percentage of your gross revenue paid to the franchisor, typically 4 to 8%, every month, forever. This is the price of using the brand and system." },
+      { term: "FDD (Franchise Disclosure Document)", definition: "The legal document every franchisor must provide before you sign. It contains 23 items including the franchisor's financial history, litigation history, and any Item 19 financial performance data." },
+      { term: "AUV (Average Unit Volume)", definition: "Average annual sales per location across the franchise system. This is the key metric for comparing franchises. Chick-fil-A's AUV of $8M+ is double most competitors." },
+      { term: "Item 19", definition: "The section of the FDD where franchisors can (but are not required to) disclose actual franchisee financial performance. Always ask for Item 19. If a franchisor does not have one, be cautious." },
     ],
     howYouMakeMoney:
-      "You operate a location of an established brand (Chick-fil-A, Subway, Dunkin', etc.) and keep the profits after paying royalties. Revenue comes from food sales just like any restaurant, but you're running a proven playbook instead of inventing one.",
+      "You operate a location of an established brand and keep the profits after paying royalties. Revenue comes from food sales just like any restaurant, but you are running a proven playbook instead of inventing one.",
     biggestCosts: [
-      "Franchise fee upfront (can be $10,000–$50,000+)",
-      "Royalties to the franchisor (usually 4–8% of gross revenue, forever)",
-      "Build-out and equipment (often $200K–$1M+ to open)",
-      "Food, labor, and rent — same as any restaurant",
+      "Franchise fee upfront (can be $10,000 to $50,000+)",
+      "Royalties to the franchisor (usually 4 to 8% of gross revenue, forever)",
+      "Build-out and equipment (often $200K to $1M+ to open)",
+      "Food, labor, and rent: same as any restaurant",
     ],
     howYouGetCustomers:
       "The franchisor handles national marketing. You benefit from brand recognition the moment you open. Locally, you might do community events or local ads, but the heavy lifting of brand-building is done for you. This is one of the biggest advantages of the model.",
     flywheel:
-      "The franchisor's brand gets stronger as more locations open → your location benefits from that recognition → your royalties fund more franchisor marketing → brand gets stronger. You're buying into a machine that's already spinning.",
+      "The franchisor's brand gets stronger as more locations open. Your location benefits from that recognition. Your royalties fund more franchisor marketing. The brand gets even stronger. You are buying into a machine that is already spinning.",
     pros: [
-      "Proven system — you don't have to figure everything out from scratch",
+      "Proven system: you do not have to figure everything out from scratch",
       "Brand recognition from day one",
       "Training and ongoing support from the franchisor",
       "Easier to get financing (banks understand franchise models)",
     ],
     cons: [
-      "You don't own the brand or the system — you're a licensee",
+      "You do not own the brand or the system: you are a licensee",
       "Royalties eat into profit permanently",
       "Less creative freedom than an independent business",
       "Expensive to start, and you can lose your investment if it fails",
     ],
     goodFor:
-      "Strong operators and executors — people who thrive following a system rather than inventing one. If you're the type who wants to focus on running a tight ship (great staff, clean location, happy customers) rather than building something from scratch, franchising can be very rewarding.",
+      "Strong operators and executors: people who thrive following a system rather than inventing one. If you want to focus on running a tight ship (great staff, clean location, happy customers) rather than building something from scratch, franchising can be very rewarding.",
+    examples: [
+      {
+        name: "McDonald's",
+        stat: "$25.5B revenue, 46% operating margin, $11.6B operating income (2023)",
+        summary: "McDonald's 46% operating margin is extraordinary for a food company because 95% of its 44,000+ locations are franchisee-owned. McDonald's collects rent and royalties from franchisees rather than running restaurants itself, which is why its margins look more like a real estate company than a fast food chain.",
+        url: "https://corporate.mcdonalds.com/corpmcd/investors.html",
+        urlLabel: "McDonald's Investor Relations",
+      },
+      {
+        name: "Domino's Pizza",
+        stat: "$4.48B revenue, $914.9M in franchisee royalties, 20,591 locations (2023)",
+        summary: "Domino's $4.48B in reported revenue understates its real scale: its franchised stores generate $18.3B in global retail sales that flow mostly to franchisees, while Domino's collects $915M in royalties plus $2.7B from selling dough and ingredients to those same franchisees.",
+        url: "https://ir.dominos.com/news-releases/news-release-details/dominos-pizzar-announces-fourth-quarter-and-fiscal-2023",
+        urlLabel: "Domino's FY2023 Earnings (Investor Relations)",
+      },
+      {
+        name: "Yum! Brands (KFC, Taco Bell, Pizza Hut)",
+        stat: "$7.08B revenue, 38% operating margin, 54,000+ locations (2023)",
+        summary: "Yum! Brands shows the franchise model at global scale. With 54,000 locations across three brands and a 38% operating margin, it is one of the most profitable restaurant companies in the world, almost entirely because it franchises rather than operates restaurants.",
+        url: "https://www.yum.com/wps/portal/yumbrands/Yumbrands/investors/financial-results",
+        urlLabel: "Yum! Brands Investor Relations",
+      },
+    ],
   },
   {
     id: "lawfirm",
     name: "Law Firm",
     emoji: "⚖️",
-    tagline: "You sell legal expertise by the hour — or by the outcome.",
+    tagline: "You sell legal expertise by the hour, or by the outcome.",
     breakdown: [
-      { label: "Attorney Salaries", pct: 45, color: CLR.cost1 },
-      { label: "Office & Admin", pct: 12, color: CLR.cost2 },
-      { label: "Malpractice Insurance", pct: 8, color: CLR.cost3 },
-      { label: "Marketing", pct: 5, color: CLR.cost4 },
-      { label: "Profit", pct: 30, color: CLR.profit },
+      { label: "Attorney Salaries", pct: 45, color: C.a },
+      { label: "Office & Admin", pct: 12, color: C.b },
+      { label: "Malpractice Insurance", pct: 8, color: C.c },
+      { label: "Marketing", pct: 5, color: C.d },
+      { label: "Profit", pct: 30, color: C.profit },
+    ],
+    keyTerms: [
+      { term: "Billable Hour", definition: "The unit of sale for most law firms. Attorneys track time in 6-minute increments and bill clients at rates ranging from $200 (small firm, junior associate) to $2,000+ per hour at elite firms." },
+      { term: "Realization Rate", definition: "The percentage of billed hours that clients actually pay. A 90% realization rate means clients pay 90 cents of every dollar billed. Big firms target 90%+. Slipping below 85% is a warning sign." },
+      { term: "Profits Per Partner (PPP)", definition: "The benchmark for comparing law firm profitability. The Am Law 100 rankings are largely sorted by PPP. It is calculated by dividing total partner profits by the number of equity partners." },
+      { term: "Leverage", definition: "The ratio of associates to equity partners. More associates per partner means more billable hours generated per partner, which is a core driver of PPP at large firms." },
+      { term: "Origination Credit", definition: "The internal credit an attorney receives for bringing in a new client. At most firms, whoever originates the client gets a percentage of fees generated, creating strong incentives to build a book of business." },
     ],
     howYouMakeMoney:
-      "Three main models: hourly billing (you charge $200–$800/hour for your time), flat fees (a set price for a specific service like drafting a contract), or contingency (you get paid a percentage — typically 33% — only if you win the case). Most firms do a mix.",
+      "Three main models: hourly billing (you charge $200 to $800 per hour for your time), flat fees (a set price for a specific service like drafting a contract), or contingency (you get paid a percentage, typically 33%, only if you win the case). Most firms do a mix.",
     biggestCosts: [
-      "Attorney salaries (your biggest cost by far)",
+      "Attorney salaries (the biggest cost by far)",
       "Malpractice insurance (required and expensive)",
       "Office space and admin staff",
       "Legal research tools and software",
     ],
     howYouGetCustomers:
-      "Referrals are king. Other lawyers send you cases. Past clients recommend you. Building a reputation in a specific area of law — personal injury, real estate, corporate — compounds over time. Google search is increasingly important for consumer-facing practices.",
+      "Referrals are king. Other lawyers send you cases. Past clients recommend you. Building a reputation in a specific area of law, whether personal injury, real estate, or corporate, compounds over time. Google search is increasingly important for consumer-facing practices.",
     flywheel:
-      "Win cases → build reputation → attract better clients with more complex (and higher-paying) cases → earn more → invest in better attorneys → win more cases. In law, reputation is everything. It takes years to build and it sticks.",
+      "Win cases, build reputation, attract better clients with more complex and higher-paying cases, earn more, invest in better attorneys, win more cases. In law, reputation is everything. It takes years to build and it sticks.",
     pros: [
-      "High billing rates — skilled attorneys command serious fees",
+      "High billing rates: skilled attorneys command serious fees",
       "Relatively recession-resistant (people always need legal help)",
       "Deep specialization creates a real moat",
       "Strong referral networks once established",
     ],
     cons: [
-      "Requires significant education and bar exam just to start",
-      "Slow to build — reputation takes years to compound",
+      "Requires significant education and bar passage just to start",
+      "Slow to build: reputation takes years to compound",
       "High stress, especially in litigation",
-      "Hard to scale because it's deeply expertise-dependent",
+      "Hard to scale because it is deeply expertise-dependent",
     ],
     goodFor:
-      "Detail-oriented people who love research, logic, and advocacy. You need high emotional intelligence — clients are often stressed or scared. If you genuinely love the law and enjoy problem-solving under pressure, it can be an incredibly fulfilling practice. Patience is non-negotiable.",
+      "Detail-oriented people who love research, logic, and advocacy. You need high emotional intelligence because clients are often stressed or scared. If you genuinely love the law and enjoy problem-solving under pressure, it can be an incredibly fulfilling practice.",
+    examples: [
+      {
+        name: "Kirkland & Ellis",
+        stat: "$7.2B gross revenue, $7.96M profits per equity partner, $2.05M revenue per lawyer (2023)",
+        summary: "Kirkland topped the Am Law 100 in 2023 with $7.2B in gross revenue and paid each equity partner nearly $8M. At $2.05M in revenue per lawyer, it generates more revenue per attorney than almost any other professional services firm on earth.",
+        url: "https://www.law.com/americanlawyer/am-law-100/",
+        urlLabel: "Am Law 100 Rankings (The American Lawyer)",
+      },
+      {
+        name: "Latham & Watkins",
+        stat: "~$5.7B gross revenue, $5.5M profits per equity partner (2023)",
+        summary: "Latham ranked second in the Am Law 100 with $5.7B in revenue and $5.5M in PPP. Its 2024 results jumped to $7B, showing how quickly BigLaw profits surge when M&A and capital markets activity rebounds.",
+        url: "https://www.law.com/americanlawyer/am-law-100/",
+        urlLabel: "Am Law 100 Rankings (The American Lawyer)",
+      },
+      {
+        name: "Cravath, Swaine & Moore",
+        stat: "~$900M gross revenue, ~$7M profits per equity partner (2023)",
+        summary: "Cravath is one of the oldest and most prestigious firms in the country. Despite being much smaller than Kirkland, its profits per partner rival the very top of BigLaw, a result of extreme selectivity, very high billing rates, and a lockstep compensation system that keeps the partnership focused on firm-wide performance.",
+        url: "https://www.law.com/americanlawyer/am-law-100/",
+        urlLabel: "Am Law 100 Rankings (The American Lawyer)",
+      },
+    ],
   },
   {
     id: "school",
@@ -273,14 +468,21 @@ const MODELS: BusinessModel[] = [
     emoji: "🎓",
     tagline: "You build a place where people learn something valuable.",
     breakdown: [
-      { label: "Teacher Salaries", pct: 50, color: CLR.cost1 },
-      { label: "Facilities", pct: 15, color: CLR.cost2 },
-      { label: "Marketing & Enrollment", pct: 10, color: CLR.cost3 },
-      { label: "Curriculum & Tech", pct: 8, color: CLR.cost4 },
-      { label: "Profit", pct: 17, color: CLR.profit },
+      { label: "Teacher Salaries", pct: 50, color: C.a },
+      { label: "Facilities", pct: 15, color: C.b },
+      { label: "Marketing & Enrollment", pct: 10, color: C.c },
+      { label: "Curriculum & Tech", pct: 8, color: C.d },
+      { label: "Profit", pct: 17, color: C.profit },
+    ],
+    keyTerms: [
+      { term: "Enrollment", definition: "The number of paying students. Enrollment is the core revenue driver for every school. Falling enrollment is the early warning sign for every school in financial trouble." },
+      { term: "Retention Rate", definition: "The percentage of students who continue from one year or semester to the next. A school with 90% retention needs to replace only 10% of students each year, which is a much easier marketing job than starting from scratch." },
+      { term: "Cost Per Enrolled Student", definition: "Total operating cost divided by enrollment. Tracking this over time tells you whether the school is becoming more or less efficient as it grows." },
+      { term: "Accreditation", definition: "Official recognition from a governing body that validates the quality of your education. Accreditation unlocks access to federal financial aid and is a prerequisite for most students to attend." },
+      { term: "Net Tuition Revenue", definition: "Tuition income after scholarships and financial aid are subtracted. This is the real revenue number, not the sticker price, and it is what matters when projecting a school's finances." },
     ],
     howYouMakeMoney:
-      "Tuition. Students (or their parents) pay to attend. This can be a traditional school, a coding bootcamp, a music academy, an online course business, or anything in between. The model is the same: you create a learning experience, and people pay to access it.",
+      "Tuition. Students (or their parents) pay to attend. This can be a traditional school, a coding bootcamp, a music academy, an online course business, or anything in between. The model is the same: you create a learning experience and people pay to access it.",
     biggestCosts: [
       "Teachers and instructors (your most important investment)",
       "Facilities or technology platform",
@@ -290,21 +492,44 @@ const MODELS: BusinessModel[] = [
     howYouGetCustomers:
       "Word of mouth from successful students is the most powerful channel. Parents talk to other parents. Alumni refer friends. SEO and community presence matter a lot for local schools. For online schools, content marketing and social proof (testimonials, outcomes data) do the heavy lifting.",
     flywheel:
-      "Strong student outcomes → better reputation → more enrollment → more revenue → better teachers and facilities → even better outcomes. The schools that win are the ones that take outcomes seriously. When your graduates succeed, it sells the next cohort for you.",
+      "Strong student outcomes lead to a better reputation, which brings more enrollment, which generates more revenue, which allows you to hire better teachers and build better facilities, which leads to even better outcomes. The schools that win take outcomes seriously. When your graduates succeed, it sells the next cohort for you.",
     pros: [
-      "Mission-driven — you're genuinely changing people's lives",
+      "Mission-driven: you are genuinely changing people's lives",
       "Recurring tuition revenue if you have ongoing programs",
       "Strong community around shared learning",
-      "Once reputation is built, it's hard to replicate",
+      "Once reputation is built, it is hard to replicate",
     ],
     cons: [
       "Heavy regulation, especially for accredited programs",
-      "Slow to build — reputation compounds over years, not months",
+      "Slow to build: reputation compounds over years, not months",
       "Completely dependent on enrollment numbers",
       "Hard to raise prices without hurting access",
     ],
     goodFor:
-      "Patient, mission-driven people who care deeply about other people's growth. You have to genuinely love teaching and believe in what you're building. Great school operators are community-minded, long-term thinkers who find meaning in the outcome, not just the revenue.",
+      "Patient, mission-driven people who care deeply about other people's growth. You have to genuinely love teaching and believe in what you are building. Great school operators are community-minded, long-term thinkers who find meaning in the outcome, not just the revenue.",
+    examples: [
+      {
+        name: "Grand Canyon Education",
+        stat: "$961M revenue, 25.9% operating margin, 117,279 enrolled students (2023)",
+        summary: "Grand Canyon Education manages Grand Canyon University and shows that education as a service can be highly profitable at scale. A 25.9% operating margin on nearly $1B in revenue, driven by online enrollment growth, makes it one of the most efficient education businesses in the country.",
+        url: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=LOPE&type=10-K",
+        urlLabel: "Grand Canyon Education 10-K (SEC EDGAR)",
+      },
+      {
+        name: "Stride, Inc.",
+        stat: "$1.84B revenue, $165.5M operating income, record enrollment (FY2023)",
+        summary: "Stride runs online public and private schools in 31 states. Its $1.84B in FY2023 revenue, a record, shows how online delivery can dramatically expand a school's reach beyond any single physical location, while government funding provides relatively stable revenue.",
+        url: "https://investors.stridelearning.com/news/news-details/2023/Stride-Reports-Record-Revenue-and-Earnings/default.aspx",
+        urlLabel: "Stride FY2023 Earnings (Investor Relations)",
+      },
+      {
+        name: "Duolingo",
+        stat: "$531M revenue, 73% gross margin, 26.9M daily active users (2023)",
+        summary: "Duolingo is the most profitable per-user language learning platform ever built. Its 73% gross margin is possible because the core product is software, not teachers. Freemium drives massive top-of-funnel while paid subscriptions convert at high margins.",
+        url: "https://investor.duolingo.com/financial-information/press-releases",
+        urlLabel: "Duolingo Investor Relations",
+      },
+    ],
   },
   {
     id: "media",
@@ -312,90 +537,137 @@ const MODELS: BusinessModel[] = [
     emoji: "🎙️",
     tagline: "You build an audience and then monetize their attention.",
     breakdown: [
-      { label: "Content Creation", pct: 40, color: CLR.cost1 },
-      { label: "Sales & Marketing", pct: 15, color: CLR.cost2 },
-      { label: "Distribution & Tech", pct: 10, color: CLR.cost3 },
-      { label: "Admin & Overhead", pct: 8, color: CLR.cost4 },
-      { label: "Profit", pct: 27, color: CLR.profit },
+      { label: "Content Creation", pct: 40, color: C.a },
+      { label: "Sales & Marketing", pct: 15, color: C.b },
+      { label: "Distribution & Tech", pct: 10, color: C.c },
+      { label: "Admin & Overhead", pct: 8, color: C.d },
+      { label: "Profit", pct: 27, color: C.profit },
+    ],
+    keyTerms: [
+      { term: "CPM (Cost Per Mille)", definition: "The rate advertisers pay per 1,000 ad impressions. A $20 CPM means an advertiser pays $20 for every 1,000 times their ad is shown. CPM is the fundamental unit of advertising economics." },
+      { term: "Monthly Active Users (MAU)", definition: "The number of unique people who engage with your content each month. MAU is the core metric for audience size, and it is what advertisers and sponsors pay for." },
+      { term: "Subscriber Churn", definition: "The percentage of subscribers who cancel each month. At 5% monthly churn, you lose 60% of subscribers per year. Keeping churn low is more important than growing new subscribers." },
+      { term: "ARPU (Average Revenue Per User)", definition: "Total revenue divided by total users. This tells you how well you are monetizing your audience. Growing ARPU without growing the audience is a sign of a maturing, healthy media business." },
+      { term: "Programmatic Advertising", definition: "Automated, algorithmic buying and selling of ad inventory. Most digital ad revenue today runs programmatically, which is efficient but gives individual media companies less pricing power than direct ad sales." },
     ],
     howYouMakeMoney:
       "Multiple streams: advertising (brands pay to reach your audience), sponsorships (a brand pays to be associated with your content), subscriptions (readers or viewers pay directly), and licensing (others pay to use your content). Most media companies mix several of these.",
     biggestCosts: [
-      "Content creation (the biggest one — writers, editors, producers, gear)",
+      "Content creation (the biggest one: writers, editors, producers, gear)",
       "Distribution and platform costs",
       "Sales and marketing to grow the audience",
       "Admin and operations",
     ],
     howYouGetCustomers:
-      "You have two customers: the audience and the advertisers. For the audience: consistency, quality, SEO, social media, and word of mouth. For advertisers: once you have a sizable audience, they come to you. The audience comes first — everything else follows.",
+      "You have two customers: the audience and the advertisers. For the audience: consistency, quality, SEO, social media, and word of mouth. For advertisers: once you have a sizable audience, they come to you. The audience comes first and everything else follows.",
     flywheel:
-      "More content → bigger audience → more valuable to advertisers → more revenue → better content budget → even more content and better quality. The compounding in media is real but slow. The accounts and publications you see everywhere usually took 3–7 years of consistent work to get there.",
+      "More content leads to a bigger audience, which makes you more valuable to advertisers, which generates more revenue, which funds a better content budget, which produces even more and better content. The compounding in media is real but slow. The outlets you see everywhere usually took 3 to 7 years of consistent work to get there.",
     pros: [
       "Once the audience is built, it scales without proportional cost",
-      "Multiple monetization options — not dependent on one revenue stream",
+      "Multiple monetization options: not dependent on one revenue stream",
       "Builds real influence and relationships over time",
-      "Content assets keep working long after they're created",
+      "Content assets keep working long after they are created",
     ],
     cons: [
-      "Slow to monetize — you need an audience before you can sell anything",
-      "Algorithm-dependent on platforms you don't control",
-      "Constant content demand — the treadmill never stops",
-      "Hard to predict what resonates",
+      "Slow to monetize: you need an audience before you can sell anything",
+      "Algorithm-dependent on platforms you do not control",
+      "Constant content demand: the treadmill never stops",
+      "Hard to predict what will resonate",
     ],
     goodFor:
-      "Creative, patient people who are comfortable with ambiguity and genuinely enjoy the content they're making. The best media operators are obsessed with their audience — they think about what their readers or viewers actually need. If you're doing it just for the money, the audience will sense it.",
+      "Creative, patient people who are comfortable with ambiguity and genuinely enjoy the content they are making. The best media operators are obsessed with their audience. They think constantly about what their readers or viewers actually need. If you are doing it just for the money, the audience will sense it.",
+    examples: [
+      {
+        name: "The New York Times",
+        stat: "$2.43B revenue, $1.09B digital subscription revenue, 9.7M digital subscribers, 12% operating margin (2023)",
+        summary: "The Times became the first newspaper to cross $1B in digital subscription revenue in 2023. It proves that a media brand can rebuild itself as a subscription software business, with 9.7M paying digital subscribers providing recurring revenue that advertising alone never could.",
+        url: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=NYT&type=10-K",
+        urlLabel: "New York Times 10-K (SEC EDGAR)",
+      },
+      {
+        name: "Spotify",
+        stat: "13.25B EUR revenue, 87% from subscriptions, 26.4% gross margin, 602M monthly active users (2023)",
+        summary: "Spotify has 602M users and $14B+ in revenue but still struggles with gross margins around 26%, because record labels take the majority of every dollar in licensing fees. It illustrates how a media platform can be enormous in scale but structurally constrained by content owners who set the terms.",
+        url: "https://newsroom.spotify.com/2024-02-06/spotify-reports-fourth-quarter-2023-earnings/",
+        urlLabel: "Spotify Q4 2023 Earnings (Newsroom)",
+      },
+      {
+        name: "BuzzFeed",
+        stat: "$414M revenue, -$223M net loss, shut down BuzzFeed News (2022)",
+        summary: "BuzzFeed went public via SPAC in 2021 at a $1.5B valuation, then shut down its flagship BuzzFeed News operation just 18 months later. It is the clearest recent case study in the dangers of building a media company almost entirely on advertising revenue from platforms you do not control.",
+        url: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=BZFD&type=10-K",
+        urlLabel: "BuzzFeed 10-K (SEC EDGAR)",
+      },
+    ],
   },
 ];
 
-/* ── Animated bar chart ─────────────────────────────────────────── */
+/* ── Stacked bar ────────────────────────────────────────────────── */
 
-function BarChart({ items }: { items: BreakdownBar[] }) {
+function StackedBar({ items }: { items: BreakdownBar[] }) {
   const [go, setGo] = useState(false);
 
   useEffect(() => {
-    const t = setTimeout(() => setGo(true), 60);
+    const t = setTimeout(() => setGo(true), 80);
     return () => clearTimeout(t);
   }, []);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-      {items.map((item, i) => (
-        <div key={i}>
+    <div>
+      <div
+        style={{
+          display: "flex",
+          height: 32,
+          borderRadius: 6,
+          overflow: "hidden",
+          background: "#EDE0BE",
+          gap: 2,
+        }}
+      >
+        {items.map((item, i) => (
           <div
+            key={i}
+            title={`${item.label}: ${item.pct}%`}
             style={{
-              display: "flex",
-              justifyContent: "space-between",
-              marginBottom: 4,
-              fontFamily: "ui-sans-serif, system-ui, sans-serif",
+              width: go ? `${item.pct}%` : "0%",
+              background: item.color,
+              flexShrink: 0,
+              transition: `width 700ms cubic-bezier(0.4, 0, 0.2, 1) ${i * 55}ms`,
             }}
-          >
-            <span style={{ fontSize: 12, color: "#5C3D00", fontWeight: 500 }}>
-              {item.label}
-            </span>
-            <span style={{ fontSize: 12, fontWeight: 700, color: "#2C1A00" }}>
-              {item.pct}%
-            </span>
-          </div>
-          <div
-            style={{
-              height: 12,
-              background: "#EDE0BE",
-              borderRadius: 3,
-              overflow: "hidden",
-            }}
-          >
+          />
+        ))}
+      </div>
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "6px 16px",
+          marginTop: 10,
+        }}
+      >
+        {items.map((item, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", gap: 5 }}>
             <div
               style={{
-                height: "100%",
-                width: go ? `${item.pct}%` : "0%",
+                width: 10,
+                height: 10,
+                borderRadius: 2,
                 background: item.color,
-                borderRadius: 3,
-                transition: `width 520ms cubic-bezier(0.4, 0, 0.2, 1) ${i * 70}ms`,
+                flexShrink: 0,
               }}
             />
+            <span
+              style={{
+                fontSize: 12,
+                color: "#5C3D00",
+                fontFamily: "ui-sans-serif, system-ui, sans-serif",
+              }}
+            >
+              {item.label} ({item.pct}%)
+            </span>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }
@@ -445,7 +717,6 @@ export default function BusinessModelsPage() {
               align-items: flex-end;
               justify-content: center;
               z-index: 100;
-              padding: 0;
               animation: bm-fade-in 160ms ease both;
             }
             @keyframes bm-fade-in {
@@ -456,17 +727,17 @@ export default function BusinessModelsPage() {
               background: #FFFDF5;
               width: 100%;
               max-width: 680px;
-              max-height: 88vh;
+              max-height: 90vh;
               overflow-y: auto;
               border-radius: 12px 12px 0 0;
               border-top: 3px solid #8B6914;
               animation: bm-slide-up 240ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
-              padding: 28px 24px 48px;
+              padding: 28px 24px 56px;
             }
             @media (min-width: 640px) {
               .bm-modal {
                 border-radius: 12px;
-                max-height: 82vh;
+                max-height: 86vh;
                 margin-bottom: 48px;
               }
               .bm-modal-overlay {
@@ -477,16 +748,16 @@ export default function BusinessModelsPage() {
               from { transform: translateY(40px); opacity: 0; }
               to { transform: translateY(0); opacity: 1; }
             }
-            .bm-section-label {
+            .bm-label {
               font-size: 10px;
               font-weight: 700;
               letter-spacing: 1.8px;
               text-transform: uppercase;
               color: #8B6914;
-              margin: 0 0 6px;
+              margin: 0 0 8px;
               font-family: ui-sans-serif, system-ui, sans-serif;
             }
-            .bm-section-body {
+            .bm-body {
               font-size: 15px;
               line-height: 1.65;
               color: #2C1F0E;
@@ -514,11 +785,18 @@ export default function BusinessModelsPage() {
               font-size: 12px;
               top: 7px;
             }
-            .bm-divider {
+            .bm-hr {
               border: none;
               border-top: 1px dashed #D4C09A;
               margin: 0 0 24px;
             }
+            .bm-example-link {
+              font-size: 12px;
+              color: #8B6914;
+              text-decoration: underline;
+              font-family: ui-sans-serif, system-ui, sans-serif;
+            }
+            .bm-example-link:hover { color: #5C3D00; }
           `,
         }}
       />
@@ -596,11 +874,11 @@ export default function BusinessModelsPage() {
                 margin: 0,
               }}
             >
-              When you're getting started in business, one of the most important things you can do is understand the model underneath what you're building. You cannot change the fundamentals of how certain businesses are set up — even if you're the best operator in the world. The economics, the customer dynamics, the grind required — it's all baked in. So before you pick a path, know the game you're signing up to play.
+              When you are getting started in business, one of the most important things you can do is understand the model underneath what you are building. You cannot change the fundamentals of how certain businesses are set up, even if you are the best operator in the world. The economics, the customer dynamics, the grind required: it is all baked in. So before you pick a path, know the game you are signing up to play.
             </p>
           </div>
 
-          {/* Drawer label */}
+          {/* Folders grid */}
           <div
             style={{
               display: "flex",
@@ -624,7 +902,6 @@ export default function BusinessModelsPage() {
             <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.1)" }} />
           </div>
 
-          {/* Folders grid */}
           <div
             style={{
               display: "grid",
@@ -786,60 +1063,165 @@ export default function BusinessModelsPage() {
               </button>
             </div>
 
-            <hr className="bm-divider" />
+            <hr className="bm-hr" />
 
-            {/* Bar chart */}
-            <p className="bm-section-label">Where the money goes (% of revenue)</p>
-            <div style={{ marginBottom: 8 }}>
-              <BarChart items={open.breakdown} />
-            </div>
-            {/* Legend */}
-            <div style={{ display: "flex", gap: 14, marginBottom: 24, flexWrap: "wrap" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                <div style={{ width: 10, height: 10, borderRadius: 2, background: CLR.cost1 }} />
-                <span style={{ fontSize: 11, color: "#7A5A2A", fontFamily: "ui-sans-serif, system-ui, sans-serif" }}>Costs</span>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                <div style={{ width: 10, height: 10, borderRadius: 2, background: CLR.profit }} />
-                <span style={{ fontSize: 11, color: "#7A5A2A", fontFamily: "ui-sans-serif, system-ui, sans-serif" }}>Profit</span>
-              </div>
+            {/* Stacked bar */}
+            <p className="bm-label">Where the money goes (% of revenue)</p>
+            <div style={{ marginBottom: 28 }}>
+              <StackedBar items={open.breakdown} />
             </div>
 
-            <hr className="bm-divider" />
+            <hr className="bm-hr" />
 
-            <p className="bm-section-label">How you make money</p>
-            <p className="bm-section-body">{open.howYouMakeMoney}</p>
+            {/* Key terms */}
+            <p className="bm-label">Terms to know</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 28 }}>
+              {open.keyTerms.map((t, i) => (
+                <div
+                  key={i}
+                  style={{
+                    padding: "10px 14px",
+                    background: "#FBF3DC",
+                    border: "1px solid #E8D5A3",
+                    borderRadius: 5,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontFamily: "ui-sans-serif, system-ui, sans-serif",
+                      fontSize: 13,
+                      fontWeight: 700,
+                      color: "#2C1A00",
+                      marginBottom: 3,
+                    }}
+                  >
+                    {t.term}
+                  </div>
+                  <div
+                    style={{
+                      fontFamily: "ui-sans-serif, system-ui, sans-serif",
+                      fontSize: 13,
+                      color: "#5C3D00",
+                      lineHeight: 1.55,
+                    }}
+                  >
+                    {t.definition}
+                  </div>
+                </div>
+              ))}
+            </div>
 
-            <p className="bm-section-label">Your biggest costs</p>
+            <hr className="bm-hr" />
+
+            <p className="bm-label">How you make money</p>
+            <p className="bm-body">{open.howYouMakeMoney}</p>
+
+            <p className="bm-label">Your biggest costs</p>
             <ul className="bm-list">
               {open.biggestCosts.map((c, i) => <li key={i}>{c}</li>)}
             </ul>
 
-            <p className="bm-section-label">How you get customers</p>
-            <p className="bm-section-body">{open.howYouGetCustomers}</p>
+            <p className="bm-label">How you get customers</p>
+            <p className="bm-body">{open.howYouGetCustomers}</p>
 
-            <p className="bm-section-label">The flywheel</p>
-            <p className="bm-section-body">{open.flywheel}</p>
+            <p className="bm-label">The flywheel</p>
+            <p className="bm-body">{open.flywheel}</p>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 24 }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: 20,
+                marginBottom: 28,
+              }}
+            >
               <div>
-                <p className="bm-section-label" style={{ marginBottom: 8 }}>The pros</p>
+                <p className="bm-label" style={{ marginBottom: 8 }}>The pros</p>
                 <ul className="bm-list" style={{ marginBottom: 0 }}>
                   {open.pros.map((p, i) => <li key={i}>{p}</li>)}
                 </ul>
               </div>
               <div>
-                <p className="bm-section-label" style={{ marginBottom: 8 }}>The cons</p>
+                <p className="bm-label" style={{ marginBottom: 8 }}>The cons</p>
                 <ul className="bm-list" style={{ marginBottom: 0 }}>
                   {open.cons.map((c, i) => <li key={i}>{c}</li>)}
                 </ul>
               </div>
             </div>
 
-            <hr className="bm-divider" />
+            <hr className="bm-hr" />
 
-            <p className="bm-section-label">Who it's good for</p>
-            <p className="bm-section-body" style={{ marginBottom: 0 }}>{open.goodFor}</p>
+            {/* Real examples */}
+            <p className="bm-label">Real examples with public numbers</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 28 }}>
+              {open.examples.map((ex, i) => (
+                <div
+                  key={i}
+                  style={{
+                    padding: "14px 16px",
+                    background: "#FBF3DC",
+                    border: "1px solid #E8D5A3",
+                    borderRadius: 5,
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                      gap: 12,
+                      marginBottom: 6,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontFamily: "ui-sans-serif, system-ui, sans-serif",
+                        fontSize: 14,
+                        fontWeight: 700,
+                        color: "#2C1A00",
+                      }}
+                    >
+                      {ex.name}
+                    </div>
+                    <a
+                      href={ex.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bm-example-link"
+                      style={{ flexShrink: 0 }}
+                    >
+                      Source →
+                    </a>
+                  </div>
+                  <div
+                    style={{
+                      fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+                      fontSize: 11,
+                      color: "#8B6914",
+                      marginBottom: 6,
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    {ex.stat}
+                  </div>
+                  <div
+                    style={{
+                      fontFamily: "ui-sans-serif, system-ui, sans-serif",
+                      fontSize: 13,
+                      color: "#5C3D00",
+                      lineHeight: 1.6,
+                    }}
+                  >
+                    {ex.summary}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <hr className="bm-hr" />
+
+            <p className="bm-label">Who it is good for</p>
+            <p className="bm-body" style={{ marginBottom: 0 }}>{open.goodFor}</p>
           </div>
         </div>
       )}
