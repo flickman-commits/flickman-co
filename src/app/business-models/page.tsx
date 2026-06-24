@@ -44,6 +44,8 @@ type BusinessModel = {
   goodFor: string;
   examples: Example[];
   selling: Selling;
+  sicCode: string;
+  sicLabel: string;
 };
 
 const C = {
@@ -136,6 +138,8 @@ const MODELS: BusinessModel[] = [
         "Owner dependence: if the brand is your face, it is hard to sell",
       ],
     },
+    sicCode: "5961",
+    sicLabel: "Catalog and Mail-Order Houses",
   },
   {
     id: "restaurant",
@@ -217,6 +221,8 @@ const MODELS: BusinessModel[] = [
         "Brand attachment to the owner personally vs. the location itself",
       ],
     },
+    sicCode: "5812",
+    sicLabel: "Eating Places",
   },
   {
     id: "agency",
@@ -297,6 +303,8 @@ const MODELS: BusinessModel[] = [
         "Revenue growth trend and pipeline visibility",
       ],
     },
+    sicCode: "7311",
+    sicLabel: "Advertising Agencies",
   },
   {
     id: "lawn",
@@ -378,6 +386,8 @@ const MODELS: BusinessModel[] = [
         "Equipment condition and fleet age",
       ],
     },
+    sicCode: "0782",
+    sicLabel: "Lawn and Garden Services",
   },
   {
     id: "franchise",
@@ -460,6 +470,8 @@ const MODELS: BusinessModel[] = [
         "Health of the overall franchise system (is the brand growing or shrinking systemwide)",
       ],
     },
+    sicCode: "6794",
+    sicLabel: "Patent Owners and Lessors (Franchisors)",
   },
   {
     id: "lawfirm",
@@ -541,6 +553,8 @@ const MODELS: BusinessModel[] = [
         "Conflicts of interest between the merging firms' client bases",
       ],
     },
+    sicCode: "8111",
+    sicLabel: "Legal Services",
   },
   {
     id: "school",
@@ -622,6 +636,8 @@ const MODELS: BusinessModel[] = [
         "Whether the brand is tied to the founder or to the institution itself",
       ],
     },
+    sicCode: "8299",
+    sicLabel: "Schools and Educational Services NEC",
   },
   {
     id: "media",
@@ -703,6 +719,798 @@ const MODELS: BusinessModel[] = [
         "Email list size and direct audience relationships the buyer inherits",
       ],
     },
+    sicCode: "7812",
+    sicLabel: "Services-Motion Picture, Videotape Production",
+  },
+  {
+    id: "saas",
+    name: "SaaS Company",
+    emoji: "💻",
+    tagline: "You build software once and charge customers to use it every month.",
+    breakdown: [
+      { label: "R&D / Engineering", pct: 28, color: C.a },
+      { label: "Sales & Marketing", pct: 30, color: C.b },
+      { label: "G&A", pct: 12, color: C.c },
+      { label: "Cost of Revenue", pct: 10, color: C.d },
+      { label: "Profit", pct: 20, color: C.profit },
+    ],
+    keyTerms: [
+      { term: "ARR (Annual Recurring Revenue)", definition: "The annualized value of all active subscriptions. ARR is the core metric investors and buyers use to size a SaaS business. Growing ARR fast while keeping churn low is the primary job of every SaaS CEO." },
+      { term: "Churn Rate", definition: "The percentage of customers or revenue lost each month. A 2% monthly churn means you lose about 22% of your customer base every year. Churn is the biggest silent killer in SaaS." },
+      { term: "NRR (Net Revenue Retention)", definition: "How much revenue you retain from existing customers after accounting for upgrades, downgrades, and cancellations. Above 100% means your existing base is growing even without new sales. Best-in-class SaaS companies hit 120%+." },
+      { term: "CAC Payback Period", definition: "How many months it takes to recover the cost of acquiring a customer from that customer's gross profit. Under 12 months is good. Above 24 months means you are funding customers you will not profit from for two years." },
+      { term: "Rule of 40", definition: "Revenue growth rate plus profit margin should equal 40 or higher. A company growing 50% with -10% margins scores 40. A company growing 10% with 30% margins also scores 40. Both are considered healthy by most investors." },
+    ],
+    howYouMakeMoney: "Customers pay a monthly or annual fee to access your software. The economics are powerful because once you build the product, delivering it to one more customer costs almost nothing. Every dollar of ARR you retain flows almost entirely to the bottom line, which is why churn is everything.",
+    biggestCosts: [
+      "Engineering and product salaries (the biggest by far)",
+      "Sales and marketing spend to acquire customers",
+      "Cloud infrastructure (AWS, Google Cloud, Azure)",
+      "Customer success and support to reduce churn",
+    ],
+    howYouGetCustomers: "Outbound sales (your sales team reaches out directly), inbound content marketing (you rank on Google for the problem your software solves), product-led growth (users sign up free before upgrading), and partnerships. Enterprise SaaS is almost always outbound. SMB SaaS often works best product-led.",
+    flywheel: "More customers fund more engineering, which improves the product, which reduces churn and drives upgrades, which funds even more engineering. At scale, customer success stories become case studies that bring in new customers without ad spend. The best SaaS businesses get cheaper to sell as they get bigger.",
+    pros: [
+      "Recurring revenue: you do not start each month from zero",
+      "Gross margins of 70 to 90% once you hit scale",
+      "Extremely scalable: one more customer costs almost nothing marginal",
+      "Predictable cash flow makes planning and hiring easier",
+    ],
+    cons: [
+      "Expensive to build and slow to monetize early on",
+      "Customer success and churn management are ongoing forever",
+      "Requires technical talent that is expensive and hard to hire",
+      "Enterprise sales cycles can take 6 to 18 months",
+    ],
+    goodFor: "Technical founders or people who partner closely with technical talent. The best SaaS entrepreneurs are obsessed with solving a specific, painful problem for a specific type of customer. Patience is essential: it typically takes 2 to 4 years to reach meaningful ARR.",
+    examples: [
+      {
+        name: "Salesforce",
+        stat: "$34.9B revenue, 75.8% subscription gross margin, $4.8B operating income (FY2024)",
+        summary: "Salesforce invented modern B2B SaaS. Its 75%+ subscription gross margins show what the model looks like at scale: once the platform is built, each additional seat costs almost nothing to deliver. Operating income reached $4.8B in FY2024 after years of heavy investment in growth.",
+        url: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=CRM&type=10-K",
+        urlLabel: "Salesforce 10-K (SEC EDGAR)",
+      },
+      {
+        name: "HubSpot",
+        stat: "$2.17B revenue, 84.3% subscription gross margin, $361M non-GAAP operating income (2023)",
+        summary: "HubSpot's 84% subscription gross margin shows what best-in-class SaaS unit economics look like. The company was unprofitable on a GAAP basis as it continued investing in growth, but non-GAAP operating income of $361M shows the real cash-generating power of the model.",
+        url: "https://ir.hubspot.com/financial-information/press-releases",
+        urlLabel: "HubSpot Investor Relations",
+      },
+      {
+        name: "Zoom Video",
+        stat: "$4.39B revenue, 75.9% gross margin, $1.41B operating income (FY2024)",
+        summary: "Zoom grew from $623M in FY2020 to $4.4B in FY2024, one of the fastest revenue ramps in software history, driven by the pandemic. Its 75.9% gross margin and $1.41B operating income in FY2024 show what a mature SaaS P&L looks like once the sales investment settles.",
+        url: "https://investors.zoom.us/financial-information/press-releases",
+        urlLabel: "Zoom Investor Relations",
+      },
+    ],
+    selling: {
+      overview: "SaaS is the most actively acquired technology category in M&A. Buyers range from strategic acquirers (companies buying a complementary product) to PE firms running software roll-ups. Most deals are structured around ARR and NRR rather than traditional EBITDA multiples, because the value is the recurring revenue base.",
+      buyers: "Strategic tech companies (Salesforce, Microsoft, Alphabet buy dozens of SaaS companies per year), PE firms with dedicated software platforms (Thoma Bravo, Vista Equity, Francisco Partners), and larger SaaS companies buying adjacent tools to bundle into their platform.",
+      valuation: "SaaS companies with high growth (40%+) and strong retention (NRR above 110%) can sell for 8 to 15x ARR. Slower-growing but profitable businesses trade at 4 to 7x ARR. PE buyers typically target 3 to 5x ARR for businesses they plan to optimize and resell. Churn is the most common reason a deal is repriced.",
+      keyDrivers: [
+        "NRR above 110%: existing customers spending more over time is the clearest signal of product-market fit",
+        "Customer concentration: one customer over 15% of ARR makes buyers nervous",
+        "Logo churn vs. revenue churn: losing large customers hurts far more than losing small ones",
+        "Contract length and renewal timing: multi-year contracts reduce risk significantly",
+        "Quality of the engineering team: buyers often value the talent as much as the product",
+      ],
+    },
+    sicCode: "7372",
+    sicLabel: "Prepackaged Software",
+  },
+  {
+    id: "rental-property",
+    name: "Rental Property",
+    emoji: "🏠",
+    tagline: "You own a property, rent it out, and let tenants pay down your mortgage.",
+    breakdown: [
+      { label: "Mortgage & Debt Service", pct: 40, color: C.a },
+      { label: "Property Taxes", pct: 12, color: C.b },
+      { label: "Maintenance & Repairs", pct: 8, color: C.c },
+      { label: "Insurance & Management", pct: 5, color: C.d },
+      { label: "Profit / Equity Build", pct: 35, color: C.profit },
+    ],
+    keyTerms: [
+      { term: "Cap Rate", definition: "Net Operating Income divided by property value. A 6% cap rate on a $500K property means it generates $30K per year in NOI before debt service. Cap rate is how real estate investors compare properties the way stock investors use P/E ratios." },
+      { term: "NOI (Net Operating Income)", definition: "Gross rent minus operating expenses, before debt service. NOI is the cleanest measure of a property's earning power, independent of how it was financed." },
+      { term: "Cash-on-Cash Return", definition: "Annual cash flow divided by the total cash you invested. If you put $100K down and collect $8K per year after all expenses and mortgage payments, your cash-on-cash return is 8%." },
+      { term: "DSCR (Debt Service Coverage Ratio)", definition: "NOI divided by annual mortgage payments. Lenders want this above 1.25, meaning the property earns 25% more than its debt payments. Banks use this to decide whether to lend." },
+      { term: "Vacancy Rate", definition: "Percentage of units not generating rent. A 5% vacancy rate is normal in most markets. Above 10% usually signals a pricing or condition problem." },
+    ],
+    howYouMakeMoney: "Tenants pay rent every month. Ideally that rent covers the mortgage, taxes, insurance, and maintenance, and leaves you with cash flow. The real wealth creation is the appreciation of the property over time plus the mortgage principal your tenants are effectively paying down for you.",
+    biggestCosts: [
+      "Mortgage payments (the biggest by far if leveraged)",
+      "Property taxes (set by local government, not negotiable)",
+      "Maintenance and repairs (budget 1 to 2% of property value per year)",
+      "Property management fees if you hire a manager (typically 8 to 10% of rent)",
+    ],
+    howYouGetCustomers: "Zillow, Apartments.com, and Craigslist listings. Word of mouth and referrals from current tenants. Location does most of the work: a well-priced unit in a good area fills fast. A great property manager handles leasing for you if you want passive income.",
+    flywheel: "More equity builds over time as the mortgage is paid down and the property appreciates. That equity can be borrowed against to buy the next property. Each property generates rent that pays its own debt and builds more equity. This is the classic wealth compounding loop of real estate.",
+    pros: [
+      "Tenants pay down your mortgage with their rent",
+      "Real estate appreciates over time in most markets",
+      "Tax advantages: depreciation lets you shelter income on paper",
+      "Leverage: you can control a $500K asset with $100K down",
+    ],
+    cons: [
+      "Illiquid: you cannot sell a piece of your property in a day",
+      "Tenants, maintenance, and vacancies require active management",
+      "Interest rate risk: rising rates compress returns and slam valuations",
+      "One bad tenant or a broken roof can wipe out a year of cash flow",
+    ],
+    goodFor: "Patient, detail-oriented people who understand math and are comfortable with illiquidity. The best landlords treat it like a business: they screen tenants carefully, respond to maintenance promptly, and track every expense.",
+    examples: [
+      {
+        name: "AvalonBay Communities",
+        stat: "$2.75B revenue, 65.4% NOI margin, $1.50B NOI (2023)",
+        summary: "AvalonBay owns 88,000+ apartment homes across the US and shows residential rental at institutional scale. Its 65% NOI margin means most of every rent dollar flows through to operating profit before debt service. The catch is massive upfront capital to get there.",
+        url: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=AVB&type=10-K",
+        urlLabel: "AvalonBay 10-K (SEC EDGAR)",
+      },
+      {
+        name: "Invitation Homes",
+        stat: "$2.33B revenue, 68% core NOI margin, $290M net income (2023)",
+        summary: "Invitation Homes owns 80,000+ single-family rental homes across the Sun Belt and is the public benchmark for the single-family rental model. Its 68% NOI margin is possible because single-family homes carry less overhead per unit than apartment complexes.",
+        url: "https://ir.invitationhomes.com/news-releases",
+        urlLabel: "Invitation Homes Investor Relations",
+      },
+      {
+        name: "American Homes 4 Rent",
+        stat: "$1.50B revenue, 62.5% core NOI margin, 58,000+ homes (2023)",
+        summary: "AMH runs a similar single-family rental playbook as Invitation Homes. Together these two REITs illustrate how even large corporate landlords operate at 60 to 70% NOI margins, leaving 30 to 40% of rents covering debt, management, and capital expenditures.",
+        url: "https://ir.americanhomes4rent.com/news-releases",
+        urlLabel: "American Homes 4 Rent Investor Relations",
+      },
+    ],
+    selling: {
+      overview: "Residential rental properties are among the most liquid real estate assets because the buyer pool is enormous: other landlords, first-time homebuyers, flippers, and institutions all compete. Most transactions happen through real estate agents. Commercial residential properties (multifamily) go through commercial brokers.",
+      buyers: "Individual landlords and real estate investors, institutional buyers like Invitation Homes for single-family, multifamily syndicates and REITs for apartment buildings, and 1031 exchange buyers who need to reinvest proceeds from another sale without triggering capital gains tax.",
+      valuation: "Residential investment properties are valued on cap rate (NOI divided by purchase price), comparable sales, and gross rent multiplier. A typical single-family rental in a growing market might sell at a 4 to 6% cap rate. Multifamily trades at 4.5 to 6.5% cap rates depending on market and quality.",
+      keyDrivers: [
+        "Location: the single biggest driver of value and appreciation trajectory",
+        "Vacancy rate and lease terms at time of sale",
+        "Age and condition of major systems (roof, HVAC, plumbing)",
+        "Rent growth potential: how far below market are current rents",
+        "Local supply/demand dynamics and rent control regulation",
+      ],
+    },
+    sicCode: "6512",
+    sicLabel: "Operators of Apartment Buildings",
+  },
+  {
+    id: "staffing",
+    name: "Staffing Agency",
+    emoji: "👥",
+    tagline: "You match people to jobs and take a cut of their wages.",
+    breakdown: [
+      { label: "Contractor Wages", pct: 65, color: C.a },
+      { label: "Recruiter Salaries", pct: 12, color: C.b },
+      { label: "Benefits & Payroll Tax", pct: 8, color: C.c },
+      { label: "Overhead & Admin", pct: 5, color: C.d },
+      { label: "Profit", pct: 10, color: C.profit },
+    ],
+    keyTerms: [
+      { term: "Bill Rate", definition: "What you charge the client company per hour for a placed worker. If you bill $50 per hour for a contractor, that is your bill rate." },
+      { term: "Pay Rate", definition: "What you actually pay the worker per hour. If you pay $38 and bill $50, your $12 spread is your gross profit per hour." },
+      { term: "Spread / Gross Margin", definition: "The difference between bill rate and pay rate, expressed as a dollar amount or percentage. Most temporary staffing operates on a 20 to 40% gross margin. Specialty staffing commands the higher end." },
+      { term: "Fill Rate", definition: "The percentage of job openings you successfully fill with a qualified candidate. A high fill rate is your core proof of value to clients." },
+      { term: "Temp-to-Perm", definition: "A placement that starts temporary and converts to a permanent hire. Clients pay a conversion fee, typically 10 to 20% of annual salary, when they hire the temp directly." },
+    ],
+    howYouMakeMoney: "You put people to work and charge their employers more than you pay the workers. The spread is your gross profit. For contract staffing, you might bill $50 per hour and pay the worker $38, keeping $12. For direct placements, you charge a one-time fee of 15 to 25% of the placed employee's first-year salary.",
+    biggestCosts: [
+      "Contractor wages (60 to 70% of revenue, by far the biggest)",
+      "Benefits and payroll taxes on contractors you employ",
+      "Recruiter salaries and commissions",
+      "Applicant tracking software and job posting fees",
+    ],
+    howYouGetCustomers: "Cold outreach to HR departments and hiring managers. Referrals from placed candidates and satisfied clients. Trade shows in your specialty. The best staffing agencies specialize (tech, healthcare, finance) because deep niche expertise commands higher bill rates.",
+    flywheel: "Successful placements build trust with clients, who give you more exclusive job orders. More placements build a larger candidate database, which means you fill roles faster, which makes clients trust you more. Strong recruiters attract other strong recruiters, which compounds placement capacity over time.",
+    pros: [
+      "Low startup capital: you can begin with a phone, a laptop, and a niche",
+      "Recurring revenue from clients with ongoing hiring needs",
+      "Scales with headcount: as you hire more recruiters, you fill more roles",
+      "Demand is countercyclical in some sectors during uncertainty",
+    ],
+    cons: [
+      "Very cyclical: hiring freezes in recessions cut revenue fast",
+      "Thin margins: 10 to 15% net margin is typical",
+      "Talent-dependent: losing one great recruiter can cost real revenue",
+      "High competition and commoditization in non-specialized segments",
+    ],
+    goodFor: "High-energy relationship builders who are comfortable with rejection and motivated by results. Great staffing entrepreneurs love people, move fast, and are obsessive about their niche. Specialization is the path to better margins and stickier client relationships.",
+    examples: [
+      {
+        name: "Robert Half International",
+        stat: "$6.31B revenue, 40.5% gross margin, $487M operating income (2023)",
+        summary: "Robert Half is the public benchmark for professional staffing. Its 40% gross margin is on the high end of the industry because it specializes in skilled professional roles (accounting, finance, tech), where bill rates are higher and the spread per hour is wider than general temp work.",
+        url: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=RHI&type=10-K",
+        urlLabel: "Robert Half 10-K (SEC EDGAR)",
+      },
+      {
+        name: "ManpowerGroup",
+        stat: "$18.9B revenue, 18.0% gross margin, $351M operating income (2023)",
+        summary: "ManpowerGroup shows what large-scale generalist staffing looks like: enormous revenue but thin 18% gross margins because most placements are in lower-skilled roles where bill rates are competitive. Even at $19B in revenue, operating margins are in the low single digits.",
+        url: "https://ir.manpowergroup.com/financial-information/press-releases",
+        urlLabel: "ManpowerGroup Investor Relations",
+      },
+      {
+        name: "Kforce Inc.",
+        stat: "$1.43B revenue, 29.6% gross margin, $68M operating income (2023)",
+        summary: "Kforce focuses on technology and finance staffing, which is why its gross margin of 29.6% sits between generalist firms (18%) and pure professional firms like Robert Half (40%). Specialization is the lever that expands margins in staffing.",
+        url: "https://ir.kforce.com/financial-information/press-releases",
+        urlLabel: "Kforce Investor Relations",
+      },
+    ],
+    selling: {
+      overview: "Staffing agencies sell through M&A processes run by investment banks or business brokers. The buyer universe is large because larger staffing firms constantly acquire smaller ones to add geography, specialty, or recruiter headcount. Strategic buyers dominate, though PE-backed staffing roll-ups are active too.",
+      buyers: "Larger staffing firms executing roll-up acquisitions, PE firms building specialty staffing platforms, and tech companies buying staffing businesses to add a human-services layer to their software.",
+      valuation: "Staffing companies typically trade at 5 to 8x EBITDA, with specialty firms commanding the upper end. Higher gross margins and niche specialization push multiples up. Businesses with heavy reliance on a few large clients sell at a discount because of concentration risk.",
+      keyDrivers: [
+        "Gross margin: specialty staffing at 35%+ is worth much more than generalist at 18%",
+        "Client concentration: one client over 20% of revenue is a red flag for buyers",
+        "Recruiter retention: if top billers walk at close, the deal falls apart",
+        "Niche expertise and defensibility: deep specialization creates a real moat",
+        "Mix of contract (recurring) vs. direct placement (one-time) revenue",
+      ],
+    },
+    sicCode: "7363",
+    sicLabel: "Help Supply Services",
+  },
+  {
+    id: "car-dealership",
+    name: "Car Dealership",
+    emoji: "🚗",
+    tagline: "You buy cars from manufacturers and sell them at a markup, plus everything around the car.",
+    breakdown: [
+      { label: "Vehicle Cost (COGS)", pct: 82, color: C.a },
+      { label: "Staff & Commissions", pct: 8, color: C.b },
+      { label: "Facility & Ops", pct: 4, color: C.c },
+      { label: "Advertising", pct: 2, color: C.d },
+      { label: "Profit", pct: 4, color: C.profit },
+    ],
+    keyTerms: [
+      { term: "Front-End Gross", definition: "The profit on the vehicle sale itself, before finance and insurance add-ons. Front-end gross has been shrinking for years as internet pricing has made it harder to markup new cars significantly." },
+      { term: "Back-End Gross (F&I)", definition: "Profit from Finance and Insurance products sold after the vehicle deal: extended warranties, GAP insurance, credit life insurance. F&I is often more profitable per vehicle than the vehicle sale itself." },
+      { term: "Floor Plan Financing", definition: "The credit line dealers use to finance their inventory. A dealer does not own their inventory outright: they borrow from a bank to stock the lot and pay interest until each car sells." },
+      { term: "Dealer Invoice Price", definition: "What the dealer actually paid the manufacturer for the vehicle, before holdback. This is publicly available on sites like Edmunds, which is why front-end margins are thin on new cars." },
+      { term: "Holdback", definition: "A percentage of MSRP (typically 2 to 3%) that the manufacturer pays back to the dealer after the vehicle sells. Holdback is invisible to customers but meaningful to dealership profitability." },
+    ],
+    howYouMakeMoney: "Four profit centers: new vehicle sales (thin margins, 1 to 3%), used vehicle sales (better margins, 5 to 10%), the service and parts department (highest margin at 40 to 50%+), and finance and insurance. Most dealership profit actually comes from service and F&I, not car sales.",
+    biggestCosts: [
+      "Cost of vehicles (82 to 85% of new car revenue goes back to the manufacturer)",
+      "Floor plan interest on unsold inventory",
+      "Staff: salespeople on commission, service technicians, F&I managers",
+      "Facility costs: lot space, showroom, service bays",
+    ],
+    howYouGetCustomers: "Online listings (Cars.com, AutoTrader, dealer websites), manufacturer national advertising, service retention (bringing back car buyers for oil changes), and reputation from previous customers. Dealerships in good locations with strong franchise brands need less active marketing.",
+    flywheel: "Sell a car, then win the service business for the life of that car. A loyal service customer comes back 4 to 5 times per year at 40%+ margins, far better than the original sale. Satisfied service customers buy their next car from the same dealer. Service is both the most profitable department and the best retention tool.",
+    pros: [
+      "Manufacturer floor plan makes inventory financing accessible",
+      "Multiple profit centers: sales, service, parts, and F&I diversify revenue",
+      "Service revenue is recurring and grows as the vehicle fleet ages",
+      "Strong franchise brands drive predictable foot traffic",
+    ],
+    cons: [
+      "Extremely capital-intensive: you are financing a lot full of cars",
+      "Margin pressure on new vehicles has been relentless for decades",
+      "Manufacturer relationship risk: OEMs can add requirements or pull franchises",
+      "EV transition is disrupting the service revenue model for legacy dealers",
+    ],
+    goodFor: "Sales-driven, relationship-oriented operators who can manage complexity across multiple profit centers. The best dealers obsess over service retention. Understanding financing, insurance products, and manufacturer incentive programs is essential.",
+    examples: [
+      {
+        name: "AutoNation",
+        stat: "$26.9B revenue, 16.5% gross margin, $1.01B net income (2023)",
+        summary: "AutoNation is the largest US auto retailer with over 300 locations. Its 16.5% blended gross margin is driven largely by F&I and service, since the new vehicle segment contributes only 2 to 3% gross margin. The $1B net income shows what strong service and F&I operations can do at scale.",
+        url: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=AN&type=10-K",
+        urlLabel: "AutoNation 10-K (SEC EDGAR)",
+      },
+      {
+        name: "Lithia Motors",
+        stat: "$34.3B revenue, 15.4% gross margin, $1.14B net income (2023)",
+        summary: "Lithia has grown from a single Oregon dealership in 1946 to a $34B revenue group through aggressive acquisition. Its strategy of buying rural and suburban dealerships with lower competition, then optimizing F&I and service, has consistently delivered strong returns.",
+        url: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=LAD&type=10-K",
+        urlLabel: "Lithia Motors 10-K (SEC EDGAR)",
+      },
+      {
+        name: "Penske Automotive Group",
+        stat: "$29.6B revenue, 15.8% gross margin, $1.53B net income (2023)",
+        summary: "Penske shows how geographic diversification (US and UK operations) and a focus on luxury and premium brands (higher F&I and service margins) can drive net income above 5% on a volume dealership model, which is exceptional for this industry.",
+        url: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=PAG&type=10-K",
+        urlLabel: "Penske Automotive 10-K (SEC EDGAR)",
+      },
+    ],
+    selling: {
+      overview: "Dealerships sell through specialized auto retail M&A advisors. The manufacturer must approve any ownership transfer and can block sales to unapproved buyers. Sellers typically engage advisors 12 to 24 months before a planned sale to get the business in the best shape for buyers.",
+      buyers: "Publicly traded dealer groups (AutoNation, Lithia, Penske, Group 1) run aggressive acquisition programs. Private PE-backed groups and successful independent operators looking to expand are also active buyers. Family succession is common when the next generation is ready.",
+      valuation: "Dealerships are valued at a multiple of earnings (EBITDA) plus adjusted book value of inventory and real estate. Blue chip franchise dealerships (Toyota, Honda, Mercedes) sell at 3 to 5x EBITDA plus real estate. Weaker franchise brands trade at lower multiples. Real estate often represents 30 to 50% of total transaction value.",
+      keyDrivers: [
+        "Franchise brand: Toyota and Honda dealerships command significant premiums over weaker brands",
+        "Real estate ownership: owning vs. leasing the property matters enormously to buyers",
+        "Service department profitability and customer retention rate",
+        "F&I penetration and profit per vehicle retailed",
+        "Market demographics and competition in the dealership's trade area",
+      ],
+    },
+    sicCode: "5511",
+    sicLabel: "Motor Vehicle Dealers (New and Used)",
+  },
+  {
+    id: "construction",
+    name: "Homebuilder",
+    emoji: "🏗️",
+    tagline: "You buy land, build homes, and sell them. The margin is in the execution.",
+    breakdown: [
+      { label: "Construction Costs", pct: 58, color: C.a },
+      { label: "Land & Lots", pct: 18, color: C.b },
+      { label: "S&A Expenses", pct: 9, color: C.c },
+      { label: "Other Ops", pct: 5, color: C.d },
+      { label: "Profit", pct: 10, color: C.profit },
+    ],
+    keyTerms: [
+      { term: "Spec Build", definition: "Building a home before a buyer is identified, betting you will sell it when complete. Spec builds are riskier but faster to sell. Most builders mix presales and specs to balance risk and volume." },
+      { term: "Contract Backlog", definition: "Homes sold but not yet delivered. Backlog is the clearest forward revenue indicator for a homebuilder. A large backlog means predictable future revenue and is the primary metric buyers use to forecast earnings." },
+      { term: "Absorption Rate", definition: "How many homes are sold per community per month. A 3-per-month rate means your 30-home community sells out in 10 months. Low absorption signals a pricing or product mismatch." },
+      { term: "Gross Margin on Homes", definition: "Home sale revenue minus land cost and construction cost. Public homebuilders target 20 to 30%. Below 15% means the business is barely covering overhead." },
+      { term: "Lot Pipeline", definition: "The land under control (owned or optioned) that will become future communities. A strong lot pipeline is proof the company can sustain its growth rate. Running out of lots is the most common growth constraint." },
+    ],
+    howYouMakeMoney: "You buy or option land, entitle it (get permits), build homes, and sell them at a markup over total cost. A home that costs $350K in land and construction might sell for $450K, generating $100K in gross profit. The challenge is speed and execution: carrying half-built homes costs capital, and markets can shift before you finish.",
+    biggestCosts: [
+      "Construction costs: framing, trades, materials (55 to 65% of price)",
+      "Land and lot acquisition",
+      "Permits, entitlement, and infrastructure",
+      "Selling, general, and administrative expenses",
+    ],
+    howYouGetCustomers: "Model homes in planned communities drive most traffic. Real estate agents bring buyers and earn a co-op commission (typically 2 to 3%). Online listings on Zillow and Realtor.com. Referrals from past buyers. The product is visible on the jobsite, so marketing spend is relatively modest compared to other businesses.",
+    flywheel: "Building more homes generates capital to buy more land, which enables more communities, which builds brand recognition with buyers and subcontractors. Scale lets you negotiate better material prices and attract top trade partners who prefer consistent volume.",
+    pros: [
+      "Enormous market: US housing demand is structurally under-supplied",
+      "Strong unit economics when margins are maintained",
+      "Land optioning lets you control lots without full upfront capital",
+      "Housing will always exist as a business",
+    ],
+    cons: [
+      "Deeply cyclical: interest rates can cut demand in half quickly",
+      "Capital-intensive: lots of cash tied up in land and work-in-progress",
+      "Dependent on subcontractor availability (labor shortages kill timelines)",
+      "Regulatory hurdles: entitlement can take years in many markets",
+    ],
+    goodFor: "Operationally disciplined people who can manage complex projects, suppliers, and timelines. The best builders think in systems: standardized plans, reliable subcontractors, and tight cost controls. Patience through market cycles is non-negotiable.",
+    examples: [
+      {
+        name: "D.R. Horton",
+        stat: "$35.5B revenue, 21.9% gross margin, $4.78B net income (FY2023)",
+        summary: "D.R. Horton is the largest US homebuilder by volume. Its focus on affordable entry-level homes gives it the broadest demand base, and its 21.9% gross margin in FY2023 shows strong execution even with elevated interest rates. Net income of $4.78B on $35.5B revenue is impressive for a capital-intensive business.",
+        url: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=DHI&type=10-K",
+        urlLabel: "D.R. Horton 10-K (SEC EDGAR)",
+      },
+      {
+        name: "Lennar Corporation",
+        stat: "$34.2B revenue, 23.4% gross margin, $3.94B net income (FY2023)",
+        summary: "Lennar is the second-largest US homebuilder and follows a land-light strategy of optioning land rather than owning it outright, which reduces capital intensity. Its 23.4% gross margin and diversified product mix from entry-level to luxury gives it resilience across interest rate environments.",
+        url: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=LEN&type=10-K",
+        urlLabel: "Lennar 10-K (SEC EDGAR)",
+      },
+      {
+        name: "PulteGroup",
+        stat: "$15.9B revenue, 29.3% gross margin, $2.63B net income (2023)",
+        summary: "PulteGroup targets first-time buyers, move-up buyers, and active adults, giving it three distinct demand pools. Its 29.3% gross margin is among the best in the industry, driven by a disciplined land strategy and focus on communities where it has real pricing power.",
+        url: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=PHM&type=10-K",
+        urlLabel: "PulteGroup 10-K (SEC EDGAR)",
+      },
+    ],
+    selling: {
+      overview: "Most homebuilding businesses sell through M&A processes handled by investment banks or real estate M&A advisors. The primary assets are the lot pipeline, brand relationships, and community backlog. Strategic acquirers (other homebuilders) are the dominant buyers because they can immediately activate the land pipeline.",
+      buyers: "Larger homebuilders looking to enter new markets or acquire backlog, PE firms building regional builders into national platforms, and family succession. Acquisitions of smaller private builders happen constantly as the industry consolidates.",
+      valuation: "Public homebuilders trade at 1 to 1.5x book value during normal cycles. Private builders typically sell for 5 to 8x EBITDA, with the lot pipeline valued separately. Land under control is often the biggest variable in total transaction value.",
+      keyDrivers: [
+        "Size and quality of the lot pipeline: the biggest driver of deal value",
+        "Geographic markets: high-growth Sun Belt markets command premiums over stagnant markets",
+        "Backlog at time of sale: strong contracted backlog de-risks future earnings for buyers",
+        "Local entitlement expertise and subcontractor relationships",
+        "Management depth: can the business run without the founder",
+      ],
+    },
+    sicCode: "1521",
+    sicLabel: "General Building Contractors-Residential Buildings",
+  },
+  {
+    id: "gym",
+    name: "Gym / Fitness Studio",
+    emoji: "💪",
+    tagline: "People pay monthly to use your space and equipment, often regardless of whether they show up.",
+    breakdown: [
+      { label: "Staff & Trainers", pct: 35, color: C.a },
+      { label: "Rent & Facilities", pct: 25, color: C.b },
+      { label: "Equipment & Maintenance", pct: 10, color: C.c },
+      { label: "Marketing", pct: 10, color: C.d },
+      { label: "Profit", pct: 20, color: C.profit },
+    ],
+    keyTerms: [
+      { term: "Attrition / Churn Rate", definition: "The percentage of members who cancel each month. Most gyms lose 3 to 5% of members monthly. The entire gym business model depends on signing up members faster than they cancel." },
+      { term: "EFT (Electronic Funds Transfer)", definition: "Automated monthly billing that pulls dues from members' accounts. EFT revenue is the backbone of gym economics: predictable, recurring, and the foundation of the business model." },
+      { term: "Dues Revenue", definition: "Monthly membership fee income. This is the core recurring revenue line. Personal training, retail, and guest fees sit on top as secondary income streams." },
+      { term: "Personal Training Revenue", definition: "Revenue from one-on-one coaching sessions. PT is typically 10 to 30% of total gym revenue and carries much higher margins because trainers are paid per session, not salaried." },
+      { term: "Member Retention Rate", definition: "The inverse of churn: what percentage of members stay month-to-month. Above 90% monthly retention (below 10% monthly churn) is considered excellent." },
+    ],
+    howYouMakeMoney: "Monthly membership dues paid automatically. A basic gym might charge $30 to $60 per month. A premium boutique studio might charge $200+. On top of dues: personal training, retail, guest passes, class packs, and corporate memberships. Many members pay but do not show up, which means your actual capacity can be far lower than your membership count.",
+    biggestCosts: [
+      "Rent (often 20 to 30% of revenue, non-negotiable once you sign a long lease)",
+      "Staff: front desk, trainers, group fitness instructors",
+      "Equipment purchase and maintenance",
+      "Marketing to continuously replace churning members",
+    ],
+    howYouGetCustomers: "January is the biggest month: everyone signs up after New Year's. Beyond that: referral programs (current members bringing friends), local advertising, social media, influencer partnerships for boutique studios, and proximity (people go to the gym closest to their home or office).",
+    flywheel: "More members fund better equipment and facilities, which improves the member experience, which reduces churn and drives referrals, which brings in more members. Boutique studios specifically use social pressure and community-building to dramatically improve retention over traditional gyms.",
+    pros: [
+      "Recurring monthly revenue that comes in automatically",
+      "High capacity utilization: many members pay but show up rarely",
+      "Multiple revenue streams: dues, PT, retail, corporate",
+      "Strong community can create very sticky retention",
+    ],
+    cons: [
+      "High fixed cost base: rent and equipment do not flex with membership swings",
+      "January-heavy revenue with summer and holiday slowdowns",
+      "High churn: most gyms replace most of their membership each year",
+      "Market saturation in many metropolitan areas",
+    ],
+    goodFor: "People who are genuinely passionate about fitness and hospitality. The best gym operators are obsessed with member experience: clean facilities, motivated staff, and programming that produces real results.",
+    examples: [
+      {
+        name: "Planet Fitness",
+        stat: "$1.07B revenue, 63.5% gross margin, $127.3M net income (2023)",
+        summary: "Planet Fitness runs the most successful low-cost gym model in history. At $10 per month for most memberships, volume is everything: its 2,400+ locations averaged nearly $2M in system-wide dues revenue each. Its 63.5% gross margin is possible because of minimal staff, basic equipment, and no pools or group classes at most locations.",
+        url: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=PLNT&type=10-K",
+        urlLabel: "Planet Fitness 10-K (SEC EDGAR)",
+      },
+      {
+        name: "Life Time Group Holdings",
+        stat: "$2.31B revenue, 47.1% gross margin, $74.1M net income (2023)",
+        summary: "Life Time is the premium opposite of Planet Fitness: 5-star athletic country clubs with pools, spas, and premium amenities at $100 to $300+ per month. Its 47% gross margin shows that premium positioning can generate strong unit economics, though the real estate and capex requirements are enormous.",
+        url: "https://ir.lt.life/news-releases/news-release-details",
+        urlLabel: "Life Time Group Investor Relations",
+      },
+      {
+        name: "Xponential Fitness",
+        stat: "$296.4M revenue, 67.3% franchise segment gross margin (2023)",
+        summary: "Xponential owns boutique studio brands including Club Pilates, CycleBar, and Row House. Its franchise model generates 67% gross margins on royalties and fees without owning the real estate risk. It shows how franchising a fitness concept, rather than operating studios directly, dramatically improves the economics.",
+        url: "https://ir.xponential.com/news-releases",
+        urlLabel: "Xponential Fitness Investor Relations",
+      },
+    ],
+    selling: {
+      overview: "Gym sales are handled through business brokers or M&A advisors depending on size. Small independent studios often sell privately. Multi-location operators typically work with middle-market advisors. The lease is the pivotal document: if the landlord will not transfer it, there is often no deal.",
+      buyers: "Larger fitness operators and franchise groups looking for geographic expansion, PE firms building regional or national gym platforms, and individual operators buying their first or second location.",
+      valuation: "Single-location gyms typically sell for 2 to 4x EBITDA. Multi-location groups with consistent operations and transferable leases can achieve 5 to 7x EBITDA. Boutique franchise-based gyms with proven systems trade at a premium over independent operations.",
+      keyDrivers: [
+        "Lease terms and landlord transferability: a short or difficult lease is often a deal killer",
+        "Member count and monthly EFT revenue at time of sale",
+        "Churn rate trend over the prior 12 months",
+        "Quality and transferability of the trainer and staff team",
+        "Proximity to residential density and competition within 1 mile",
+      ],
+    },
+    sicCode: "7991",
+    sicLabel: "Physical Fitness Facilities",
+  },
+  {
+    id: "hotel",
+    name: "Hotel",
+    emoji: "🏨",
+    tagline: "You rent the same room over and over again, every night.",
+    breakdown: [
+      { label: "Labor", pct: 33, color: C.a },
+      { label: "Operating Expenses", pct: 25, color: C.b },
+      { label: "Fixed Costs & Debt", pct: 18, color: C.c },
+      { label: "OTA Commissions", pct: 10, color: C.d },
+      { label: "Profit", pct: 14, color: C.profit },
+    ],
+    keyTerms: [
+      { term: "RevPAR (Revenue Per Available Room)", definition: "Total room revenue divided by total available room nights. RevPAR is the single most important KPI in hospitality. It combines occupancy rate and average daily rate into one metric." },
+      { term: "ADR (Average Daily Rate)", definition: "Average revenue per occupied room per night. ADR times occupancy rate equals RevPAR. Luxury hotels push ADR. Budget hotels push occupancy." },
+      { term: "Occupancy Rate", definition: "Percentage of available rooms sold on a given night. Industry-wide occupancy typically runs 60 to 70%. During peak season or high-demand markets, properties can hit 90%+." },
+      { term: "GOPPAR (Gross Operating Profit Per Available Room)", definition: "Total hotel profit from all revenue sources (rooms, F&B, spa, parking) divided by available rooms. A more complete measure than RevPAR because it includes all revenue streams and operating costs." },
+      { term: "OTA Commission", definition: "The fee paid to Online Travel Agencies like Booking.com and Expedia for bookings they generate. OTA commissions typically run 15 to 25% of booking revenue, which is why hotels push hard for direct bookings." },
+    ],
+    howYouMakeMoney: "Room revenue is the core: guests pay per night. But full-service hotels make significant money from food and beverage, event space, parking, spa services, and resort fees. Economy hotels are almost purely room revenue. The highest-margin business in a hotel is a direct booking from a loyalty member, because no OTA commission is owed.",
+    biggestCosts: [
+      "Labor (housekeeping, front desk, food service, maintenance): 30 to 40% of revenue",
+      "OTA commissions if third-party bookings are heavy",
+      "Utilities, insurance, and property taxes",
+      "Capital expenditure and brand-mandated property improvement plans",
+    ],
+    howYouGetCustomers: "Brand affiliation (Marriott, Hilton, IHG) brings loyalty program traffic. OTAs (Booking.com, Expedia) drive significant volume at a cost. Corporate contracts bring reliable business travelers. Direct website bookings via SEO and loyalty programs are the highest-margin channel and the one every hotel fights to grow.",
+    flywheel: "Better reviews lead to higher search ranking on OTAs, which drives more bookings, which generates revenue to invest in property improvement, which drives better reviews. Loyalty programs create their own flywheel: stays earn points that motivate return stays, reducing acquisition cost over time.",
+    pros: [
+      "Rooms reset every night: if you have demand, you can raise rates dynamically",
+      "Revenue diversification: rooms, F&B, events, and parking all compound",
+      "Brand affiliation provides marketing and distribution you could not build alone",
+      "Real estate appreciation on top of operating income",
+    ],
+    cons: [
+      "Heavily capital-intensive to build and renovate",
+      "OTA dependency is expensive and getting more expensive",
+      "Extremely cyclical: recessions and pandemics can cut occupancy in half overnight",
+      "Labor management is complex across many departments",
+    ],
+    goodFor: "Hospitality-obsessed operators who care deeply about guest experience. The best hotel operators track every detail: check-in times, cleanliness scores, TripAdvisor rankings. If you love creating memorable experiences and can manage complexity across many simultaneous guests, this is a great business.",
+    examples: [
+      {
+        name: "Marriott International",
+        stat: "$23.7B revenue, 37.4% adjusted EBITDA margin, $3.08B net income (2023)",
+        summary: "Marriott operates 8,700+ properties worldwide under 30 brands, mostly under an asset-light management and franchise model. It manages hotels on behalf of owners and collects fees, which is why its margins are exceptional: 37%+ EBITDA without owning most of the real estate. RevPAR was a record $143 globally in 2023.",
+        url: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=MAR&type=10-K",
+        urlLabel: "Marriott 10-K (SEC EDGAR)",
+      },
+      {
+        name: "Hilton Worldwide",
+        stat: "$10.2B revenue, 31.2% adjusted EBITDA margin, $1.14B net income (2023)",
+        summary: "Hilton runs 7,530+ properties across 22 brands in 123 countries, almost entirely as an asset-light manager and franchisor. Its Hilton Honors loyalty program has 173M members, one of the most powerful direct booking engines in hospitality, reducing OTA dependency for its properties.",
+        url: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=HLT&type=10-K",
+        urlLabel: "Hilton 10-K (SEC EDGAR)",
+      },
+      {
+        name: "Host Hotels & Resorts",
+        stat: "$5.58B revenue, 28.6% EBITDA margin, $1.35B net income (2023)",
+        summary: "Host is the largest hotel REIT in the US and represents the opposite side of the asset-light model: it actually owns the real estate (100 luxury and upper-upscale hotels) and contracts with Marriott and Hyatt to manage them. RevPAR of $225 across its premium portfolio shows the power of location and brand in hotel economics.",
+        url: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=HST&type=10-K",
+        urlLabel: "Host Hotels 10-K (SEC EDGAR)",
+      },
+    ],
+    selling: {
+      overview: "Hotel transactions are among the most complex real estate deals: you are selling both operating business value and real property. Most deals go through specialized hotel M&A brokers (CBRE Hotels, JLL Hotels). Branded properties must receive franchisor approval on the buyer, and sometimes a property improvement plan is required as a condition of sale.",
+      buyers: "Hotel REITs, institutional real estate investors, PE firms with hospitality platforms, high-net-worth individual investors, and other hotel operators. Foreign capital is a significant buyer of US hotel assets.",
+      valuation: "Hotels are valued on a per-key (per room) basis and as a multiple of EBITDA or NOI. A limited-service hotel might sell for $80K to $150K per key. A luxury urban hotel can exceed $500K to $1M per key. EBITDA multiples range from 10 to 18x for well-located, well-branded properties. RevPAR growth trajectory is the primary valuation driver.",
+      keyDrivers: [
+        "Location quality: downtown urban, resort destination, airport, or suburban",
+        "Brand affiliation: Marriott and Hilton properties sell at premiums to independent hotels",
+        "RevPAR trend vs. the competitive set (is the hotel gaining or losing market share)",
+        "Age of the property and size of any upcoming capital expenditure or improvement plan",
+        "Whether the hotel has food and beverage and event space (adds income and complexity)",
+      ],
+    },
+    sicCode: "7011",
+    sicLabel: "Hotels and Motels",
+  },
+  {
+    id: "insurance-brokerage",
+    name: "Insurance Brokerage",
+    emoji: "🛡️",
+    tagline: "You help clients find and buy insurance, and the insurer pays you a commission.",
+    breakdown: [
+      { label: "Broker Salaries & Commissions", pct: 55, color: C.a },
+      { label: "G&A & Technology", pct: 15, color: C.b },
+      { label: "Marketing", pct: 10, color: C.c },
+      { label: "Compliance & E&O Insurance", pct: 8, color: C.d },
+      { label: "Profit", pct: 12, color: C.profit },
+    ],
+    keyTerms: [
+      { term: "Commission Rate", definition: "The percentage of the insurance premium the carrier pays you for placing the business. Personal lines (home, auto) commissions run 5 to 15%. Commercial lines run 10 to 20%. Specialty lines can go higher." },
+      { term: "Contingency Commission", definition: "A bonus payment from an insurance carrier based on your total book of business with them: volume, profitability, and growth. Contingencies can add 2 to 8% to revenue and are a major profit driver for larger agencies." },
+      { term: "Retention Rate", definition: "The percentage of insurance policies you retain at renewal each year. A 90% retention rate means clients renew almost automatically, which is the hallmark of a strong book of business." },
+      { term: "Book of Business", definition: "The total portfolio of insurance policies you manage. This is the core asset of a brokerage. When an agency sells, it sells its book of business at a multiple of its annual revenue." },
+      { term: "E&O Insurance (Errors and Omissions)", definition: "Professional liability insurance protecting the agency if a client suffers a loss due to a placement mistake. E&O is mandatory in the industry and a fixed cost every agency carries." },
+    ],
+    howYouMakeMoney: "Insurance carriers pay you a commission every time a policy is placed or renewed. The client pays the premium, the carrier keeps the bulk, and you earn a percentage for placing the business and servicing the relationship. Renewals are the engine: a well-managed book renews at 90%+ without you having to resell. You build once, then collect annually.",
+    biggestCosts: [
+      "Broker and producer salaries and commissions (the biggest cost)",
+      "G&A including technology, office, and compliance systems",
+      "E&O insurance (mandatory professional liability)",
+      "Marketing and lead generation to grow the book",
+    ],
+    howYouGetCustomers: "Referrals from existing clients and referral partners (accountants, lawyers, financial advisors). Outbound prospecting by producers to businesses in your target niche. The best brokerages specialize in an industry vertical (construction, healthcare, technology) and become the go-to expert in that space.",
+    flywheel: "A larger book of business makes you a more important trading partner to carriers, which earns better commission terms and contingency bonuses. Better carrier relationships mean better coverage options for clients, which improves retention. Higher retention means lower replacement cost, which improves margins without new sales.",
+    pros: [
+      "Recurring revenue: renewals come in every year without reselling",
+      "Relatively low capital requirements to start",
+      "High client retention rates in specialized niches",
+      "Carrier commission structures create leverage as your book grows",
+    ],
+    cons: [
+      "Heavily regulated at the state level in the US",
+      "Producer-dependent: key brokers leaving can take clients with them",
+      "Commission compression as carriers and direct platforms compete",
+      "Complex E&O exposure if a placement error leaves a client uninsured at the wrong moment",
+    ],
+    goodFor: "Relationship-driven people who enjoy complexity and are comfortable selling in a regulated environment. The best insurance brokers become deeply specialized in one industry and are seen as trusted advisors rather than salespeople. Long-term client focus is the core characteristic.",
+    examples: [
+      {
+        name: "Marsh McLennan",
+        stat: "$22.7B revenue, 25.2% adjusted operating margin, $3.09B net income (2023)",
+        summary: "Marsh McLennan is the world's largest insurance brokerage and risk advisory firm. Its 25% operating margin on $22.7B in revenue shows what the model looks like at massive scale: a recurring commission stream from an enormous global book of business, with nearly all revenue recurring at renewal.",
+        url: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=MMC&type=10-K",
+        urlLabel: "Marsh McLennan 10-K (SEC EDGAR)",
+      },
+      {
+        name: "Aon PLC",
+        stat: "$13.4B revenue, 28.8% operating margin, $2.99B net income (2023)",
+        summary: "Aon competes with Marsh at the top of global commercial brokerage. Its 28.8% operating margin is slightly better because of its heavy mix of consulting and analytics revenue, which carries higher margins than pure brokerage. Together Marsh and Aon broker a meaningful share of all commercial insurance placed globally.",
+        url: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=AON&type=10-K",
+        urlLabel: "Aon 10-K (SEC EDGAR)",
+      },
+      {
+        name: "Arthur J. Gallagher & Co.",
+        stat: "$9.34B revenue, 18.7% EBITDA margin, $860M net income (2023)",
+        summary: "Gallagher is the mid-market leader in brokerage, growing primarily through acquisitions of regional and specialty agencies. It shows how roll-up strategies work in insurance: acquire agencies with sticky books of business, retain the producers, and generate expanding contingency commissions as the combined book grows.",
+        url: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=AJG&type=10-K",
+        urlLabel: "Arthur J. Gallagher 10-K (SEC EDGAR)",
+      },
+    ],
+    selling: {
+      overview: "Insurance brokerages sell through specialized M&A advisors who know the industry. The core asset is the book of business. Most deals include earnout provisions tied to client retention post-close, because clients have the right to move their insurance to a different agency at renewal.",
+      buyers: "Large brokers like Gallagher, Brown & Brown, Hub International, and Acrisure that are executing roll-up strategies. PE-backed platforms have been among the most aggressive acquirers in the past decade.",
+      valuation: "Independent insurance agencies with strong retention typically sell for 1.5 to 2.5x revenue, or 8 to 12x EBITDA. Specialty and niche agencies with very high retention (92%+) and strong contingency commissions can reach 2.5 to 3.5x revenue. Earnout structures are common to align incentives around retention.",
+      keyDrivers: [
+        "Retention rate of the book: the closer to 95%, the higher the multiple",
+        "Whether client relationships live with the agency or individual producers",
+        "Mix of commercial vs. personal lines: commercial is more valuable and sticky",
+        "Specialty niche expertise and carrier relationships",
+        "Producer employment agreements: non-solicitation and non-compete terms matter enormously",
+      ],
+    },
+    sicCode: "6411",
+    sicLabel: "Insurance Agents, Brokers, and Services",
+  },
+  {
+    id: "consulting",
+    name: "Management Consulting",
+    emoji: "📊",
+    tagline: "You help organizations solve hard problems and charge a lot to do it.",
+    breakdown: [
+      { label: "Consultant Salaries & Comp", pct: 60, color: C.a },
+      { label: "Overhead & Admin", pct: 10, color: C.b },
+      { label: "Travel & Expenses", pct: 8, color: C.c },
+      { label: "Biz Dev", pct: 7, color: C.d },
+      { label: "Profit", pct: 15, color: C.profit },
+    ],
+    keyTerms: [
+      { term: "Engagement", definition: "A consulting project, defined by scope, deliverables, and timeline. An engagement might last 6 weeks or 2 years. Revenue is organized around engagements rather than clients, since one client might have multiple simultaneous projects." },
+      { term: "Utilization Rate", definition: "The percentage of a consultant's time that is billable to clients. Target utilization at most firms is 75 to 85%. Non-billable time goes toward business development, training, and internal projects. Low utilization is the primary margin killer." },
+      { term: "Revenue Per Consultant", definition: "Total revenue divided by total headcount. This is the efficiency metric for consulting. McKinsey and Bain generate over $500K per employee. Mid-market consulting firms typically run $200K to $400K." },
+      { term: "Up-or-Out", definition: "The career model at major consulting firms: if you do not get promoted within a certain number of years, you leave. This structure maintains a pyramid of junior staff generating billable hours while relatively few partners manage clients." },
+      { term: "Statement of Work (SOW)", definition: "The contract document defining scope, deliverables, timeline, and fees for an engagement. A well-written SOW protects both parties. Scope creep happens when the project expands beyond the SOW without adjusting the fee." },
+    ],
+    howYouMakeMoney: "Clients pay project fees or daily rates for consultants to work on their problems. A junior consultant bills at $3,000 to $5,000 per day. A senior partner's time might bill at $10,000 to $30,000 per day. A major strategy engagement at a top firm can run $1M to $10M+. The business scales by adding consultants who generate billing while the partner handles client relationships.",
+    biggestCosts: [
+      "Consultant compensation including salaries, bonuses, and benefits (55 to 65% of revenue)",
+      "Travel and expenses (clients expect consultants on-site, and that is expensive)",
+      "Overhead: office, IT, training, and knowledge management systems",
+      "Business development: proposals, conferences, and relationship cultivation",
+    ],
+    howYouGetCustomers: "Reputation and relationships are everything. Work gets referred from one executive to another. Thought leadership (white papers, published research, conference speaking) builds credibility at scale. Junior consultants who move into industry often bring their former firm back for projects. The top firms spend heavily on recruiting from elite universities, because the people are the product.",
+    flywheel: "Strong work leads to case studies and referrals, which bring in more clients. More clients fund better analyst programs, which attract stronger talent, which produces better work. Firm reputation compounds over decades. McKinsey's brand moat is over 100 years old.",
+    pros: [
+      "Very high billing rates for expertise clients cannot easily access otherwise",
+      "Relatively low capital requirements: you are selling brains, not widgets",
+      "Deep exposure to many industries builds generalist strategic value fast",
+      "Exit opportunities are exceptional: alumni networks open many doors",
+    ],
+    cons: [
+      "Extremely people-dependent: the product walks out the door every night",
+      "Travel-heavy culture burns out consultants and increases turnover",
+      "Hard to productize: each engagement tends to be custom",
+      "Business development is expensive and slow-moving at the high end",
+    ],
+    goodFor: "Highly analytical, curious people who enjoy variety and can synthesize information quickly under pressure. The best consultants have strong structured thinking, communicate clearly to executives, and genuinely enjoy problem-solving in unfamiliar industries. It is one of the best training grounds for future business leaders.",
+    examples: [
+      {
+        name: "Accenture",
+        stat: "$64.1B revenue, 14.6% operating margin, $6.87B operating income (FY2023)",
+        summary: "Accenture sits at the scale extreme of consulting, blending management consulting, technology services, and outsourcing. Its 14.6% operating margin on $64B in revenue is lower than pure strategy firms but higher than IT services companies, reflecting its hybrid positioning. It is the world's largest consulting firm by headcount.",
+        url: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=ACN&type=10-K",
+        urlLabel: "Accenture 10-K (SEC EDGAR)",
+      },
+      {
+        name: "Booz Allen Hamilton",
+        stat: "$9.26B revenue, 8.8% adjusted EBITDA margin, $640M net income (FY2023)",
+        summary: "Booz Allen focuses almost exclusively on government and defense consulting, which gives it predictable contract revenue but lower margins than commercial consulting. Over 95% of its revenue comes from US government clients, illustrating how a consulting firm can dominate a sector by going all-in on niche expertise.",
+        url: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=BAH&type=10-K",
+        urlLabel: "Booz Allen Hamilton 10-K (SEC EDGAR)",
+      },
+      {
+        name: "Huron Consulting Group",
+        stat: "$1.41B revenue, 18.1% adjusted EBITDA margin, $100M net income (2023)",
+        summary: "Huron is a mid-market consulting firm specializing in healthcare and education, two sectors with complex regulatory and financial challenges. Its 18% adjusted EBITDA margin shows what sector specialization can do: deeper expertise commands better rates and stronger retention than generalist work.",
+        url: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=HURN&type=10-K",
+        urlLabel: "Huron Consulting 10-K (SEC EDGAR)",
+      },
+    ],
+    selling: {
+      overview: "Consulting firms rarely sell in a traditional sense. The typical exit is a merger with or acquisition by a larger consulting or professional services firm. The challenge is that the core asset is people: consulting relationships are personal and can walk out the door at close.",
+      buyers: "Larger consulting firms buying specialization or sector depth. Tech companies (Accenture, IBM, Cognizant) acquiring consulting capabilities to bundle with technology services. PE firms have entered management consulting roll-ups with mixed success.",
+      valuation: "Independent consulting firms typically sell for 0.5 to 1.5x revenue or 5 to 10x EBITDA, depending on specialization and client stickiness. Firms with government contracts are more valuable because contracts are transferable. Purely relationship-driven firms trade at steep discounts because of key-man risk.",
+      keyDrivers: [
+        "Key-man risk: how much of the business depends on one or two individuals",
+        "Contractual vs. relationship-based revenue: contracts survive leadership changes, relationships often do not",
+        "Sector specialization depth and brand recognition in the niche",
+        "Team retention post-close: without retaining partners, there is nothing to buy",
+        "Backlog and pipeline visibility at time of close",
+      ],
+    },
+    sicCode: "8742",
+    sicLabel: "Management Consulting Services",
+  },
+  {
+    id: "cpg",
+    name: "CPG Brand",
+    emoji: "🛒",
+    tagline: "You make a product, get it on store shelves, and sell millions of units.",
+    breakdown: [
+      { label: "COGS (Materials & Mfg)", pct: 45, color: C.a },
+      { label: "Marketing & Trade Spend", pct: 25, color: C.b },
+      { label: "Distribution & Logistics", pct: 10, color: C.c },
+      { label: "Admin & Overhead", pct: 8, color: C.d },
+      { label: "Profit", pct: 12, color: C.profit },
+    ],
+    keyTerms: [
+      { term: "Trade Spend", definition: "Money paid to retailers to secure shelf space, run promotions, and display your product. Trade spend typically runs 15 to 25% of gross revenue and is the biggest hidden cost for CPG brands. Every major retailer requires significant trade investment." },
+      { term: "Velocity", definition: "How many units of your product sell per store per week. Retailers track velocity obsessively because slow-moving products get delisted. A new brand needs to demonstrate strong velocity to maintain shelf space and expand distribution." },
+      { term: "Distribution Points", definition: "The number of store locations carrying your product. Each retailer and each SKU counts separately. Growing distribution (into more stores) and velocity (selling more per store) are the two levers of CPG revenue growth." },
+      { term: "MSRP", definition: "Manufacturer's Suggested Retail Price. The consumer price you recommend. Price too high and velocity suffers; price too low and margins collapse. Pricing strategy is one of the most consequential decisions in CPG." },
+      { term: "Slotting Fee", definition: "An upfront fee paid to a retailer for shelf space when a new product is introduced. Slotting fees can run thousands to tens of thousands of dollars per SKU per retailer, making retail distribution very expensive for small brands." },
+    ],
+    howYouMakeMoney: "You manufacture (or contract-manufacture) a product, sell it to retailers or distributors at wholesale, who mark it up and sell it to consumers. A bag of chips you sell to Walmart for $1.50 ends up on shelf for $2.99. Your revenue is the $1.50. The math works if your production cost plus trade spend plus overhead stays below $1.50.",
+    biggestCosts: [
+      "Cost of goods (ingredients, packaging, manufacturing, co-manufacturing fees)",
+      "Trade spend to get and keep shelf space at retailers",
+      "Distribution and logistics (getting product from factory to retail shelf)",
+      "Marketing to drive consumer awareness and trial",
+    ],
+    howYouGetCustomers: "Two customers: retailers (who carry your product) and consumers (who buy it). Getting into retail requires calling on buyers, offering slotting fees and trade support, and demonstrating consumer demand. Building consumer demand requires sampling, social media, influencer marketing, and grassroots community building. The brands that win do both simultaneously.",
+    flywheel: "Higher consumer demand drives better velocity in existing stores, which makes it easier to get into more stores, which increases total distribution, which funds more marketing to drive more demand. Scale gives you negotiating leverage with manufacturers to lower COGS, which improves margins, which funds more distribution expansion.",
+    pros: [
+      "Billions of potential consumers through retail distribution",
+      "Brand equity compounds: a trusted brand is hard to displace on shelf",
+      "Can be capital-light if you use contract manufacturing",
+      "Potential for significant scale and strategic acquisition by large CPG companies",
+    ],
+    cons: [
+      "Trade spend is relentless and expensive",
+      "Retail relationships are power-asymmetric: Walmart can delist you overnight",
+      "Velocity pressure means underperforming SKUs get cut quickly",
+      "Working capital requirements are heavy: you pay for inventory before retailers pay you",
+    ],
+    goodFor: "Entrepreneurial people who understand both operations and brand-building. The best CPG founders obsess over the consumer, not just the product. You need patience to build retail relationships, discipline to manage trade spend, and creativity to build a brand that stands out on a crowded shelf.",
+    examples: [
+      {
+        name: "Procter & Gamble",
+        stat: "$84.0B revenue, 47.8% gross margin, $14.6B net income (FY2023)",
+        summary: "P&G is the template for what CPG looks like at full maturity: 65 brands across personal care, household, and health products, with a 47.8% gross margin powered by brand pricing power that decades of investment have built. Its 17.4% net margin shows how efficiently a scaled CPG machine operates.",
+        url: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=PG&type=10-K",
+        urlLabel: "P&G 10-K (SEC EDGAR)",
+      },
+      {
+        name: "Celsius Holdings",
+        stat: "$1.32B revenue, 51.1% gross margin, $269M net income (2023)",
+        summary: "Celsius grew from $314M to $1.32B in revenue in a single year, one of the fastest CPG scaling stories in recent history. Its 51% gross margin on a beverage product is exceptional, achieved through premium positioning and a strategic distribution partnership with PepsiCo. It shows what the upside of a breakout CPG brand looks like.",
+        url: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=CELH&type=10-K",
+        urlLabel: "Celsius Holdings 10-K (SEC EDGAR)",
+      },
+      {
+        name: "Oatly Group",
+        stat: "$793M revenue, 25.2% gross margin, -$121M net loss (2023)",
+        summary: "Oatly created the oat milk category and IPO'd at a $10B valuation. But its 25% gross margin is far below what premium CPG should achieve, squeezed by high production costs and aggressive trade investment. It is a cautionary tale about the gap between brand love and financial performance.",
+        url: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=OTLY&type=10-K",
+        urlLabel: "Oatly 10-K (SEC EDGAR)",
+      },
+    ],
+    selling: {
+      overview: "CPG exits are typically strategic acquisitions by large CPG companies looking to buy growth and brand equity rather than build it. The acquirer buys the brand, the formulations, the retail relationships, and the consumer loyalty. Deals under $50M often involve M&A advisors or direct outreach. Larger deals involve investment banks.",
+      buyers: "Major CPG companies (P&G, Unilever, Nestle, General Mills, PepsiCo) that run brand acquisition programs. PE firms building CPG brand portfolios. Strategic roll-ups in specific categories. Individual operators looking to buy established brands.",
+      valuation: "Growing CPG brands with distribution momentum typically sell for 2 to 5x revenue. Profitable brands with strong margins and retail relationships can achieve 8 to 15x EBITDA. The best exits happen when multiple strategic buyers compete, which happens when velocity data is strong and the category is growing.",
+      keyDrivers: [
+        "Velocity in key retail accounts: the clearest proof of consumer demand",
+        "Gross margin before trade: buyers want to see margin before the trade spend",
+        "Retail distribution quality and depth (national chains vs. regional accounts)",
+        "Brand differentiation and defensibility against private label substitution",
+        "Working capital health: clean inventory management makes acquisitions easier",
+      ],
+    },
+    sicCode: "2090",
+    sicLabel: "Food Preparations, Not Elsewhere Classified",
   },
 ];
 
@@ -771,6 +1579,100 @@ function StackedBar({ items }: { items: BreakdownBar[] }) {
             </span>
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+/* ── SEC 10-K Search ────────────────────────────────────────────── */
+
+function Sec10kSearch({ sicCode, sicLabel }: { sicCode: string; sicLabel: string }) {
+  const [query, setQuery] = useState("");
+  const browseUrl = `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&State=0&SIC=${sicCode}&type=10-K&dateb=&owner=include&count=40`;
+  const searchUrl = query
+    ? `https://www.sec.gov/cgi-bin/browse-edgar?company=${encodeURIComponent(query)}&CIK=${encodeURIComponent(query)}&type=10-K&dateb=&owner=include&count=40&search_text=&action=getcompany`
+    : "";
+
+  return (
+    <div
+      style={{
+        background: "#F5EDD4",
+        border: "1px solid #D4C09A",
+        borderRadius: 6,
+        padding: "14px 16px",
+        marginBottom: 28,
+      }}
+    >
+      <div
+        style={{
+          fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+          fontSize: 9,
+          letterSpacing: 2,
+          color: "#8B6914",
+          textTransform: "uppercase",
+          marginBottom: 10,
+        }}
+      >
+        Search public 10-K filings
+      </div>
+      <a
+        href={browseUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          display: "block",
+          fontFamily: "ui-sans-serif, system-ui, sans-serif",
+          fontSize: 13,
+          color: "#8B6914",
+          textDecoration: "underline",
+          marginBottom: 10,
+        }}
+      >
+        Browse all {sicLabel} companies on SEC EDGAR →
+      </a>
+      <div style={{ display: "flex", gap: 8 }}>
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search by company name or ticker..."
+          style={{
+            flex: 1,
+            fontFamily: "ui-sans-serif, system-ui, sans-serif",
+            fontSize: 13,
+            padding: "7px 10px",
+            border: "1px solid #C4A050",
+            borderRadius: 4,
+            background: "#FFFDF5",
+            color: "#2C1A00",
+            outline: "none",
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && searchUrl) window.open(searchUrl, "_blank");
+          }}
+        />
+        {query && (
+          <a
+            href={searchUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              padding: "7px 14px",
+              background: "#8B6914",
+              color: "#FFFDF5",
+              fontFamily: "ui-sans-serif, system-ui, sans-serif",
+              fontSize: 13,
+              fontWeight: 600,
+              textDecoration: "none",
+              borderRadius: 4,
+              whiteSpace: "nowrap",
+            }}
+          >
+            Search →
+          </a>
+        )}
       </div>
     </div>
   );
@@ -1174,6 +2076,11 @@ export default function BusinessModelsPage() {
             <div style={{ marginBottom: 28 }}>
               <StackedBar items={open.breakdown} />
             </div>
+
+            <hr className="bm-hr" />
+
+            {/* SEC 10-K search */}
+            <Sec10kSearch sicCode={open.sicCode} sicLabel={open.sicLabel} />
 
             <hr className="bm-hr" />
 
