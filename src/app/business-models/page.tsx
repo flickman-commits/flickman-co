@@ -44,8 +44,6 @@ type BusinessModel = {
   goodFor: string;
   examples: Example[];
   selling: Selling;
-  sicCode: string;
-  sicLabel: string;
 };
 
 const C = {
@@ -138,8 +136,6 @@ const MODELS: BusinessModel[] = [
         "Owner dependence: if the brand is your face, it is hard to sell",
       ],
     },
-    sicCode: "5961",
-    sicLabel: "Catalog and Mail-Order Houses",
   },
   {
     id: "restaurant",
@@ -221,8 +217,6 @@ const MODELS: BusinessModel[] = [
         "Brand attachment to the owner personally vs. the location itself",
       ],
     },
-    sicCode: "5812",
-    sicLabel: "Eating Places",
   },
   {
     id: "agency",
@@ -303,8 +297,6 @@ const MODELS: BusinessModel[] = [
         "Revenue growth trend and pipeline visibility",
       ],
     },
-    sicCode: "7311",
-    sicLabel: "Advertising Agencies",
   },
   {
     id: "lawn",
@@ -386,8 +378,6 @@ const MODELS: BusinessModel[] = [
         "Equipment condition and fleet age",
       ],
     },
-    sicCode: "0782",
-    sicLabel: "Lawn and Garden Services",
   },
   {
     id: "franchise",
@@ -470,8 +460,6 @@ const MODELS: BusinessModel[] = [
         "Health of the overall franchise system (is the brand growing or shrinking systemwide)",
       ],
     },
-    sicCode: "6794",
-    sicLabel: "Patent Owners and Lessors (Franchisors)",
   },
   {
     id: "lawfirm",
@@ -553,8 +541,6 @@ const MODELS: BusinessModel[] = [
         "Conflicts of interest between the merging firms' client bases",
       ],
     },
-    sicCode: "8111",
-    sicLabel: "Legal Services",
   },
   {
     id: "school",
@@ -636,8 +622,6 @@ const MODELS: BusinessModel[] = [
         "Whether the brand is tied to the founder or to the institution itself",
       ],
     },
-    sicCode: "8299",
-    sicLabel: "Schools and Educational Services NEC",
   },
   {
     id: "media",
@@ -719,8 +703,6 @@ const MODELS: BusinessModel[] = [
         "Email list size and direct audience relationships the buyer inherits",
       ],
     },
-    sicCode: "7812",
-    sicLabel: "Services-Motion Picture, Videotape Production",
   },
   {
     id: "saas",
@@ -798,8 +780,6 @@ const MODELS: BusinessModel[] = [
         "Quality of the engineering team: buyers often value the talent as much as the product",
       ],
     },
-    sicCode: "7372",
-    sicLabel: "Prepackaged Software",
   },
   {
     id: "rental-property",
@@ -877,8 +857,6 @@ const MODELS: BusinessModel[] = [
         "Local supply/demand dynamics and rent control regulation",
       ],
     },
-    sicCode: "6512",
-    sicLabel: "Operators of Apartment Buildings",
   },
   {
     id: "staffing",
@@ -956,8 +934,6 @@ const MODELS: BusinessModel[] = [
         "Mix of contract (recurring) vs. direct placement (one-time) revenue",
       ],
     },
-    sicCode: "7363",
-    sicLabel: "Help Supply Services",
   },
   {
     id: "car-dealership",
@@ -1035,8 +1011,6 @@ const MODELS: BusinessModel[] = [
         "Market demographics and competition in the dealership's trade area",
       ],
     },
-    sicCode: "5511",
-    sicLabel: "Motor Vehicle Dealers (New and Used)",
   },
   {
     id: "construction",
@@ -1114,8 +1088,6 @@ const MODELS: BusinessModel[] = [
         "Management depth: can the business run without the founder",
       ],
     },
-    sicCode: "1521",
-    sicLabel: "General Building Contractors-Residential Buildings",
   },
   {
     id: "gym",
@@ -1193,8 +1165,6 @@ const MODELS: BusinessModel[] = [
         "Proximity to residential density and competition within 1 mile",
       ],
     },
-    sicCode: "7991",
-    sicLabel: "Physical Fitness Facilities",
   },
   {
     id: "hotel",
@@ -1272,8 +1242,6 @@ const MODELS: BusinessModel[] = [
         "Whether the hotel has food and beverage and event space (adds income and complexity)",
       ],
     },
-    sicCode: "7011",
-    sicLabel: "Hotels and Motels",
   },
   {
     id: "insurance-brokerage",
@@ -1351,8 +1319,6 @@ const MODELS: BusinessModel[] = [
         "Producer employment agreements: non-solicitation and non-compete terms matter enormously",
       ],
     },
-    sicCode: "6411",
-    sicLabel: "Insurance Agents, Brokers, and Services",
   },
   {
     id: "consulting",
@@ -1430,8 +1396,6 @@ const MODELS: BusinessModel[] = [
         "Backlog and pipeline visibility at time of close",
       ],
     },
-    sicCode: "8742",
-    sicLabel: "Management Consulting Services",
   },
   {
     id: "cpg",
@@ -1509,8 +1473,6 @@ const MODELS: BusinessModel[] = [
         "Working capital health: clean inventory management makes acquisitions easier",
       ],
     },
-    sicCode: "2090",
-    sicLabel: "Food Preparations, Not Elsewhere Classified",
   },
 ];
 
@@ -1579,100 +1541,6 @@ function StackedBar({ items }: { items: BreakdownBar[] }) {
             </span>
           </div>
         ))}
-      </div>
-    </div>
-  );
-}
-
-/* ── SEC 10-K Search ────────────────────────────────────────────── */
-
-function Sec10kSearch({ sicCode, sicLabel }: { sicCode: string; sicLabel: string }) {
-  const [query, setQuery] = useState("");
-  const browseUrl = `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&State=0&SIC=${sicCode}&type=10-K&dateb=&owner=include&count=40`;
-  const searchUrl = query
-    ? `https://www.sec.gov/cgi-bin/browse-edgar?company=${encodeURIComponent(query)}&CIK=${encodeURIComponent(query)}&type=10-K&dateb=&owner=include&count=40&search_text=&action=getcompany`
-    : "";
-
-  return (
-    <div
-      style={{
-        background: "#F5EDD4",
-        border: "1px solid #D4C09A",
-        borderRadius: 6,
-        padding: "14px 16px",
-        marginBottom: 28,
-      }}
-    >
-      <div
-        style={{
-          fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
-          fontSize: 9,
-          letterSpacing: 2,
-          color: "#8B6914",
-          textTransform: "uppercase",
-          marginBottom: 10,
-        }}
-      >
-        Search public 10-K filings
-      </div>
-      <a
-        href={browseUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        style={{
-          display: "block",
-          fontFamily: "ui-sans-serif, system-ui, sans-serif",
-          fontSize: 13,
-          color: "#8B6914",
-          textDecoration: "underline",
-          marginBottom: 10,
-        }}
-      >
-        Browse all {sicLabel} companies on SEC EDGAR →
-      </a>
-      <div style={{ display: "flex", gap: 8 }}>
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search by company name or ticker..."
-          style={{
-            flex: 1,
-            fontFamily: "ui-sans-serif, system-ui, sans-serif",
-            fontSize: 13,
-            padding: "7px 10px",
-            border: "1px solid #C4A050",
-            borderRadius: 4,
-            background: "#FFFDF5",
-            color: "#2C1A00",
-            outline: "none",
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && searchUrl) window.open(searchUrl, "_blank");
-          }}
-        />
-        {query && (
-          <a
-            href={searchUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              padding: "7px 14px",
-              background: "#8B6914",
-              color: "#FFFDF5",
-              fontFamily: "ui-sans-serif, system-ui, sans-serif",
-              fontSize: 13,
-              fontWeight: 600,
-              textDecoration: "none",
-              borderRadius: 4,
-              whiteSpace: "nowrap",
-            }}
-          >
-            Search →
-          </a>
-        )}
       </div>
     </div>
   );
@@ -2076,11 +1944,6 @@ export default function BusinessModelsPage() {
             <div style={{ marginBottom: 28 }}>
               <StackedBar items={open.breakdown} />
             </div>
-
-            <hr className="bm-hr" />
-
-            {/* SEC 10-K search */}
-            <Sec10kSearch sicCode={open.sicCode} sicLabel={open.sicLabel} />
 
             <hr className="bm-hr" />
 
