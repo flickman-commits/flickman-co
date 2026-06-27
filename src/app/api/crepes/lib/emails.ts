@@ -228,8 +228,12 @@ export async function sendApprovalToGuest(opts: {
     <p style="margin: 0 0 16px; color: #4B3A2F; font-size: 16px; line-height: 1.5;">
       <strong>${escapeHtml(longDate)}</strong> at 11 AM. Table for ${opts.party}.
     </p>
-    <p style="margin: 0 0 14px; color: #4B3A2F; font-size: 15px; line-height: 1.55;">
-      Calendar invite is attached (address included).
+    <p style="margin: 0 0 4px; color: #7C6A5D; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;">Where</p>
+    <p style="margin: 0 0 16px; color: #2A1A14; font-size: 15px; line-height: 1.5;">
+      ${escapeHtml(process.env.CREPES_LOCATION ?? "West Village, New York")}
+    </p>
+    <p style="margin: 0 0 10px; color: #4B3A2F; font-size: 15px; line-height: 1.55;">
+      Calendar invite is attached so you can add it in one tap.
     </p>
     <p style="margin: 0; color: #4B3A2F; font-size: 15px; line-height: 1.55;">
       Come hungry.
@@ -240,10 +244,13 @@ export async function sendApprovalToGuest(opts: {
   </div>
 </body></html>`;
 
+  const location = process.env.CREPES_LOCATION ?? "West Village, New York";
+
   const text =
     `You're in, ${opts.name.split(" ")[0]}.\n\n` +
     `${longDate} at 11 AM. Table for ${opts.party}.\n\n` +
-    `Calendar invite is attached (address included).\n\n` +
+    `Where: ${location}\n\n` +
+    `Calendar invite is attached so you can add it in one tap.\n\n` +
     `Come hungry.\nMatt & Nat`;
 
   const NAT = process.env.CREPES_NAT_EMAIL ?? "natalia.ohanesian@gmail.com";
@@ -291,6 +298,10 @@ export async function scheduleReminderToGuest(opts: {
     <p style="margin: 0 0 14px; color: #4B3A2F; font-size: 16px; line-height: 1.55;">
       Quick reminder: you&rsquo;re booked for <strong>${escapeHtml(longDate)}</strong> at 11 AM. Table for ${opts.party}.
     </p>
+    <p style="margin: 0 0 4px; color: #7C6A5D; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;">Where</p>
+    <p style="margin: 0 0 16px; color: #2A1A14; font-size: 15px; line-height: 1.5;">
+      ${escapeHtml(process.env.CREPES_LOCATION ?? "West Village, New York")}
+    </p>
     <p style="margin: 0 0 14px; color: #4B3A2F; font-size: 15px; line-height: 1.55;">
       If anything changed and you can&rsquo;t make it, just reply to this email so we can give the spot to someone else.
     </p>
@@ -303,9 +314,12 @@ export async function scheduleReminderToGuest(opts: {
   </div>
 </body></html>`;
 
+  const reminderLocation = process.env.CREPES_LOCATION ?? "West Village, New York";
+
   const text =
     `See you tomorrow, ${opts.name.split(" ")[0]}.\n\n` +
     `Quick reminder: you're booked for ${longDate} at 11 AM. Table for ${opts.party}.\n\n` +
+    `Where: ${reminderLocation}\n\n` +
     `If anything changed and you can't make it, just reply to this email so we can give the spot to someone else.\n\n` +
     `Otherwise, come hungry.\nMatt & Nat`;
 
