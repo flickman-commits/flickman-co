@@ -27,6 +27,7 @@ type PastGuest = {
 const PAST_GUESTS: PastGuest[] = [
   { date: "2026-05-17", guests: "Jason & Julia", party: 2 },
   { date: "2026-05-31", guests: "Tom & Lex", party: 2 },
+  { date: "2026-06-28", guests: "Chase & Kaitlyn", party: 2 },
 ];
 
 /* ──────────────────────────────────────────────────────────────── */
