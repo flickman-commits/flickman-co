@@ -6,6 +6,7 @@ import {
   sendApprovalToGuest,
   sendDenialToGuest,
   scheduleReminderToGuest,
+  scheduleFollowUpToGuest,
 } from "../lib/emails";
 
 /**
@@ -109,6 +110,17 @@ export async function GET(req: NextRequest) {
       } catch (err) {
         console.error("[crepes/decision] reminder schedule failed:", err);
         reminderNote = " (Reminder couldn't be scheduled — but the confirmation went through.)";
+      }
+
+      // Schedule the post-event follow-up for Sunday at 3 PM ET.
+      try {
+        await scheduleFollowUpToGuest({
+          name: payload.name,
+          email: payload.email,
+          dateISO: payload.dateISO,
+        });
+      } catch (err) {
+        console.error("[crepes/decision] follow-up schedule failed:", err);
       }
 
       return htmlPage({

@@ -64,7 +64,7 @@ const FAQ = [
   },
   {
     q: "How long does it usually go?",
-    a: "About 90 minutes. First crepe hits the pan at 11 sharp. Most folks roll out around 12:30 stuffed.",
+    a: "About 90 minutes. First crepe hits the pan at 11 AM. Most folks roll out around 12:30 stuffed.",
   },
   {
     q: "What should I bring?",

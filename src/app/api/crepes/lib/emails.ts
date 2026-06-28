@@ -338,7 +338,104 @@ export async function scheduleReminderToGuest(opts: {
 }
 
 /* ──────────────────────────────────────────────────────────────── */
-/* 4. Guest gets a polite decline                                    */
+/* 4. Guest gets a follow-up asking for a review + photos            */
+/* ──────────────────────────────────────────────────────────────── */
+
+/**
+ * Build a JS Date for Sunday at 3:00 PM ET (after the event ends at 12:30).
+ * Returns null if that moment is already past or less than 5 minutes away.
+ */
+function followUpUtcDate(dateISO: string): Date | null {
+  const [y, m, d] = dateISO.split("-").map(Number);
+
+  for (const utcHour of [19, 20]) {
+    const candidate = new Date(Date.UTC(y, m - 1, d, utcHour, 0, 0));
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/New_York",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }).formatToParts(candidate);
+    const map: Record<string, string> = {};
+    parts.forEach((p) => { if (p.type !== "literal") map[p.type] = p.value; });
+    if (parseInt(map.hour, 10) === 15 && parseInt(map.day, 10) === d) {
+      return candidate;
+    }
+  }
+  return null;
+}
+
+export function followUpScheduledAt(dateISO: string): string | null {
+  const candidate = followUpUtcDate(dateISO);
+  if (!candidate) return null;
+  if (candidate.getTime() < Date.now() + 5 * 60 * 1000) return null;
+  return candidate.toISOString();
+}
+
+export async function scheduleFollowUpToGuest(opts: {
+  name: string;
+  email: string;
+  dateISO: string;
+}): Promise<{ scheduled: boolean; scheduledAt?: string }> {
+  const scheduledAt = followUpScheduledAt(opts.dateISO);
+  if (!scheduledAt) return { scheduled: false };
+
+  const firstName = opts.name.split(" ")[0];
+  const phone = process.env.MATT_PHONE ?? "Matt";
+  const subject = `Thanks for coming to Crepe Sundays`;
+
+  const html = `<!doctype html>
+<html><body style="margin:0; padding:32px 16px; background:#FBF4E2; font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;">
+  <div style="max-width: 520px; margin: 0 auto; background: #FFFCF6; border:2px solid #2A1A14; border-radius:6px; padding:28px 24px 22px; box-shadow: 0 6px 0 #2A1A14;">
+    <div style="font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #B23A2A; margin-bottom: 10px;">Crepe Sundays</div>
+    <h1 style="font-family: ui-serif, Georgia, serif; font-size: 26px; margin: 0 0 12px; color: #2A1A14;">
+      So glad you came, ${escapeHtml(firstName)}.
+    </h1>
+    <p style="margin: 0 0 14px; color: #4B3A2F; font-size: 15px; line-height: 1.55;">
+      We had such a great time hosting you this morning. Hope the crepes lived up to the hype.
+    </p>
+    <p style="margin: 0 0 14px; color: #4B3A2F; font-size: 15px; line-height: 1.55;">
+      Two small asks if you&rsquo;re feeling generous:
+    </p>
+    <ol style="margin: 0 0 16px; padding-left: 20px; color: #4B3A2F; font-size: 15px; line-height: 1.7;">
+      <li><strong>Drop us a quick review</strong> by texting it to ${escapeHtml(phone)}. Doesn&rsquo;t have to be long. One honest sentence is perfect. We&rsquo;d love to put it on the site.</li>
+      <li><strong>Text any photos</strong> you took this morning to that same number. We&rsquo;d love to add them to the page.</li>
+    </ol>
+    <p style="margin: 0; color: #4B3A2F; font-size: 15px; line-height: 1.55;">
+      Thanks again. Come back soon.
+    </p>
+    <p style="margin: 24px 0 0; color: #7C6A5D; font-size: 13px; font-style: italic;">
+      Matt &amp; Nat
+    </p>
+  </div>
+</body></html>`;
+
+  const text =
+    `So glad you came, ${firstName}.\n\n` +
+    `We had such a great time hosting you this morning. Hope the crepes lived up to the hype.\n\n` +
+    `Two small asks if you're feeling generous:\n\n` +
+    `1. Drop us a quick review by texting it to ${phone}. Doesn't have to be long. One honest sentence is perfect. We'd love to put it on the site.\n\n` +
+    `2. Text any photos you took this morning to that same number. We'd love to add them to the page.\n\n` +
+    `Thanks again. Come back soon.\nMatt & Nat`;
+
+  await sendViaResend({
+    from: FROM,
+    to: [opts.email],
+    replyTo: NOTIFY,
+    subject,
+    html,
+    text,
+    scheduledAt,
+  });
+
+  return { scheduled: true, scheduledAt };
+}
+
+/* ──────────────────────────────────────────────────────────────── */
+/* 5. Guest gets a polite decline                                    */
 /* ──────────────────────────────────────────────────────────────── */
 
 export async function sendDenialToGuest(opts: {
