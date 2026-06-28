@@ -77,10 +77,9 @@ type Photo = { src?: string; caption: string };
 const PHOTOS: Photo[] = [
   { src: "/crepes/IMG_2808.jpeg", caption: "Fresh strawberries & bananas" },
   { src: "/crepes/IMG_2813.jpeg", caption: "The hosts" },
-  { caption: "The first crepe of the morning" },
-  { caption: "Sunday morning" },
-  { caption: "Strawberry & cream" },
-  { caption: "Sunday morning regulars" },
+  { src: "/crepes/chase.jpeg", caption: "That first bite feeling..." },
+  { src: "/crepes/group photo.jpeg", caption: "Happy guests" },
+  { src: "/crepes/spread.jpeg", caption: "The spread..." },
 ];
 
 /* ──────────────────────────────────────────────────────────────── */
