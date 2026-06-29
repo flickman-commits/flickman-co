@@ -1548,13 +1548,33 @@ function StackedBar({ items }: { items: BreakdownBar[] }) {
 
 /* ── Mock P&L ───────────────────────────────────────────────────── */
 
-const REVENUE = 100_000;
+const MONTHLY_REVENUE: Record<string, number> = {
+  ecommerce:           75_000,
+  restaurant:          85_000,
+  agency:             120_000,
+  lawn:                35_000,
+  franchise:          250_000,
+  lawfirm:            130_000,
+  school:              40_000,
+  media:               22_000,
+  saas:                48_000,
+  "rental-property":   14_000,
+  staffing:           380_000,
+  "car-dealership": 1_800_000,
+  construction:       850_000,
+  gym:                 58_000,
+  hotel:              175_000,
+  "insurance-brokerage": 42_000,
+  consulting:         160_000,
+  cpg:                220_000,
+};
 
 function fmt(n: number) {
   return "$" + n.toLocaleString("en-US");
 }
 
-function MockPL({ items }: { items: BreakdownBar[] }) {
+function MockPL({ id, items }: { id: string; items: BreakdownBar[] }) {
+  const REVENUE = MONTHLY_REVENUE[id] ?? 100_000;
   const expenses = items.filter((x) => x.label !== "Profit");
   const profitItem = items.find((x) => x.label === "Profit");
   const totalExpenses = expenses.reduce((s, x) => s + x.pct, 0);
@@ -2076,7 +2096,7 @@ export default function BusinessModelsPage() {
             </div>
 
             {/* Mock P&L */}
-            <MockPL items={open.breakdown} />
+            <MockPL id={open.id} items={open.breakdown} />
 
             <hr className="bm-hr" />
 
