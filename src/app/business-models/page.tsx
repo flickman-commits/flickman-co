@@ -47,12 +47,12 @@ type BusinessModel = {
 };
 
 const C = {
-  a: "#B8703A",
-  b: "#C49A4A",
-  c: "#8B7355",
-  d: "#D4B870",
-  e: "#A09070",
-  profit: "#5C8A5C",
+  a: "#E05A2B",
+  b: "#2B7FE0",
+  c: "#9B44D4",
+  d: "#E8B030",
+  e: "#D42B6A",
+  profit: "#22A855",
 };
 
 const MODELS: BusinessModel[] = [
@@ -1546,6 +1546,130 @@ function StackedBar({ items }: { items: BreakdownBar[] }) {
   );
 }
 
+/* ── Mock P&L ───────────────────────────────────────────────────── */
+
+const REVENUE = 100_000;
+
+function fmt(n: number) {
+  return "$" + n.toLocaleString("en-US");
+}
+
+function MockPL({ items }: { items: BreakdownBar[] }) {
+  const expenses = items.filter((x) => x.label !== "Profit");
+  const profitItem = items.find((x) => x.label === "Profit");
+  const totalExpenses = expenses.reduce((s, x) => s + x.pct, 0);
+
+  return (
+    <div
+      style={{
+        background: "#0F1117",
+        borderRadius: 8,
+        padding: "18px 20px",
+        marginBottom: 28,
+        fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+      }}
+    >
+      <div
+        style={{
+          fontSize: 10,
+          letterSpacing: 2,
+          color: "#6B7A99",
+          textTransform: "uppercase",
+          marginBottom: 14,
+        }}
+      >
+        Mock Monthly P&amp;L
+      </div>
+
+      {/* Revenue row */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          fontSize: 13,
+          color: "#E2E8F0",
+          marginBottom: 4,
+          paddingBottom: 10,
+          borderBottom: "1px solid #1E2233",
+        }}
+      >
+        <span>Revenue</span>
+        <span style={{ color: "#4ADE80", fontWeight: 700 }}>{fmt(REVENUE)}</span>
+      </div>
+
+      {/* Expense rows */}
+      <div style={{ marginBottom: 10 }}>
+        {expenses.map((item, i) => (
+          <div
+            key={i}
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              fontSize: 12,
+              color: "#94A3B8",
+              padding: "5px 0",
+              borderBottom: "1px solid #1A1E2A",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+              <div
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: 2,
+                  background: item.color,
+                  flexShrink: 0,
+                }}
+              />
+              <span>{item.label}</span>
+            </div>
+            <span style={{ color: "#F87171" }}>
+              ({fmt(Math.round(REVENUE * item.pct / 100))})
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {/* Total expenses */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          fontSize: 12,
+          color: "#64748B",
+          marginBottom: 10,
+          paddingBottom: 10,
+          borderBottom: "1px solid #2D3348",
+        }}
+      >
+        <span>Total Expenses</span>
+        <span style={{ color: "#F87171" }}>
+          ({fmt(Math.round(REVENUE * totalExpenses / 100))})
+        </span>
+      </div>
+
+      {/* Net profit */}
+      {profitItem && (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            fontSize: 14,
+            fontWeight: 700,
+            color: "#E2E8F0",
+          }}
+        >
+          <span>Net Profit</span>
+          <span style={{ color: "#4ADE80" }}>
+            {fmt(Math.round(REVENUE * profitItem.pct / 100))}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ── Page ───────────────────────────────────────────────────────── */
 
 export default function BusinessModelsPage() {
@@ -1884,20 +2008,26 @@ export default function BusinessModelsPage() {
               <div>
                 <div
                   style={{
-                    fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
-                    fontSize: 10,
-                    letterSpacing: 2,
-                    color: "#8B6914",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    background: "#2C1A00",
+                    color: "#F5E6B8",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    letterSpacing: 1.4,
                     textTransform: "uppercase",
-                    marginBottom: 6,
+                    fontFamily: "ui-sans-serif, system-ui, sans-serif",
+                    padding: "4px 10px",
+                    borderRadius: 999,
+                    marginBottom: 10,
                   }}
                 >
-                  Business Model
+                  Business model explained
                 </div>
                 <h2
                   style={{
                     fontFamily: "ui-serif, Georgia, serif",
-                    fontSize: "clamp(24px, 5vw, 30px)",
+                    fontSize: "clamp(30px, 6vw, 40px)",
                     fontWeight: 700,
                     color: "#2C1A00",
                     margin: 0,
@@ -1944,6 +2074,9 @@ export default function BusinessModelsPage() {
             <div style={{ marginBottom: 28 }}>
               <StackedBar items={open.breakdown} />
             </div>
+
+            {/* Mock P&L */}
+            <MockPL items={open.breakdown} />
 
             <hr className="bm-hr" />
 

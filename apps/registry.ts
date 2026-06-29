@@ -68,6 +68,15 @@ export const apps: AppEntry[] = [
     url: "/long-distance",
     createdAt: "2026-05-21",
   },
+  {
+    slug: "business-models",
+    name: "Business Models 101",
+    icon: "📂",
+    description:
+      "18 business models explained — how they make money, their costs, and what the P&L looks like.",
+    url: "/business-models",
+    createdAt: "2026-06-29",
+  },
 ];
 
 export function getApp(slug: string): AppEntry | undefined {
