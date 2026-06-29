@@ -47,6 +47,11 @@ const REVIEWS = [
     stars: 5,
     body: "It was such a delight to be hosted by Matt & Nat for crepe sundays. They created a space for generous hospitality and connection right in the heart of the west village. Five stars for these two!",
   },
+  {
+    name: "Chase & Kaitlyn",
+    stars: 5,
+    body: "We felt like we'd been teleported onto the real life version of Friends, Hitch, When Harry Met Sally… all rolled up into one. From mouth watering food to picturesque NYC aesthetics, the morning could not have been more perfect. Such a creative way to stay connected and value your friendships! We can't wait for Round 2!",
+  },
 ];
 
 const FAQ = [
