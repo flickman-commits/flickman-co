@@ -1548,25 +1548,28 @@ function StackedBar({ items }: { items: BreakdownBar[] }) {
 
 /* ── Mock P&L ───────────────────────────────────────────────────── */
 
+// Source: U.S. Census Bureau, Statistics of U.S. Businesses (SUSB) 2022.
+// All figures are avg annual receipts ÷ 12, filtered to firms with <5 employees
+// (closest proxy for owner-operated), except where noted.
 const MONTHLY_REVENUE: Record<string, number> = {
-  ecommerce:           75_000,
-  restaurant:          85_000,
-  agency:             120_000,
-  lawn:                35_000,
-  franchise:          250_000,
-  lawfirm:            130_000,
-  school:              40_000,
-  media:               22_000,
-  saas:                48_000,
-  "rental-property":   14_000,
-  staffing:           380_000,
-  "car-dealership": 1_800_000,
-  construction:       850_000,
-  gym:                 58_000,
-  hotel:              175_000,
-  "insurance-brokerage": 42_000,
-  consulting:         160_000,
-  cpg:                220_000,
+  ecommerce:              74_000,  // NAICS 454110 — Electronic Shopping; <5 emp
+  restaurant:             33_000,  // NAICS 722511 — Full-Service Restaurants; <5 emp
+  agency:                 43_000,  // NAICS 541810 — Advertising Agencies; <5 emp
+  lawn:                   25_000,  // NAICS 561730 — Landscaping Services; <5 emp
+  franchise:             119_000,  // NAICS 722513 — Limited-Service Restaurants; 20-24 emp (most franchise units have 20+ staff)
+  lawfirm:                35_000,  // NAICS 541110 — Offices of Lawyers; <5 emp
+  school:                 28_000,  // NAICS 611710 — Educational Support Services; <5 emp
+  media:                  49_000,  // NAICS 711510 — Independent Artists & Writers; <5 emp
+  saas:                   56_000,  // NAICS 511210 — Software Publishers; <5 emp
+  "rental-property":      54_000,  // NAICS 531110 — Lessors of Residential Buildings; <5 emp
+  staffing:               55_000,  // NAICS 561320 — Temporary Help Services; <5 emp
+  "car-dealership":      344_000,  // NAICS 441110 — New Car Dealers; <5 emp
+  construction:           64_000,  // NAICS 236115 — New Single-Family Housing Construction; <5 emp
+  gym:                    52_000,  // NAICS 713940 — Fitness & Recreational Sports Centers; 10-14 emp (typical small gym)
+  hotel:                  75_000,  // NAICS 721110 — Hotels & Motels; 5-9 emp (typical small property)
+  "insurance-brokerage":  27_000,  // NAICS 524210 — Insurance Agencies & Brokerages; <5 emp
+  consulting:             29_000,  // NAICS 541611 — Management Consulting Services; <5 emp
+  cpg:                    51_000,  // NAICS 311 sector — Food Manufacturing; <5 emp
 };
 
 function fmt(n: number) {
