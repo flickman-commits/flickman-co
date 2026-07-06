@@ -1474,6 +1474,160 @@ const MODELS: BusinessModel[] = [
       ],
     },
   },
+  {
+    id: "gas-station",
+    name: "Gas Station / C-Store",
+    emoji: "⛽",
+    tagline: "You sell gas at pennies of margin to pull people inside, where the real money is made.",
+    breakdown: [
+      { label: "Cost of Fuel", pct: 58, color: C.a },
+      { label: "Cost of In-Store Goods", pct: 22, color: C.b },
+      { label: "Rent, Card Fees & Overhead", pct: 11, color: C.c },
+      { label: "Labor", pct: 7, color: C.d },
+      { label: "Profit", pct: 2, color: C.profit },
+    ],
+    keyTerms: [
+      { term: "Fuel Margin (CPG)", definition: "Gross profit per gallon of fuel: the retail price minus the wholesale cost, measured in cents per gallon. The industry averaged around 35 cents per gallon in early 2025, and card fees alone eat roughly 8 of those cents before freight and labor." },
+      { term: "Inside Sales", definition: "Everything sold in the store besides fuel: drinks, snacks, tobacco, coffee, prepared food, and lottery. It was roughly $341 billion industry-wide in 2025 and is the actual profit engine of the business." },
+      { term: "Throughput", definition: "Gallons of fuel sold per site per month. It is the volume metric that drives both fuel dollars and the foot traffic that feeds high-margin inside sales." },
+      { term: "Interchange (Swipe) Fees", definition: "Fees paid to card networks on every transaction. A structural, unavoidable drag: about 8.4 cents of every gallon's margin and a record $21.3 billion for the industry in 2025." },
+      { term: "Foodservice Margin", definition: "The gross margin on prepared food and coffee, often near 50%. Foodservice drove roughly 39% of in-store gross profit in 2025 and is the single biggest lever a good operator has." },
+    ],
+    howYouMakeMoney: "Fuel is a high-volume, low-margin traffic magnet. You clear only about 35 cents of gross profit per gallon, and roughly 8 cents of that is eaten by card fees before you touch freight, labor, and shrink. The real money is made inside: 57% of fuel customers come into the store, where merchandise runs low-to-mid 30s% gross margin and foodservice runs near 50%. Fuel is only about 39% of industry gross profit despite being 65% of revenue. The model is: use gas to buy traffic, then convert it on drinks, snacks, tobacco, lottery, and food.",
+    biggestCosts: [
+      "Wholesale fuel cost: by far the largest line (~58% of revenue) and largely outside your control",
+      "In-store cost of goods: merchandise and food inventory (~22% of revenue)",
+      "Credit and debit card interchange fees: ~8.4 cents per gallon, a record $21.3B industry-wide in 2025",
+      "Labor and occupancy: ~20 employees per store, plus rent, utilities, and maintenance",
+    ],
+    howYouGetCustomers: "It is overwhelmingly about location and visibility: corner lots, highway access, and proximity to traffic (Murphy USA's entire strategy is siting next to Walmart supercenters). The big fuel-price sign is the primary advertising medium: a few cents cheaper pulls cars off the road, and once they are fueling, most walk inside. Operators layer on loyalty apps that tie fuel discounts to in-store spend, and increasingly compete on foodservice.",
+    flywheel: "Cheap, visible fuel prices pull cars into the lot. A majority of fuelers walk inside and buy high-margin drinks, snacks, and food. Loyalty apps capture purchase data and dangle fuel discounts that require in-store spend. That data sharpens assortment and promotions, lifting inside conversion, and the richer inside profit lets you hold fuel prices aggressively to pull even more traffic.",
+    pros: [
+      "Consistent, everyday-necessity demand: recession-resistant traffic",
+      "High-margin inside sales, with foodservice near 50%, reward good operators",
+      "Cash-heavy, high-frequency business with real estate that can appreciate",
+      "Clear levers (foodservice, loyalty, assortment) to grow profit without more fuel volume",
+    ],
+    cons: [
+      "Razor-thin net margins, often 1 to 3%: ARKO cleared just 0.24% in 2024",
+      "Fuel margins are volatile and card fees permanently skim ~8.4 cents per gallon",
+      "Environmental and underground storage tank (UST) liability is strict: you can owe for contamination you did not cause",
+      "Labor-intensive, often 24/7, and exposed to fuel-price swings, theft, and shrink",
+    ],
+    goodFor: "A hands-on owner-operator who will live in the business: running long hours, controlling shrink and labor, and pushing foodservice and loyalty to grow the high-margin inside sales that actually make the money. Best suited to someone comfortable owning the real estate and managing environmental compliance.",
+    examples: [
+      {
+        name: "Casey's General Stores",
+        stat: "$15.5B revenue, 3.2% net margin, $502.0M net income (FY2024)",
+        summary: "Casey's shows the model done well: fuel is huge on the top line, but the store and its scaled pizza and prepared-food program drive profitability. Inside gross margin (34.1%) is more than 3x the fuel margin percentage, and a ~3% net margin is strong for the sector.",
+        url: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=CASY&type=10-K",
+        urlLabel: "Casey's 10-K (SEC EDGAR)",
+      },
+      {
+        name: "Murphy USA",
+        stat: "$20.2B revenue, 2.5% net margin, $502.5M net income (FY2024)",
+        summary: "Murphy is the low-price, high-volume archetype: small kiosks sited next to Walmart, thin fuel margins, enormous throughput. Its lower merchandise margin (~20%) reflects a fuel-and-tobacco-weighted mix rather than foodservice, yet scale still delivers ~$500M in net income.",
+        url: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=MUSA&type=10-K",
+        urlLabel: "Murphy USA 10-K (SEC EDGAR)",
+      },
+      {
+        name: "ARKO Corp.",
+        stat: "$8.7B revenue, 0.24% net margin, $20.8M net income (FY2024)",
+        summary: "ARKO is the cautionary example: healthy fuel and merchandise margins but a sub-1% net margin, showing how overhead, interest, and a mixed dealer/retail model can crush the bottom line even when unit economics look fine. It is why the sector is judged on EBITDA, not net income.",
+        url: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=ARKO&type=10-K",
+        urlLabel: "ARKO Corp. 10-K (SEC EDGAR)",
+      },
+    ],
+    selling: {
+      overview: "A single-site sale is really the sale of several bundled components: the real estate (often 50 to 60% of total value), the branded fuel supply agreement, the c-store operation and inventory, and any car wash. Two items dominate diligence: the fuel supply agreement (typically 10 to 15 year terms with volume commitments and image obligations), and environmental / UST liability, which is strict liability requiring Phase I and sometimes Phase II assessments.",
+      buyers: "Independent owner-operators (often first-time or immigrant entrepreneurs), local and regional multi-site operators consolidating, fuel jobbers and distributors extending branded volume, and larger chains or PE-backed platforms rolling up sites.",
+      valuation: "Established stations are valued primarily on EBITDA or SDE multiples, and value hinges heavily on owning versus leasing the real estate. Smaller single sites commonly trade around 2.3 to 3.3x SDE, multi-site operators around 5 to 8x EBITDA, and single owner-operator stations frequently transact between $750K and $3M all-in.",
+      keyDrivers: [
+        "Real estate ownership: owning the dirt versus leasing dramatically raises the multiple and buyer pool",
+        "Fuel supply agreement terms: remaining years, volume minimums, rebate quality, and image obligations",
+        "Fuel throughput (gallons per month): the volume base that anchors valuation",
+        "Inside-sales strength and mix, especially high-margin foodservice",
+        "Environmental and UST condition: a clean Phase I removes the single biggest deal-killer",
+      ],
+    },
+  },
+  {
+    id: "coworking",
+    name: "Co-Working Space",
+    emoji: "🏢",
+    tagline: "You sign one long lease, subdivide the space, and re-rent it short-term at a markup.",
+    breakdown: [
+      { label: "Rent / Lease Payments", pct: 50, color: C.a },
+      { label: "Staff & Community", pct: 18, color: C.b },
+      { label: "Utilities & Amenities", pct: 15, color: C.c },
+      { label: "Sales & Marketing", pct: 7, color: C.d },
+      { label: "Profit", pct: 10, color: C.profit },
+    ],
+    keyTerms: [
+      { term: "Occupancy Rate", definition: "The percentage of available desks actually rented and generating revenue. The benchmark for health is 80 to 85%; below ~75% an operator typically cannot cover its fixed lease costs. WeWork's physical occupancy was just 75% at the end of 2022." },
+      { term: "Lease Arbitrage / Spread", definition: "The core profit engine: the gap between what you pay per square foot on a long-term lease and what you earn per square foot from short-term memberships, multiplied by occupancy." },
+      { term: "Hot Desk vs. Dedicated Desk vs. Private Office", definition: "The product tiers. A hot desk is any open, first-come seat (cheapest). A dedicated desk is a reserved seat that is always yours (mid). A private office is an enclosed, lockable room (most expensive, highest revenue per square foot)." },
+      { term: "Member Churn", definition: "The rate at which members cancel. Because most memberships are month-to-month, churn is the single biggest revenue risk: long-term profitability depends more on retaining members than on filling desks." },
+      { term: "Management Agreement vs. Conventional Lease", definition: "Under a conventional lease the operator takes on all the rent liability (the WeWork model). Under a management agreement the landlord funds the fit-out and shares revenue, so the operator carries far less balance-sheet risk (the IWG and Industrious model)." },
+    ],
+    howYouMakeMoney: "Revenue comes from recurring membership fees tiered by privacy: hot desks are cheapest, dedicated desks mid-tier, and private offices most expensive per member. On top sit high-margin add-ons: hourly meeting rooms, printing, events, and virtual-office and mail services. The fundamental economics are a spread: you pay a fixed long-term lease cost per square foot and resell that same space at a higher short-term membership rate, and your profit is that spread multiplied by occupancy. Because the lease cost is fixed, every point of occupancy above breakeven drops almost straight to the bottom line.",
+    biggestCosts: [
+      "Rent and lease payments: by far the dominant cost, 40 to 60% of revenue, and the fixed obligation that makes or breaks the model",
+      "Staff and community management: front desk, community managers, and operations (~16 to 20%)",
+      "Utilities and amenities: internet, electricity, cleaning, coffee, and upkeep (~15%)",
+      "Fit-out capex and sales/marketing: the upfront buildout is a major capital drain",
+    ],
+    howYouGetCustomers: "Location and foot traffic do heavy lifting: a visible, well-located space captures walk-in demand. Beyond that: commercial real-estate brokers who place tenants for referral fees, online flex-space marketplaces like LiquidSpace and Coworker, in-person tours that convert lookers to members, member referrals, and, for larger locations, direct enterprise sales to companies wanting flexible satellite offices. Enterprise members are especially valuable because they take blocks of private offices on longer commitments.",
+    flywheel: "More members fill the space, which funds a fuller calendar of events and a livelier atmosphere. That community drives word-of-mouth referrals and higher retention. Retention plus referrals push occupancy toward the 80 to 85% healthy zone. Higher occupancy throws off more cash, which funds a better space and more locations, which attracts still more members. The engine is occupancy: because rent is fixed, each incremental member is nearly pure margin.",
+    pros: [
+      "Recurring, predictable membership revenue with high gross margins on add-ons",
+      "Strong operating leverage: once past breakeven occupancy, incremental members drop almost straight to profit",
+      "Asset-light if structured via management agreements where the landlord funds the buildout",
+      "Rising structural demand for flexible and hybrid work supports occupancy long-term",
+    ],
+    cons: [
+      "Duration mismatch (the killer): you owe a 10 to 20 year fixed lease but members can cancel monthly. This is precisely what sank WeWork",
+      "Highly cyclical: a downturn empties desks while rent stays fixed, driving fast losses",
+      "Rent dominates the cost structure (40 to 60%), leaving a thin margin with little tolerance for error",
+      "Capital-intensive buildout with long payback, and commoditized, price-competitive in many markets",
+    ],
+    goodFor: "Operators who can secure below-market or revenue-share space, run disciplined occupancy above ~80%, and serve a specific local niche or community. It is a poor fit for anyone signing aggressive long-term fixed leases hoping to grow into them: that is the WeWork trap.",
+    examples: [
+      {
+        name: "WeWork",
+        stat: "$3.2B revenue, -$2.3B net loss (FY2022); filed Chapter 11 in Nov 2023",
+        summary: "WeWork leased buildings on 10 to 20 year terms and resold desks by the month: the classic duration mismatch. Its FY2022 location operating expenses alone were ~$2.9B, roughly 91% of revenue, so the core business lost money before overhead. It filed Chapter 11 in November 2023 and emerged debt-free in June 2024.",
+        url: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001813756&type=10-K",
+        urlLabel: "WeWork 10-K (SEC EDGAR)",
+      },
+      {
+        name: "IWG plc (Regus / Spaces)",
+        stat: "£3.3B revenue, £403M EBITDA (+34% YoY), 3,514 locations (2023)",
+        summary: "IWG is the profitable counterexample: the world's largest flex-space operator pivoted toward capital-light management agreements, shifting lease risk to landlords. In 2023 it grew EBITDA 34% and signed 582 capital-light centres, proving the model works when you do not own the lease liability.",
+        url: "https://investors.iwgplc.com/key-financials/income-statement",
+        urlLabel: "IWG plc Investor Relations",
+      },
+      {
+        name: "Industrious",
+        stat: "Acquired by CBRE at ~$800M valuation (Jan 2025); 200+ locations",
+        summary: "Industrious pioneered the asset-light management-agreement model in the US, aligning with property owners rather than taking on fixed leases. That de-risked model is what made it acquirable: CBRE, which already held ~40%, bought the rest at ~$800M. The opposite outcome to WeWork's bankruptcy.",
+        url: "https://ir.cbre.com/press-releases/detail/245/cbre-group-to-acquire-industrious-create-new-business",
+        urlLabel: "CBRE Acquisition Announcement",
+      },
+    ],
+    selling: {
+      overview: "The crux of any sale, or failure, is the lease liability. There are two very different paths. Selling a healthy operating business: a profitable, high-occupancy operator with attractive management agreements gets acquired for its brand, member base, and cash flow (the Industrious and CBRE outcome). The failure path: when leases exceed what members will pay, the operator cannot sell equity value at all, and it restructures in bankruptcy while the landlord often assumes management in-house (the WeWork outcome).",
+      buyers: "Larger operators consolidating (IWG-style roll-ups), landlords and REITs bringing flex management in-house or via CBRE-style acquisitions, and private equity buying distressed or scalable platforms.",
+      valuation: "Priced on a revenue or EBITDA multiple, but heavily discounted for lease liabilities and member-churn risk. A book of long-term fixed leases against month-to-month revenue is a discount factor, not a premium: buyers subtract the present value of above-market lease obligations. Asset-light, management-agreement books command far higher multiples than conventional-lease portfolios, which is why Industrious was worth ~$800M while WeWork's equity went to roughly zero.",
+      keyDrivers: [
+        "Occupancy rate: 80 to 85%+ signals a healthy, sellable business",
+        "Lease structure: management and revenue-share agreements versus fixed long-term leases (asset-light is a premium)",
+        "Member retention and low churn: the durability of the revenue stream",
+        "Revenue per available desk and margin: pricing power and unit economics",
+        "Enterprise member mix: longer commitments and larger private-office blocks reduce churn risk",
+      ],
+    },
+  },
 ];
 
 /* ── Stacked bar ────────────────────────────────────────────────── */
@@ -1570,6 +1724,8 @@ const MONTHLY_REVENUE: Record<string, number> = {
   "insurance-brokerage":  27_000,  // NAICS 524210 — Insurance Agencies & Brokerages; <5 emp
   consulting:             29_000,  // NAICS 541611 — Management Consulting Services; <5 emp
   cpg:                    51_000,  // NAICS 311 sector — Food Manufacturing; <5 emp
+  "gas-station":         317_000,  // NAICS 447110 — Gas Stations w/ Convenience Stores; 5-9 emp (typical single station)
+  coworking:             210_000,  // NAICS 531120 — Lessors of Nonresidential Buildings (proxy; no dedicated co-working code); 5-9 emp
 };
 
 function fmt(n: number) {

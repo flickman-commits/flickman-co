@@ -73,7 +73,7 @@ export const apps: AppEntry[] = [
     name: "Business Models 101",
     icon: "📂",
     description:
-      "18 business models explained — how they make money, their costs, and what the P&L looks like.",
+      "20 business models explained — how they make money, their costs, and what the P&L looks like.",
     url: "/business-models",
     createdAt: "2026-06-29",
   },
