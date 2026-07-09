@@ -1849,6 +1849,185 @@ function MockPL({ id, items }: { id: string; items: BreakdownBar[] }) {
   );
 }
 
+/* ── Verified P&L hero cards ─────────────────────────────────────── */
+
+type HeroPL = {
+  type: string;
+  location: string;
+  years: number;
+  revenue: number; // monthly
+  lines: BreakdownBar[]; // must include a "Profit" line; pcts sum to 100
+};
+
+// Illustrative sample entries for the landing hero. These are mock records
+// standing in for the real verified database until it fills up.
+const HERO_PLS: HeroPL[] = [
+  {
+    type: "Lawn Care Company",
+    location: "Phoenix, Arizona",
+    years: 5,
+    revenue: 31_000,
+    lines: [
+      { label: "Labor & Crew", pct: 38, color: C.a },
+      { label: "Equipment & Fuel", pct: 16, color: C.b },
+      { label: "Insurance & Overhead", pct: 13, color: C.c },
+      { label: "Marketing", pct: 5, color: C.d },
+      { label: "Profit", pct: 28, color: C.profit },
+    ],
+  },
+  {
+    type: "Coffee Shop",
+    location: "Portland, Oregon",
+    years: 3,
+    revenue: 68_000,
+    lines: [
+      { label: "Cost of Goods", pct: 30, color: C.a },
+      { label: "Labor", pct: 32, color: C.b },
+      { label: "Rent", pct: 14, color: C.c },
+      { label: "Utilities & Overhead", pct: 12, color: C.d },
+      { label: "Profit", pct: 12, color: C.profit },
+    ],
+  },
+  {
+    type: "Marketing Agency",
+    location: "Austin, Texas",
+    years: 6,
+    revenue: 94_000,
+    lines: [
+      { label: "Salaries & Contractors", pct: 50, color: C.a },
+      { label: "Software & Tools", pct: 8, color: C.b },
+      { label: "Office & Overhead", pct: 10, color: C.c },
+      { label: "Business Development", pct: 7, color: C.d },
+      { label: "Profit", pct: 25, color: C.profit },
+    ],
+  },
+];
+
+function VerifiedPLCard({ pl }: { pl: HeroPL }) {
+  const expenses = pl.lines.filter((l) => l.label !== "Profit");
+  const profit = pl.lines.find((l) => l.label === "Profit");
+  const rev = pl.revenue;
+
+  return (
+    <div
+      style={{
+        background: "#0F1117",
+        border: "1px solid rgba(255,255,255,0.09)",
+        borderRadius: 12,
+        padding: "18px 18px 16px",
+        boxShadow: "0 14px 40px rgba(0,0,0,0.4)",
+        fontFamily: "ui-sans-serif, system-ui, sans-serif",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      {/* Card header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+        <div>
+          <div style={{ fontSize: 15, fontWeight: 700, color: "#F1F5F9" }}>{pl.type}</div>
+          <div style={{ fontSize: 12, color: "#7C8AA5", marginTop: 2 }}>
+            {pl.location} · {pl.years} yrs in business
+          </div>
+        </div>
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 4,
+            background: "rgba(34,168,85,0.14)",
+            color: "#4ADE80",
+            fontSize: 10,
+            fontWeight: 700,
+            letterSpacing: 0.6,
+            textTransform: "uppercase",
+            padding: "3px 8px",
+            borderRadius: 999,
+            whiteSpace: "nowrap",
+            flexShrink: 0,
+          }}
+        >
+          ✓ Verified
+        </div>
+      </div>
+
+      {/* Mini stacked bar */}
+      <div
+        style={{
+          display: "flex",
+          height: 8,
+          borderRadius: 4,
+          overflow: "hidden",
+          background: "#1A1E2A",
+          gap: 1,
+          margin: "13px 0 14px",
+        }}
+      >
+        {pl.lines.map((l, i) => (
+          <div key={i} style={{ width: `${l.pct}%`, background: l.color }} />
+        ))}
+      </div>
+
+      {/* P&L */}
+      <div style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            fontSize: 12.5,
+            color: "#E2E8F0",
+            paddingBottom: 8,
+            marginBottom: 6,
+            borderBottom: "1px solid #1E2233",
+          }}
+        >
+          <span>Revenue</span>
+          <span style={{ color: "#4ADE80", fontWeight: 700 }}>{fmt(rev)}/mo</span>
+        </div>
+        {expenses.map((l, i) => (
+          <div
+            key={i}
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              fontSize: 11.5,
+              color: "#94A3B8",
+              padding: "3px 0",
+            }}
+          >
+            <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ width: 7, height: 7, borderRadius: 2, background: l.color, flexShrink: 0 }} />
+              {l.label}
+            </span>
+            <span style={{ color: "#F87171" }}>({fmt(Math.round((rev * l.pct) / 100))})</span>
+          </div>
+        ))}
+        {profit && (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              fontSize: 13,
+              fontWeight: 700,
+              color: "#E2E8F0",
+              marginTop: 8,
+              paddingTop: 8,
+              borderTop: "1px solid #2D3348",
+            }}
+          >
+            <span>Net Profit</span>
+            <span style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+              <span style={{ color: "#4ADE80" }}>{fmt(Math.round((rev * profit.pct) / 100))}</span>
+              <span style={{ fontSize: 11, color: "#64748B", fontWeight: 400 }}>{profit.pct}%</span>
+            </span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ── Page ───────────────────────────────────────────────────────── */
 
 export default function BusinessModelsPage() {
@@ -1873,6 +2052,39 @@ export default function BusinessModelsPage() {
             .bm-folder:hover {
               transform: translateY(-6px);
               box-shadow: 2px 9px 0 #6B4E10;
+            }
+            .bm-btn-primary {
+              background: #22A855;
+              color: #06210F;
+              font-weight: 700;
+              font-size: 15px;
+              border: none;
+              border-radius: 8px;
+              padding: 13px 22px;
+              cursor: pointer;
+              font-family: ui-sans-serif, system-ui, sans-serif;
+              box-shadow: 0 4px 14px rgba(34,168,85,0.35);
+              transition: transform 120ms ease, box-shadow 120ms ease;
+            }
+            .bm-btn-primary:hover {
+              transform: translateY(-2px);
+              box-shadow: 0 8px 22px rgba(34,168,85,0.45);
+            }
+            .bm-btn-secondary {
+              background: transparent;
+              color: #E8DEC8;
+              font-weight: 600;
+              font-size: 15px;
+              border: 1px solid rgba(255,255,255,0.22);
+              border-radius: 8px;
+              padding: 13px 22px;
+              cursor: pointer;
+              font-family: ui-sans-serif, system-ui, sans-serif;
+              transition: background 120ms ease, border-color 120ms ease;
+            }
+            .bm-btn-secondary:hover {
+              background: rgba(255,255,255,0.06);
+              border-color: rgba(255,255,255,0.4);
             }
             .bm-folder::before {
               content: "";
@@ -2015,11 +2227,145 @@ export default function BusinessModelsPage() {
               textTransform: "uppercase",
             }}
           >
-            Business Models 101 — Cabinet No. 1
+            Verified P&L Database
           </div>
         </div>
 
+        {/* ── Hero ─────────────────────────────────────────────── */}
+        <div style={{ maxWidth: 1140, margin: "0 auto", padding: "0 20px" }}>
+          <div style={{ textAlign: "center", padding: "clamp(48px, 8vw, 80px) 0 4px" }}>
+            <div
+              style={{
+                display: "inline-block",
+                fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+                fontSize: 10,
+                letterSpacing: 2.5,
+                color: "#C4A84A",
+                textTransform: "uppercase",
+                border: "1px solid rgba(196,168,74,0.35)",
+                borderRadius: 999,
+                padding: "5px 12px",
+              }}
+            >
+              Real numbers · Anonymized · Verified
+            </div>
+            <h1
+              style={{
+                fontFamily: "ui-serif, Georgia, serif",
+                fontSize: "clamp(34px, 6vw, 60px)",
+                fontWeight: 700,
+                color: "#F5EFE0",
+                lineHeight: 1.05,
+                letterSpacing: "-0.5px",
+                margin: "20px auto 0",
+                maxWidth: 780,
+              }}
+            >
+              A Database of Verified P&Ls
+            </h1>
+            <p
+              style={{
+                fontFamily: "ui-sans-serif, system-ui, sans-serif",
+                fontSize: "clamp(16px, 2.4vw, 20px)",
+                color: "#B9AE97",
+                maxWidth: 620,
+                margin: "18px auto 0",
+                lineHeight: 1.55,
+              }}
+            >
+              Learn how real businesses are operating, understand margins, and check
+              against industry standards.
+            </p>
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 12,
+                justifyContent: "center",
+                margin: "30px 0 0",
+              }}
+            >
+              <button type="button" className="bm-btn-primary">
+                Sign up for access
+              </button>
+              <button type="button" className="bm-btn-secondary">
+                Submit your P&L for free access
+              </button>
+            </div>
+            <div
+              style={{
+                fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+                fontSize: 12,
+                color: "#6E6552",
+                marginTop: 14,
+                letterSpacing: 0.3,
+              }}
+            >
+              Contribute a verified P&L and browse the whole database free.
+            </div>
+          </div>
+
+          {/* Hero P&L cards */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+              gap: 18,
+              margin: "38px 0 0",
+            }}
+          >
+            {HERO_PLS.map((pl, i) => (
+              <VerifiedPLCard key={i} pl={pl} />
+            ))}
+          </div>
+        </div>
+
+        {/* ── Mock Business Models ─────────────────────────────── */}
+        <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", marginTop: 80 }}>
         <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 20px" }}>
+          {/* Section header */}
+          <div style={{ textAlign: "center", padding: "56px 0 0" }}>
+            <div
+              style={{
+                display: "inline-block",
+                fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+                fontSize: 10,
+                letterSpacing: 2.5,
+                color: "#8A7A4A",
+                textTransform: "uppercase",
+                marginBottom: 12,
+              }}
+            >
+              Reference library
+            </div>
+            <h2
+              style={{
+                fontFamily: "ui-serif, Georgia, serif",
+                fontSize: "clamp(26px, 4.5vw, 38px)",
+                fontWeight: 700,
+                color: "#F0E7D2",
+                lineHeight: 1.1,
+                margin: 0,
+              }}
+            >
+              Mock Business Models
+            </h2>
+            <p
+              style={{
+                fontFamily: "ui-sans-serif, system-ui, sans-serif",
+                fontSize: "clamp(15px, 2vw, 17px)",
+                color: "#A99D86",
+                maxWidth: 560,
+                margin: "14px auto 0",
+                lineHeight: 1.55,
+              }}
+            >
+              While the database fills up, here are illustrative teardowns of 20 common
+              business models — how each one makes money, its typical costs, and what a
+              monthly P&L looks like.
+            </p>
+          </div>
+
           {/* Intro */}
           <div
             style={{
@@ -2168,6 +2514,7 @@ export default function BusinessModelsPage() {
               </div>
             ))}
           </div>
+        </div>
         </div>
       </div>
 
