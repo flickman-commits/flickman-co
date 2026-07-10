@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 
 type BreakdownBar = {
   label: string;
@@ -2028,6 +2028,106 @@ function VerifiedPLCard({ pl }: { pl: HeroPL }) {
   );
 }
 
+/* ── Waitlist form ──────────────────────────────────────────────── */
+
+function WaitlistForm() {
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
+  const [error, setError] = useState("");
+
+  async function submit(e: FormEvent) {
+    e.preventDefault();
+    if (status === "loading") return;
+    setStatus("loading");
+    setError("");
+    try {
+      const res = await fetch("/api/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, source: "pnl-database" }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data.error || "Something went wrong. Please try again.");
+        setStatus("error");
+        return;
+      }
+      setStatus("done");
+    } catch {
+      setError("Network error. Please try again.");
+      setStatus("error");
+    }
+  }
+
+  if (status === "done") {
+    return (
+      <div style={{ margin: "30px 0 0" }}>
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+            background: "rgba(34,168,85,0.14)",
+            border: "1px solid rgba(34,168,85,0.35)",
+            color: "#4ADE80",
+            fontFamily: "ui-sans-serif, system-ui, sans-serif",
+            fontSize: 15,
+            fontWeight: 600,
+            padding: "13px 20px",
+            borderRadius: 8,
+          }}
+        >
+          ✓ You&apos;re on the list — we&apos;ll be in touch.
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={submit} style={{ margin: "30px 0 0" }}>
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 10,
+          justifyContent: "center",
+        }}
+      >
+        <input
+          type="email"
+          required
+          value={email}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            if (status === "error") setStatus("idle");
+          }}
+          placeholder="you@email.com"
+          aria-label="Email address"
+          className="bm-waitlist-input"
+          disabled={status === "loading"}
+        />
+        <button type="submit" className="bm-btn-primary" disabled={status === "loading"}>
+          {status === "loading" ? "Adding…" : "Get on the waitlist"}
+        </button>
+      </div>
+      <div
+        style={{
+          fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+          fontSize: 12,
+          color: status === "error" ? "#F87171" : "#6E6552",
+          marginTop: 14,
+          letterSpacing: 0.3,
+          minHeight: 16,
+        }}
+      >
+        {status === "error"
+          ? error
+          : "Be the first in when the database opens."}
+      </div>
+    </form>
+  );
+}
+
 /* ── Page ───────────────────────────────────────────────────────── */
 
 export default function BusinessModelsPage() {
@@ -2085,6 +2185,29 @@ export default function BusinessModelsPage() {
             .bm-btn-secondary:hover {
               background: rgba(255,255,255,0.06);
               border-color: rgba(255,255,255,0.4);
+            }
+            .bm-btn-primary:disabled {
+              opacity: 0.65;
+              cursor: default;
+              transform: none;
+            }
+            .bm-waitlist-input {
+              background: rgba(255,255,255,0.05);
+              color: #F5EFE0;
+              font-size: 15px;
+              border: 1px solid rgba(255,255,255,0.22);
+              border-radius: 8px;
+              padding: 13px 16px;
+              width: 280px;
+              max-width: 100%;
+              font-family: ui-sans-serif, system-ui, sans-serif;
+              outline: none;
+              transition: border-color 120ms ease, background 120ms ease;
+            }
+            .bm-waitlist-input::placeholder { color: #6E6552; }
+            .bm-waitlist-input:focus {
+              border-color: rgba(34,168,85,0.7);
+              background: rgba(255,255,255,0.08);
             }
             .bm-folder::before {
               content: "";
@@ -2276,33 +2399,7 @@ export default function BusinessModelsPage() {
               Learn how real businesses are operating, understand margins, and check
               against industry standards.
             </p>
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: 12,
-                justifyContent: "center",
-                margin: "30px 0 0",
-              }}
-            >
-              <button type="button" className="bm-btn-primary">
-                Sign up for access
-              </button>
-              <button type="button" className="bm-btn-secondary">
-                Submit your P&L for free access
-              </button>
-            </div>
-            <div
-              style={{
-                fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
-                fontSize: 12,
-                color: "#6E6552",
-                marginTop: 14,
-                letterSpacing: 0.3,
-              }}
-            >
-              Contribute a verified P&L and browse the whole database free.
-            </div>
+            <WaitlistForm />
           </div>
 
           {/* Hero P&L cards */}
