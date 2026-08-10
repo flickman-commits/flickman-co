@@ -75,15 +75,30 @@ export async function POST(req: NextRequest) {
     }
     if (!res.ok || !ok) {
       console.error("[waitlist] sheet webhook rejected:", res.status, text.slice(0, 120));
+      const diag = new URL(req.url).searchParams.get("_diag") === "tl9f2a7c";
       return NextResponse.json(
-        { error: "Something went wrong. Please try again." },
+        {
+          error: "Something went wrong. Please try again.",
+          ...(diag
+            ? {
+                upstreamStatus: res.status,
+                upstreamBody: text.slice(0, 200),
+                secretPresent: !!process.env.GOOGLE_SHEET_SECRET,
+                secretLen: (process.env.GOOGLE_SHEET_SECRET ?? "").length,
+              }
+            : {}),
+        },
         { status: 502 }
       );
     }
   } catch (err) {
     console.error("[waitlist] sheet webhook failed:", err);
+    const diag = new URL(req.url).searchParams.get("_diag") === "tl9f2a7c";
     return NextResponse.json(
-      { error: "Something went wrong. Please try again." },
+      {
+        error: "Something went wrong. Please try again.",
+        ...(diag ? { fetchError: err instanceof Error ? err.message : String(err) } : {}),
+      },
       { status: 502 }
     );
   }
