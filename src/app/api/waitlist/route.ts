@@ -66,8 +66,16 @@ export async function POST(req: NextRequest) {
 
   if (error) {
     console.error("[waitlist] insert failed:", error.message);
+    // TEMP diagnostic: reveal the real error only when the caller passes the
+    // secret ?_diag= token. Remove after debugging.
+    const diag = new URL(req.url).searchParams.get("_diag") === "tl9f2a7c";
     return NextResponse.json(
-      { error: "Something went wrong. Please try again." },
+      {
+        error: "Something went wrong. Please try again.",
+        ...(diag
+          ? { detail: error.message, code: error.code, hint: error.hint, details: error.details }
+          : {}),
+      },
       { status: 500 }
     );
   }
