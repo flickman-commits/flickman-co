@@ -55,6 +55,10 @@ const C = {
   profit: "#22A855",
 };
 
+// Hide the "Mock Business Models" reference library (folders + intro) for now.
+// Flip to true to bring the whole section back — nothing is deleted.
+const SHOW_MOCK_MODELS = false;
+
 // Topline show palette — light background, heavy geometric type, red accent.
 const TL = {
   bg: "#F6F5F1",
@@ -2077,12 +2081,12 @@ function VerifiedPLCard({ pl }: { pl: HeroPL }) {
             boxShadow: "0 8px 22px rgba(251,44,29,0.26)",
           }}
         >
-          <span style={{ fontSize: 14, fontWeight: 800, color: TL.ink }}>Monthly profit</span>
+          <span style={{ fontSize: 14, fontWeight: 800, color: "#FFFFFF" }}>Monthly profit</span>
           <span style={{ display: "flex", alignItems: "baseline", gap: 7 }}>
-            <span style={{ fontSize: 22, fontWeight: 800, color: TL.ink, letterSpacing: "-0.5px" }}>
+            <span style={{ fontSize: 22, fontWeight: 800, color: "#FFFFFF", letterSpacing: "-0.5px" }}>
               {fmt(profit)}
             </span>
-            <span style={{ fontSize: 13, fontWeight: 700, color: "#7A140B" }}>{profitPct}%</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.75)" }}>{profitPct}%</span>
           </span>
         </div>
       </div>
@@ -2405,9 +2409,10 @@ export default function BusinessModelsPage() {
                     letterSpacing: 1.4,
                     color: TL.red,
                     textTransform: "uppercase",
-                    background: TL.redSoft,
-                    borderRadius: 999,
+                    background: "#FFFFFF",
+                    borderRadius: 5,
                     padding: "6px 14px",
+                    boxShadow: "0 2px 8px rgba(20,17,14,0.08)",
                   }}
                 >
                   {tag}
@@ -2459,6 +2464,7 @@ export default function BusinessModelsPage() {
         </div>
 
         {/* ── Mock Business Models ─────────────────────────────── */}
+        {SHOW_MOCK_MODELS && (
         <div style={{ borderTop: `1px solid ${TL.hair}`, marginTop: 80 }}>
         <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 20px" }}>
           {/* Section header */}
@@ -2654,6 +2660,7 @@ export default function BusinessModelsPage() {
           </div>
         </div>
         </div>
+        )}
       </div>
 
       {/* Modal */}
