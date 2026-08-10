@@ -55,6 +55,19 @@ const C = {
   profit: "#22A855",
 };
 
+// Topline show palette — light background, heavy geometric type, red accent.
+const TL = {
+  bg: "#F6F5F1",
+  panel: "#FFFFFF",
+  ink: "#14110E",
+  muted: "#A7A199",
+  hair: "#E6E2DA",
+  track: "#EAE7E0",
+  red: "#FB2C1D",
+  redSoft: "#FFEBE8",
+  costBar: "#CDC6BA",
+};
+
 const MODELS: BusinessModel[] = [
   {
     id: "ecommerce",
@@ -1851,81 +1864,108 @@ function MockPL({ id, items }: { id: string; items: BreakdownBar[] }) {
 
 /* ── Verified P&L hero cards ─────────────────────────────────────── */
 
+type PLLine = { label: string; amount: number };
 type HeroPL = {
   type: string;
+  subtitle: string;
   location: string;
   years: number;
-  revenue: number; // monthly
-  lines: BreakdownBar[]; // must include a "Profit" line; pcts sum to 100
+  revenue: PLLine[];
+  costs: PLLine[];
 };
 
 // Illustrative sample entries for the landing hero. These are mock records
-// standing in for the real verified database until it fills up.
+// standing in for the real verified database until it fills up. Modeled to
+// look like the show's P&L graphics.
 const HERO_PLS: HeroPL[] = [
   {
     type: "Lawn Care Company",
+    subtitle: "Monthly average",
     location: "Phoenix, Arizona",
     years: 5,
-    revenue: 31_000,
-    lines: [
-      { label: "Labor & Crew", pct: 38, color: C.a },
-      { label: "Equipment & Fuel", pct: 16, color: C.b },
-      { label: "Insurance & Overhead", pct: 13, color: C.c },
-      { label: "Marketing", pct: 5, color: C.d },
-      { label: "Profit", pct: 28, color: C.profit },
+    revenue: [
+      { label: "Recurring mowing", amount: 22_400 },
+      { label: "One-off jobs", amount: 8_600 },
+    ],
+    costs: [
+      { label: "Labor & crew", amount: 11_780 },
+      { label: "Equipment & fuel", amount: 4_960 },
+      { label: "Insurance & overhead", amount: 4_030 },
+      { label: "Marketing", amount: 1_550 },
     ],
   },
   {
     type: "Coffee Shop",
+    subtitle: "Monthly average",
     location: "Portland, Oregon",
     years: 3,
-    revenue: 68_000,
-    lines: [
-      { label: "Cost of Goods", pct: 30, color: C.a },
-      { label: "Labor", pct: 32, color: C.b },
-      { label: "Rent", pct: 14, color: C.c },
-      { label: "Utilities & Overhead", pct: 12, color: C.d },
-      { label: "Profit", pct: 12, color: C.profit },
+    revenue: [
+      { label: "Drinks & espresso", amount: 49_000 },
+      { label: "Food & retail", amount: 19_000 },
+    ],
+    costs: [
+      { label: "Labor", amount: 21_760 },
+      { label: "Cost of goods", amount: 20_400 },
+      { label: "Rent", amount: 9_520 },
+      { label: "Utilities & overhead", amount: 8_160 },
     ],
   },
   {
     type: "Marketing Agency",
+    subtitle: "Monthly average",
     location: "Austin, Texas",
     years: 6,
-    revenue: 94_000,
-    lines: [
-      { label: "Salaries & Contractors", pct: 50, color: C.a },
-      { label: "Software & Tools", pct: 8, color: C.b },
-      { label: "Office & Overhead", pct: 10, color: C.c },
-      { label: "Business Development", pct: 7, color: C.d },
-      { label: "Profit", pct: 25, color: C.profit },
+    revenue: [
+      { label: "Retainers", amount: 71_000 },
+      { label: "Project work", amount: 23_000 },
+    ],
+    costs: [
+      { label: "Salaries & contractors", amount: 47_000 },
+      { label: "Office & overhead", amount: 9_400 },
+      { label: "Software & tools", amount: 7_520 },
+      { label: "Business development", amount: 6_580 },
     ],
   },
 ];
 
+const sum = (lines: PLLine[]) => lines.reduce((s, l) => s + l.amount, 0);
+const pctOf = (n: number, total: number) => (total ? Math.round((n / total) * 100) : 0);
+
+const COST_SHADES = ["#CFC8BC", "#BEB6A8", "#ACA394", "#978E80"];
+
 function VerifiedPLCard({ pl }: { pl: HeroPL }) {
-  const expenses = pl.lines.filter((l) => l.label !== "Profit");
-  const profit = pl.lines.find((l) => l.label === "Profit");
-  const rev = pl.revenue;
+  const totalRev = sum(pl.revenue);
+  const totalCost = sum(pl.costs);
+  const profit = totalRev - totalCost;
+  const profitPct = pctOf(profit, totalRev);
 
   return (
     <div
       style={{
-        background: "#0F1117",
-        border: "1px solid rgba(255,255,255,0.09)",
-        borderRadius: 12,
-        padding: "18px 18px 16px",
-        boxShadow: "0 14px 40px rgba(0,0,0,0.4)",
-        fontFamily: "ui-sans-serif, system-ui, sans-serif",
+        background: "#FFFFFF",
+        border: `1px solid ${TL.hair}`,
+        borderRadius: 16,
+        padding: "20px 20px 18px",
+        boxShadow: "0 14px 36px rgba(20,17,14,0.07)",
+        fontFamily: "var(--font-display), ui-sans-serif, system-ui, sans-serif",
         display: "flex",
         flexDirection: "column",
       }}
     >
-      {/* Card header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+      {/* Header */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          gap: 8,
+        }}
+      >
         <div>
-          <div style={{ fontSize: 15, fontWeight: 700, color: "#F1F5F9" }}>{pl.type}</div>
-          <div style={{ fontSize: 12, color: "#7C8AA5", marginTop: 2 }}>
+          <div style={{ fontSize: 18, fontWeight: 800, color: TL.ink, lineHeight: 1.1 }}>
+            {pl.type}
+          </div>
+          <div style={{ fontSize: 13, fontWeight: 500, color: TL.muted, marginTop: 4 }}>
             {pl.location} · {pl.years} yrs in business
           </div>
         </div>
@@ -1934,13 +1974,13 @@ function VerifiedPLCard({ pl }: { pl: HeroPL }) {
             display: "inline-flex",
             alignItems: "center",
             gap: 4,
-            background: "rgba(34,168,85,0.14)",
-            color: "#4ADE80",
+            background: TL.redSoft,
+            color: TL.red,
             fontSize: 10,
             fontWeight: 700,
             letterSpacing: 0.6,
             textTransform: "uppercase",
-            padding: "3px 8px",
+            padding: "4px 8px",
             borderRadius: 999,
             whiteSpace: "nowrap",
             flexShrink: 0,
@@ -1950,79 +1990,101 @@ function VerifiedPLCard({ pl }: { pl: HeroPL }) {
         </div>
       </div>
 
-      {/* Mini stacked bar */}
+      {/* Mini stacked bar — costs (tan ramp) + profit (red) */}
       <div
         style={{
           display: "flex",
           height: 8,
           borderRadius: 4,
           overflow: "hidden",
-          background: "#1A1E2A",
+          background: TL.track,
           gap: 1,
-          margin: "13px 0 14px",
+          margin: "14px 0 16px",
         }}
       >
-        {pl.lines.map((l, i) => (
-          <div key={i} style={{ width: `${l.pct}%`, background: l.color }} />
-        ))}
-      </div>
-
-      {/* P&L */}
-      <div style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace" }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            fontSize: 12.5,
-            color: "#E2E8F0",
-            paddingBottom: 8,
-            marginBottom: 6,
-            borderBottom: "1px solid #1E2233",
-          }}
-        >
-          <span>Revenue</span>
-          <span style={{ color: "#4ADE80", fontWeight: 700 }}>{fmt(rev)}/mo</span>
-        </div>
-        {expenses.map((l, i) => (
+        {pl.costs.map((l, i) => (
           <div
             key={i}
             style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              fontSize: 11.5,
-              color: "#94A3B8",
-              padding: "3px 0",
+              width: `${pctOf(l.amount, totalRev)}%`,
+              background: COST_SHADES[i % COST_SHADES.length],
             }}
-          >
-            <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ width: 7, height: 7, borderRadius: 2, background: l.color, flexShrink: 0 }} />
-              {l.label}
-            </span>
-            <span style={{ color: "#F87171" }}>({fmt(Math.round((rev * l.pct) / 100))})</span>
-          </div>
+          />
         ))}
-        {profit && (
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              fontSize: 13,
-              fontWeight: 700,
-              color: "#E2E8F0",
-              marginTop: 8,
-              paddingTop: 8,
-              borderTop: "1px solid #2D3348",
-            }}
-          >
-            <span>Net Profit</span>
-            <span style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
-              <span style={{ color: "#4ADE80" }}>{fmt(Math.round((rev * profit.pct) / 100))}</span>
-              <span style={{ fontSize: 11, color: "#64748B", fontWeight: 400 }}>{profit.pct}%</span>
+        <div style={{ width: `${profitPct}%`, background: TL.red }} />
+      </div>
+
+      {/* P&L */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "baseline",
+          paddingBottom: 10,
+          marginBottom: 8,
+          borderBottom: `1px solid ${TL.hair}`,
+        }}
+      >
+        <span style={{ fontSize: 13.5, fontWeight: 600, color: TL.ink }}>Revenue</span>
+        <span style={{ fontSize: 15, fontWeight: 800, color: TL.ink }}>
+          {fmt(totalRev)}
+          <span style={{ fontSize: 12, fontWeight: 600, color: TL.muted }}>/mo</span>
+        </span>
+      </div>
+
+      {pl.costs.map((l, i) => (
+        <div
+          key={i}
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            padding: "4px 0",
+          }}
+        >
+          <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: 2,
+                background: COST_SHADES[i % COST_SHADES.length],
+                flexShrink: 0,
+              }}
+            />
+            <span style={{ fontSize: 13.5, fontWeight: 500, color: TL.ink }}>{l.label}</span>
+          </span>
+          <span style={{ fontSize: 13.5, fontWeight: 600, color: TL.muted }}>{fmt(l.amount)}</span>
+        </div>
+      ))}
+
+      {/* Profit box */}
+      <div
+        style={{
+          marginTop: "auto",
+          paddingTop: 14,
+        }}
+      >
+        <div
+          style={{
+            background: TL.red,
+            borderRadius: 12,
+            padding: "13px 16px",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 10,
+            boxShadow: "0 8px 22px rgba(251,44,29,0.26)",
+          }}
+        >
+          <span style={{ fontSize: 14, fontWeight: 800, color: TL.ink }}>Monthly profit</span>
+          <span style={{ display: "flex", alignItems: "baseline", gap: 7 }}>
+            <span style={{ fontSize: 22, fontWeight: 800, color: TL.ink, letterSpacing: "-0.5px" }}>
+              {fmt(profit)}
             </span>
-          </div>
-        )}
+            <span style={{ fontSize: 13, fontWeight: 700, color: "#7A140B" }}>{profitPct}%</span>
+          </span>
+        </div>
       </div>
     </div>
   );
@@ -2044,7 +2106,7 @@ function WaitlistForm() {
       const res = await fetch("/api/waitlist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, source: "pnl-database" }),
+        body: JSON.stringify({ email, source: "topline" }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -2067,17 +2129,18 @@ function WaitlistForm() {
             display: "inline-flex",
             alignItems: "center",
             gap: 8,
-            background: "rgba(34,168,85,0.14)",
-            border: "1px solid rgba(34,168,85,0.35)",
-            color: "#4ADE80",
-            fontFamily: "ui-sans-serif, system-ui, sans-serif",
+            background: TL.redSoft,
+            border: `1px solid ${TL.red}`,
+            color: TL.ink,
+            fontFamily: "var(--font-display), ui-sans-serif, system-ui, sans-serif",
             fontSize: 15,
             fontWeight: 600,
             padding: "13px 20px",
-            borderRadius: 8,
+            borderRadius: 10,
           }}
         >
-          ✓ You&apos;re on the list — we&apos;ll be in touch.
+          <span style={{ color: TL.red }}>✓</span> You&apos;re on the list — we&apos;ll be
+          in touch.
         </div>
       </div>
     );
@@ -2112,11 +2175,11 @@ function WaitlistForm() {
       </div>
       <div
         style={{
-          fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
-          fontSize: 12,
-          color: status === "error" ? "#F87171" : "#6E6552",
+          fontFamily: "var(--font-display), ui-sans-serif, system-ui, sans-serif",
+          fontSize: 13,
+          fontWeight: 500,
+          color: status === "error" ? TL.red : TL.muted,
           marginTop: 14,
-          letterSpacing: 0.3,
           minHeight: 16,
         }}
       >
@@ -2154,21 +2217,21 @@ export default function BusinessModelsPage() {
               box-shadow: 2px 9px 0 #6B4E10;
             }
             .bm-btn-primary {
-              background: #22A855;
-              color: #06210F;
+              background: #FB2C1D;
+              color: #FFFFFF;
               font-weight: 700;
               font-size: 15px;
               border: none;
-              border-radius: 8px;
-              padding: 13px 22px;
+              border-radius: 10px;
+              padding: 14px 24px;
               cursor: pointer;
-              font-family: ui-sans-serif, system-ui, sans-serif;
-              box-shadow: 0 4px 14px rgba(34,168,85,0.35);
+              font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+              box-shadow: 0 6px 18px rgba(251,44,29,0.32);
               transition: transform 120ms ease, box-shadow 120ms ease;
             }
             .bm-btn-primary:hover {
               transform: translateY(-2px);
-              box-shadow: 0 8px 22px rgba(34,168,85,0.45);
+              box-shadow: 0 10px 26px rgba(251,44,29,0.42);
             }
             .bm-btn-secondary {
               background: transparent;
@@ -2192,22 +2255,23 @@ export default function BusinessModelsPage() {
               transform: none;
             }
             .bm-waitlist-input {
-              background: rgba(255,255,255,0.05);
-              color: #F5EFE0;
+              background: #FFFFFF;
+              color: #14110E;
               font-size: 15px;
-              border: 1px solid rgba(255,255,255,0.22);
-              border-radius: 8px;
-              padding: 13px 16px;
+              border: 1px solid #E0DCD3;
+              border-radius: 10px;
+              padding: 14px 16px;
               width: 280px;
               max-width: 100%;
-              font-family: ui-sans-serif, system-ui, sans-serif;
+              font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
               outline: none;
-              transition: border-color 120ms ease, background 120ms ease;
+              box-shadow: 0 2px 8px rgba(20,17,14,0.04);
+              transition: border-color 120ms ease, box-shadow 120ms ease;
             }
-            .bm-waitlist-input::placeholder { color: #6E6552; }
+            .bm-waitlist-input::placeholder { color: #B4AEA4; }
             .bm-waitlist-input:focus {
-              border-color: rgba(34,168,85,0.7);
-              background: rgba(255,255,255,0.08);
+              border-color: #FB2C1D;
+              box-shadow: 0 0 0 3px rgba(251,44,29,0.14);
             }
             .bm-folder::before {
               content: "";
@@ -2316,84 +2380,61 @@ export default function BusinessModelsPage() {
       <div
         style={{
           minHeight: "100vh",
-          background: "linear-gradient(180deg, #1E1E1E 0%, #2A2A2A 100%)",
+          background: TL.bg,
           padding: "0 0 80px",
+          fontFamily: "var(--font-display), ui-sans-serif, system-ui, sans-serif",
         }}
       >
-        {/* Cabinet top bar */}
-        <div
-          style={{
-            background: "linear-gradient(180deg, #3C3C3C, #2E2E2E)",
-            borderBottom: "3px solid #111",
-            padding: "14px 24px",
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-            boxShadow: "0 4px 12px rgba(0,0,0,0.5)",
-          }}
-        >
-          <div
-            style={{
-              width: 10,
-              height: 10,
-              borderRadius: "50%",
-              background: "#8A8A8A",
-              boxShadow: "inset 0 1px 2px rgba(0,0,0,0.6)",
-            }}
-          />
-          <div
-            style={{
-              fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
-              fontSize: 11,
-              letterSpacing: 3,
-              color: "#7A7A7A",
-              textTransform: "uppercase",
-            }}
-          >
-            Verified P&L Database
-          </div>
-        </div>
-
         {/* ── Hero ─────────────────────────────────────────────── */}
         <div style={{ maxWidth: 1140, margin: "0 auto", padding: "0 20px" }}>
-          <div style={{ textAlign: "center", padding: "clamp(48px, 8vw, 80px) 0 4px" }}>
+          <div style={{ textAlign: "center", padding: "clamp(48px, 8vw, 84px) 0 4px" }}>
             <div
               style={{
-                display: "inline-block",
-                fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
-                fontSize: 10,
-                letterSpacing: 2.5,
-                color: "#C4A84A",
-                textTransform: "uppercase",
-                border: "1px solid rgba(196,168,74,0.35)",
-                borderRadius: 999,
-                padding: "5px 12px",
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 8,
+                justifyContent: "center",
               }}
             >
-              Real numbers · Anonymized · Verified
+              {["Real numbers", "Anonymized", "Verified"].map((tag) => (
+                <span
+                  key={tag}
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    letterSpacing: 1.4,
+                    color: TL.red,
+                    textTransform: "uppercase",
+                    background: TL.redSoft,
+                    borderRadius: 999,
+                    padding: "6px 14px",
+                  }}
+                >
+                  {tag}
+                </span>
+              ))}
             </div>
             <h1
               style={{
-                fontFamily: "ui-serif, Georgia, serif",
-                fontSize: "clamp(34px, 6vw, 60px)",
-                fontWeight: 700,
-                color: "#F5EFE0",
-                lineHeight: 1.05,
-                letterSpacing: "-0.5px",
-                margin: "20px auto 0",
-                maxWidth: 780,
+                fontSize: "clamp(38px, 6.5vw, 66px)",
+                fontWeight: 800,
+                color: TL.ink,
+                lineHeight: 1.02,
+                letterSpacing: "-1px",
+                margin: "22px auto 0",
+                maxWidth: 820,
               }}
             >
               A Database of Verified P&Ls
             </h1>
             <p
               style={{
-                fontFamily: "ui-sans-serif, system-ui, sans-serif",
                 fontSize: "clamp(16px, 2.4vw, 20px)",
-                color: "#B9AE97",
-                maxWidth: 620,
-                margin: "18px auto 0",
-                lineHeight: 1.55,
+                fontWeight: 500,
+                color: TL.muted,
+                maxWidth: 600,
+                margin: "20px auto 0",
+                lineHeight: 1.5,
               }}
             >
               Learn how real businesses are operating, understand margins, and check
@@ -2418,17 +2459,16 @@ export default function BusinessModelsPage() {
         </div>
 
         {/* ── Mock Business Models ─────────────────────────────── */}
-        <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", marginTop: 80 }}>
+        <div style={{ borderTop: `1px solid ${TL.hair}`, marginTop: 80 }}>
         <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 20px" }}>
           {/* Section header */}
           <div style={{ textAlign: "center", padding: "56px 0 0" }}>
             <div
               style={{
-                display: "inline-block",
-                fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
-                fontSize: 10,
-                letterSpacing: 2.5,
-                color: "#8A7A4A",
+                fontSize: 11,
+                fontWeight: 600,
+                letterSpacing: 1.8,
+                color: TL.red,
                 textTransform: "uppercase",
                 marginBottom: 12,
               }}
@@ -2437,11 +2477,11 @@ export default function BusinessModelsPage() {
             </div>
             <h2
               style={{
-                fontFamily: "ui-serif, Georgia, serif",
-                fontSize: "clamp(26px, 4.5vw, 38px)",
-                fontWeight: 700,
-                color: "#F0E7D2",
-                lineHeight: 1.1,
+                fontSize: "clamp(28px, 4.5vw, 42px)",
+                fontWeight: 800,
+                color: TL.ink,
+                lineHeight: 1.05,
+                letterSpacing: "-0.5px",
                 margin: 0,
               }}
             >
@@ -2449,12 +2489,12 @@ export default function BusinessModelsPage() {
             </h2>
             <p
               style={{
-                fontFamily: "ui-sans-serif, system-ui, sans-serif",
                 fontSize: "clamp(15px, 2vw, 17px)",
-                color: "#A99D86",
+                fontWeight: 500,
+                color: TL.muted,
                 maxWidth: 560,
                 margin: "14px auto 0",
-                lineHeight: 1.55,
+                lineHeight: 1.5,
               }}
             >
               While the database fills up, here are illustrative teardowns of 20 common
@@ -2466,31 +2506,32 @@ export default function BusinessModelsPage() {
           {/* Intro */}
           <div
             style={{
-              margin: "48px 0 40px",
-              padding: "24px 26px",
-              background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(255,255,255,0.08)",
-              borderRadius: 6,
+              margin: "44px 0 40px",
+              padding: "26px 28px",
+              background: TL.panel,
+              border: `1px solid ${TL.hair}`,
+              borderRadius: 16,
+              boxShadow: "0 10px 30px rgba(20,17,14,0.05)",
             }}
           >
             <div
               style={{
-                fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
-                fontSize: 10,
-                letterSpacing: 2.5,
-                color: "#C4A84A",
+                fontSize: 11,
+                fontWeight: 600,
+                letterSpacing: 1.6,
+                color: TL.red,
                 textTransform: "uppercase",
-                marginBottom: 10,
+                marginBottom: 12,
               }}
             >
               Before you start
             </div>
             <p
               style={{
-                fontFamily: "ui-serif, Georgia, serif",
-                fontSize: "clamp(17px, 3vw, 20px)",
+                fontSize: "clamp(16px, 3vw, 19px)",
+                fontWeight: 500,
                 lineHeight: 1.6,
-                color: "#E8DEC8",
+                color: TL.ink,
                 margin: 0,
               }}
             >
@@ -2507,19 +2548,19 @@ export default function BusinessModelsPage() {
               marginBottom: 28,
             }}
           >
-            <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.1)" }} />
+            <div style={{ flex: 1, height: 1, background: TL.hair }} />
             <div
               style={{
-                fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
-                fontSize: 10,
-                letterSpacing: 2,
-                color: "#666",
+                fontSize: 11,
+                fontWeight: 600,
+                letterSpacing: 1.5,
+                color: TL.muted,
                 textTransform: "uppercase",
               }}
             >
               Click a folder to open it
             </div>
-            <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.1)" }} />
+            <div style={{ flex: 1, height: 1, background: TL.hair }} />
           </div>
 
           <div

@@ -69,12 +69,12 @@ export const apps: AppEntry[] = [
     createdAt: "2026-05-21",
   },
   {
-    slug: "business-models",
-    name: "Business Models 101",
-    icon: "📂",
+    slug: "topline",
+    name: "Topline",
+    icon: "📊",
     description:
-      "20 business models explained — how they make money, their costs, and what the P&L looks like.",
-    url: "/business-models",
+      "A database of verified P&Ls — learn how real businesses operate, margins, and industry standards.",
+    url: "/topline",
     createdAt: "2026-06-29",
   },
 ];

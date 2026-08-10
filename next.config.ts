@@ -31,6 +31,8 @@ const nextConfig: NextConfig = {
       { source: "/nyc/:path*", destination: "/apps/nyc/:path*", permanent: true },
       { source: "/resident", destination: "/apps/resident", permanent: true },
       { source: "/resident/:path*", destination: "/apps/resident/:path*", permanent: true },
+      // Business Models 101 was rebranded as Topline.
+      { source: "/business-models", destination: "/topline", permanent: true },
     ];
   },
 };
