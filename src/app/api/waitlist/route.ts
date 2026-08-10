@@ -6,11 +6,11 @@ import { rateLimit } from "../../../lib/rate-limit";
  *
  * Body: { email, source? }
  *
- * Validates the email and forwards it to a Google Apps Script web app that
- * appends a row to a Google Sheet. No database — the Sheet is the store.
+ * Validates the email and forwards it to a Formspree form endpoint, which
+ * stores the submission and emails a notification. No database.
  *
- * Env: GOOGLE_SHEET_WEBHOOK_URL — the Apps Script web app URL (ends in /exec).
- * Server-only (not NEXT_PUBLIC) so the URL stays private.
+ * Env: FORMSPREE_ENDPOINT — the form URL, e.g. https://formspree.io/f/xxxxxxxx
+ * Server-only so the endpoint isn't exposed in the browser.
  */
 export const dynamic = "force-dynamic";
 
@@ -43,9 +43,9 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const webhook = process.env.GOOGLE_SHEET_WEBHOOK_URL;
-  if (!webhook) {
-    console.error("[waitlist] GOOGLE_SHEET_WEBHOOK_URL not set");
+  const endpoint = process.env.FORMSPREE_ENDPOINT;
+  if (!endpoint) {
+    console.error("[waitlist] FORMSPREE_ENDPOINT not set");
     return NextResponse.json(
       { error: "Waitlist is temporarily unavailable. Please try again later." },
       { status: 503 }
@@ -53,52 +53,26 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const res = await fetch(webhook, {
+    const res = await fetch(endpoint, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email,
-        source,
-        secret: process.env.GOOGLE_SHEET_SECRET ?? "",
-      }),
-      // Apps Script 302-redirects to its googleusercontent output; follow it.
-      redirect: "follow",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({ email, source }),
     });
-    // Apps Script always returns HTTP 200; the real outcome is in the JSON
-    // body ({ ok: true } / { ok: false, error }). Verify the body, not status.
-    const text = await res.text();
-    let ok = false;
-    try {
-      ok = JSON.parse(text)?.ok === true;
-    } catch {
-      ok = false;
-    }
-    if (!res.ok || !ok) {
-      console.error("[waitlist] sheet webhook rejected:", res.status, text.slice(0, 120));
-      const diag = new URL(req.url).searchParams.get("_diag") === "tl9f2a7c";
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      console.error("[waitlist] formspree rejected:", res.status, text.slice(0, 160));
       return NextResponse.json(
-        {
-          error: "Something went wrong. Please try again.",
-          ...(diag
-            ? {
-                upstreamStatus: res.status,
-                upstreamBody: text.slice(0, 200),
-                secretPresent: !!process.env.GOOGLE_SHEET_SECRET,
-                secretLen: (process.env.GOOGLE_SHEET_SECRET ?? "").length,
-              }
-            : {}),
-        },
+        { error: "Something went wrong. Please try again." },
         { status: 502 }
       );
     }
   } catch (err) {
-    console.error("[waitlist] sheet webhook failed:", err);
-    const diag = new URL(req.url).searchParams.get("_diag") === "tl9f2a7c";
+    console.error("[waitlist] formspree request failed:", err);
     return NextResponse.json(
-      {
-        error: "Something went wrong. Please try again.",
-        ...(diag ? { fetchError: err instanceof Error ? err.message : String(err) } : {}),
-      },
+      { error: "Something went wrong. Please try again." },
       { status: 502 }
     );
   }
