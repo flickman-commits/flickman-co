@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { getSupabaseAdmin } from "../../../lib/supabase";
+import { getSupabasePublic } from "../../../lib/supabase";
 import { rateLimit } from "../../../lib/rate-limit";
 
 /**
@@ -7,17 +7,12 @@ import { rateLimit } from "../../../lib/rate-limit";
  *
  * Body: { email, source? }
  *
- * Validates the email and upserts it into the Supabase `waitlist` table.
- * Duplicate emails are treated as success (idempotent signup). No auth —
- * this is a public waitlist form, protected only by rate limiting.
+ * Validates the email and inserts it into the Supabase `topline_waitlist`
+ * table using the public anon key (RLS allows insert-only). Duplicate emails
+ * are treated as success (idempotent signup). No auth — this is a public
+ * waitlist form, protected only by rate limiting.
  *
- * Table (run once in Supabase SQL editor):
- *   create table if not exists waitlist (
- *     id uuid primary key default gen_random_uuid(),
- *     email text unique not null,
- *     source text,
- *     created_at timestamptz not null default now()
- *   );
+ * Table + RLS policy live in supabase/migrations/0001_create_waitlist.sql.
  */
 export const dynamic = "force-dynamic";
 
@@ -54,7 +49,7 @@ export async function POST(req: NextRequest) {
 
   let supabase;
   try {
-    supabase = getSupabaseAdmin();
+    supabase = getSupabasePublic();
   } catch {
     console.error("[waitlist] Supabase not configured");
     return NextResponse.json(
@@ -66,7 +61,7 @@ export async function POST(req: NextRequest) {
   // Upsert on the unique email so re-submitting the same address is a no-op
   // success rather than a duplicate-key error.
   const { error } = await supabase
-    .from("waitlist")
+    .from("topline_waitlist")
     .upsert({ email, source }, { onConflict: "email", ignoreDuplicates: true });
 
   if (error) {
