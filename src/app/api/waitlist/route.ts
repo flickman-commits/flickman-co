@@ -1,5 +1,4 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { getSupabasePublic } from "../../../lib/supabase";
 import { rateLimit } from "../../../lib/rate-limit";
 
 /**
@@ -7,12 +6,11 @@ import { rateLimit } from "../../../lib/rate-limit";
  *
  * Body: { email, source? }
  *
- * Validates the email and inserts it into the Supabase `topline_waitlist`
- * table using the public anon key (RLS allows insert-only). Duplicate emails
- * are treated as success (idempotent signup). No auth — this is a public
- * waitlist form, protected only by rate limiting.
+ * Validates the email and forwards it to a Google Apps Script web app that
+ * appends a row to a Google Sheet. No database — the Sheet is the store.
  *
- * Table + RLS policy live in supabase/migrations/0001_create_waitlist.sql.
+ * Env: GOOGLE_SHEET_WEBHOOK_URL — the Apps Script web app URL (ends in /exec).
+ * Server-only (not NEXT_PUBLIC) so the URL stays private.
  */
 export const dynamic = "force-dynamic";
 
@@ -34,11 +32,9 @@ export async function POST(req: NextRequest) {
   }
 
   const obj = body as Record<string, unknown>;
-  const email = (typeof obj.email === "string" ? obj.email : "")
-    .trim()
-    .toLowerCase();
+  const email = (typeof obj.email === "string" ? obj.email : "").trim().toLowerCase();
   const source =
-    typeof obj.source === "string" ? obj.source.trim().slice(0, 80) : "pnl-database";
+    typeof obj.source === "string" ? obj.source.trim().slice(0, 80) : "topline";
 
   if (!EMAIL_RX.test(email) || email.length > 160) {
     return NextResponse.json(
@@ -47,36 +43,48 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  let supabase;
-  try {
-    supabase = getSupabasePublic();
-  } catch {
-    console.error("[waitlist] Supabase not configured");
+  const webhook = process.env.GOOGLE_SHEET_WEBHOOK_URL;
+  if (!webhook) {
+    console.error("[waitlist] GOOGLE_SHEET_WEBHOOK_URL not set");
     return NextResponse.json(
       { error: "Waitlist is temporarily unavailable. Please try again later." },
       { status: 503 }
     );
   }
 
-  // Upsert on the unique email so re-submitting the same address is a no-op
-  // success rather than a duplicate-key error.
-  const { error } = await supabase
-    .from("topline_waitlist")
-    .upsert({ email, source }, { onConflict: "email", ignoreDuplicates: true });
-
-  if (error) {
-    console.error("[waitlist] insert failed:", error.message);
-    // TEMP diagnostic: reveal the real error only when the caller passes the
-    // secret ?_diag= token. Remove after debugging.
-    const diag = new URL(req.url).searchParams.get("_diag") === "tl9f2a7c";
+  try {
+    const res = await fetch(webhook, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email,
+        source,
+        secret: process.env.GOOGLE_SHEET_SECRET ?? "",
+      }),
+      // Apps Script 302-redirects to its googleusercontent output; follow it.
+      redirect: "follow",
+    });
+    // Apps Script always returns HTTP 200; the real outcome is in the JSON
+    // body ({ ok: true } / { ok: false, error }). Verify the body, not status.
+    const text = await res.text();
+    let ok = false;
+    try {
+      ok = JSON.parse(text)?.ok === true;
+    } catch {
+      ok = false;
+    }
+    if (!res.ok || !ok) {
+      console.error("[waitlist] sheet webhook rejected:", res.status, text.slice(0, 120));
+      return NextResponse.json(
+        { error: "Something went wrong. Please try again." },
+        { status: 502 }
+      );
+    }
+  } catch (err) {
+    console.error("[waitlist] sheet webhook failed:", err);
     return NextResponse.json(
-      {
-        error: "Something went wrong. Please try again.",
-        ...(diag
-          ? { detail: error.message, code: error.code, hint: error.hint, details: error.details }
-          : {}),
-      },
-      { status: 500 }
+      { error: "Something went wrong. Please try again." },
+      { status: 502 }
     );
   }
 
