@@ -35,6 +35,11 @@ export async function POST(req: NextRequest) {
   const email = (typeof obj.email === "string" ? obj.email : "").trim().toLowerCase();
   const source =
     typeof obj.source === "string" ? obj.source.trim().slice(0, 80) : "topline";
+  const role = typeof obj.role === "string" ? obj.role.trim() : "";
+  const wouldSubmitPL =
+    typeof obj.wouldSubmitPL === "string" ? obj.wouldSubmitPL.trim() : "";
+  const reason =
+    typeof obj.reason === "string" ? obj.reason.trim().slice(0, 1000) : "";
 
   if (!EMAIL_RX.test(email) || email.length > 160) {
     return NextResponse.json(
@@ -42,6 +47,24 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
+
+  const ROLES = [
+    "Current business owner",
+    "Looking to start or buy a business",
+    "Not interested in business ownership",
+  ];
+  if (!ROLES.includes(role)) {
+    return NextResponse.json(
+      { error: "Please choose the option that best describes you." },
+      { status: 400 }
+    );
+  }
+
+  // The P&L question only applies to current business owners.
+  const pl =
+    role === "Current business owner" && ["Yes", "Maybe", "No"].includes(wouldSubmitPL)
+      ? wouldSubmitPL
+      : "";
 
   const endpoint = process.env.FORMSPREE_ENDPOINT;
   if (!endpoint) {
@@ -59,7 +82,14 @@ export async function POST(req: NextRequest) {
         "Content-Type": "application/json",
         Accept: "application/json",
       },
-      body: JSON.stringify({ email, source }),
+      body: JSON.stringify({
+        email,
+        source,
+        role,
+        would_submit_pl: pl,
+        reason,
+        _subject: "New Topline waitlist signup",
+      }),
     });
     if (!res.ok) {
       const text = await res.text().catch(() => "");

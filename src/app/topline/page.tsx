@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, type FormEvent } from "react";
+import { useState, useEffect, type FormEvent, type ReactNode } from "react";
 
 type BreakdownBar = {
   label: string;
@@ -2096,21 +2096,110 @@ function VerifiedPLCard({ pl }: { pl: HeroPL }) {
 
 /* ── Waitlist form ──────────────────────────────────────────────── */
 
+const ROLE_OPTIONS = [
+  "Current business owner",
+  "Looking to start or buy a business",
+  "Not interested in business ownership",
+];
+const PL_OPTIONS = ["Yes", "Maybe", "No"];
+
+function FieldLabel({ children }: { children: ReactNode }) {
+  return (
+    <div style={{ fontSize: 14, fontWeight: 700, color: TL.ink, margin: "0 0 10px" }}>
+      {children}
+    </div>
+  );
+}
+
+function ChoiceRow({
+  label,
+  selected,
+  onSelect,
+  disabled,
+}: {
+  label: string;
+  selected: boolean;
+  onSelect: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      disabled={disabled}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 11,
+        width: "100%",
+        textAlign: "left",
+        padding: "12px 14px",
+        borderRadius: 10,
+        cursor: disabled ? "default" : "pointer",
+        border: selected ? `1.5px solid ${TL.red}` : "1px solid #E0DCD3",
+        background: selected ? TL.redSoft : "#FFFFFF",
+        color: TL.ink,
+        fontSize: 14.5,
+        fontWeight: selected ? 600 : 500,
+        fontFamily: "var(--font-display), ui-sans-serif, system-ui, sans-serif",
+        transition: "border-color 120ms ease, background 120ms ease",
+        marginBottom: 8,
+      }}
+    >
+      <span
+        style={{
+          width: 16,
+          height: 16,
+          borderRadius: "50%",
+          flexShrink: 0,
+          boxSizing: "border-box",
+          background: "#FFFFFF",
+          border: selected ? `5px solid ${TL.red}` : "2px solid #C9C3B8",
+        }}
+      />
+      {label}
+    </button>
+  );
+}
+
 function WaitlistForm() {
   const [email, setEmail] = useState("");
+  const [role, setRole] = useState("");
+  const [pl, setPl] = useState("");
+  const [reason, setReason] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
   const [error, setError] = useState("");
+
+  const isOwner = role === "Current business owner";
+
+  function clearError() {
+    if (status === "error") {
+      setStatus("idle");
+      setError("");
+    }
+  }
 
   async function submit(e: FormEvent) {
     e.preventDefault();
     if (status === "loading") return;
+    if (!role) {
+      setError("Please choose the option that best describes you.");
+      setStatus("error");
+      return;
+    }
     setStatus("loading");
     setError("");
     try {
       const res = await fetch("/api/waitlist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, source: "topline" }),
+        body: JSON.stringify({
+          email,
+          source: "topline",
+          role,
+          wouldSubmitPL: isOwner ? pl : "",
+          reason,
+        }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -2127,7 +2216,7 @@ function WaitlistForm() {
 
   if (status === "done") {
     return (
-      <div style={{ margin: "30px 0 0" }}>
+      <div style={{ margin: "30px 0 0", textAlign: "center" }}>
         <div
           style={{
             display: "inline-flex",
@@ -2150,46 +2239,126 @@ function WaitlistForm() {
     );
   }
 
+  const loading = status === "loading";
+
   return (
-    <form onSubmit={submit} style={{ margin: "30px 0 0" }}>
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 10,
-          justifyContent: "center",
+    <form
+      onSubmit={submit}
+      style={{
+        margin: "32px auto 0",
+        maxWidth: 480,
+        textAlign: "left",
+        background: "#FFFFFF",
+        border: `1px solid ${TL.hair}`,
+        borderRadius: 16,
+        padding: "24px 22px",
+        boxShadow: "0 16px 40px rgba(20,17,14,0.07)",
+      }}
+    >
+      <FieldLabel>Email</FieldLabel>
+      <input
+        type="email"
+        required
+        value={email}
+        onChange={(e) => {
+          setEmail(e.target.value);
+          clearError();
         }}
-      >
-        <input
-          type="email"
-          required
-          value={email}
-          onChange={(e) => {
-            setEmail(e.target.value);
-            if (status === "error") setStatus("idle");
+        placeholder="you@email.com"
+        aria-label="Email address"
+        className="bm-waitlist-input"
+        style={{ width: "100%" }}
+        disabled={loading}
+      />
+
+      <div style={{ height: 22 }} />
+      <FieldLabel>Which of the following describes you?</FieldLabel>
+      {ROLE_OPTIONS.map((opt) => (
+        <ChoiceRow
+          key={opt}
+          label={opt}
+          selected={role === opt}
+          onSelect={() => {
+            setRole(opt);
+            clearError();
           }}
-          placeholder="you@email.com"
-          aria-label="Email address"
-          className="bm-waitlist-input"
-          disabled={status === "loading"}
+          disabled={loading}
         />
-        <button type="submit" className="bm-btn-primary" disabled={status === "loading"}>
-          {status === "loading" ? "Adding…" : "Get on the waitlist"}
-        </button>
-      </div>
+      ))}
+
+      {isOwner && (
+        <div style={{ marginTop: 6 }}>
+          <FieldLabel>Would you submit your P&L to the group?</FieldLabel>
+          <div style={{ display: "flex", gap: 8 }}>
+            {PL_OPTIONS.map((opt) => {
+              const on = pl === opt;
+              return (
+                <button
+                  key={opt}
+                  type="button"
+                  onClick={() => setPl(opt)}
+                  disabled={loading}
+                  style={{
+                    flex: 1,
+                    padding: "10px 8px",
+                    borderRadius: 10,
+                    cursor: loading ? "default" : "pointer",
+                    border: on ? `1.5px solid ${TL.red}` : "1px solid #E0DCD3",
+                    background: on ? TL.redSoft : "#FFFFFF",
+                    color: TL.ink,
+                    fontSize: 14,
+                    fontWeight: on ? 700 : 500,
+                    fontFamily: "var(--font-display), ui-sans-serif, system-ui, sans-serif",
+                    transition: "border-color 120ms ease, background 120ms ease",
+                  }}
+                >
+                  {opt}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      <div style={{ height: 22 }} />
+      <FieldLabel>
+        Why is this database interesting to you? What will you use it for?{" "}
+        <span style={{ fontWeight: 500, color: TL.muted }}>(optional)</span>
+      </FieldLabel>
+      <textarea
+        value={reason}
+        onChange={(e) => setReason(e.target.value)}
+        placeholder="A sentence or two…"
+        rows={3}
+        maxLength={1000}
+        className="bm-waitlist-input"
+        style={{ width: "100%", resize: "vertical", minHeight: 84, lineHeight: 1.5 }}
+        disabled={loading}
+      />
+
+      <button
+        type="submit"
+        className="bm-btn-primary"
+        style={{ width: "100%", marginTop: 18 }}
+        disabled={loading}
+      >
+        {loading ? "Submitting…" : "Get on the waitlist"}
+      </button>
+
       <div
         style={{
           fontFamily: "var(--font-display), ui-sans-serif, system-ui, sans-serif",
           fontSize: 13,
           fontWeight: 500,
           color: status === "error" ? TL.red : TL.muted,
-          marginTop: 14,
+          marginTop: 12,
           minHeight: 16,
+          textAlign: "center",
         }}
       >
         {status === "error"
           ? error
-          : "Be the first in when the database opens."}
+          : "Takes 15 seconds — be the first in when the database opens."}
       </div>
     </form>
   );
