@@ -2232,7 +2232,7 @@ function WaitlistForm() {
             borderRadius: 10,
           }}
         >
-          <span style={{ color: TL.red }}>✓</span> You&apos;re on the list — we&apos;ll be
+          <span style={{ color: TL.red }}>✓</span> You&apos;re on the list. We&apos;ll be
           in touch.
         </div>
       </div>
