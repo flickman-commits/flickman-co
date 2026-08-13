@@ -128,18 +128,30 @@ function readApiKey():
     );
   }
 
-  // Printable ASCII only — anything else cannot go in a header.
-  const bad = [...key].find((c) => c.charCodeAt(0) < 0x21 || c.charCodeAt(0) > 0x7e);
-  if (bad !== undefined) {
+  // A real key is one unbroken run of printable ASCII. Anything outside that
+  // can't go in a header, and in practice means extra text came along with it.
+  const chars = [...key];
+  const at = chars.findIndex((c) => c.charCodeAt(0) < 0x21 || c.charCodeAt(0) > 0x7e);
+  if (at !== -1) {
+    const code = chars[at].charCodeAt(0);
+    const name =
+      code === 0x20
+        ? "a space"
+        : code === 0x0a || code === 0x0d
+          ? "a line break"
+          : code === 0x201c || code === 0x201d
+            ? "a curly quote"
+            : `U+${code.toString(16).toUpperCase().padStart(4, "0")}`;
+    // Length and offset describe the shape of the value, never its contents —
+    // and they're what actually identifies "you pasted more than the key".
     return {
       ok: false,
       reason:
-        `ANTHROPIC_API_KEY contains a non-ASCII character (U+${bad
-          .charCodeAt(0)
-          .toString(16)
-          .toUpperCase()
-          .padStart(4, "0")}). This is usually smart quotes or a stray space from ` +
-        "copy-paste. Re-add the key as plain text.",
+        `ANTHROPIC_API_KEY doesn't look like a bare key: ${chars.length} characters, ` +
+        `with ${name} at index ${at}${
+          key.startsWith("sk-ant-") ? "" : ", and it doesn't start with 'sk-ant-'"
+        }. A key is a single unbroken token of about 108 characters. ` +
+        "Re-add just the key, with no surrounding text or line breaks.",
     };
   }
 
