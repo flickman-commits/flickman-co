@@ -160,6 +160,134 @@ export async function getTrackstarYTDRevenue(): Promise<number | null> {
   }
 }
 
+/* ──────────────────────────────────────────────────────────────── */
+/* Single-day sales (used by the daily digest)                       */
+/* ──────────────────────────────────────────────────────────────── */
+
+export interface DaySales {
+  revenue: number;
+  orders: number;
+  /** The day covered, as an ET calendar date, e.g. "2026-08-12". */
+  dateISO: string;
+}
+
+/** The wall-clock UTC offset in New York on a given instant, e.g. "-04:00". */
+function easternOffset(at: Date): string {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    timeZoneName: "longOffset",
+  }).formatToParts(at);
+  const name = parts.find((p) => p.type === "timeZoneName")?.value ?? "";
+  const match = name.match(/GMT([+-]\d{2}:\d{2})/);
+  return match ? match[1] : "-05:00";
+}
+
+/** The calendar date in New York at a given instant, as YYYY-MM-DD. */
+function easternDate(at: Date): string {
+  // en-CA formats as YYYY-MM-DD.
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/New_York",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(at);
+}
+
+/**
+ * Paid revenue and order count for the previous full day, New York time.
+ *
+ * Day boundaries are built from the calendar date rather than "now minus 24
+ * hours", so a digest that runs late still reports yesterday rather than a
+ * rolling window. On the two DST changeover days the day is 23 or 25 hours
+ * long and this will be an hour off at one edge — not worth correcting for a
+ * sales figure.
+ *
+ * Returns null if env vars are missing or the call fails; the caller drops the
+ * panel rather than showing a misleading $0.
+ */
+export async function getYesterdaySales(now = new Date()): Promise<DaySales | null> {
+  const store = process.env.SHOPIFY_STORE?.trim();
+  if (!store || !process.env.SHOPIFY_CLIENT_ID || !process.env.SHOPIFY_CLIENT_SECRET) {
+    return null;
+  }
+
+  const today = easternDate(now);
+  const [y, m, d] = today.split("-").map(Number);
+  // Calendar arithmetic in UTC, so month/year rollovers are handled for us.
+  const prev = new Date(Date.UTC(y, m - 1, d - 1));
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const yesterday = `${prev.getUTCFullYear()}-${pad(prev.getUTCMonth() + 1)}-${pad(prev.getUTCDate())}`;
+
+  // Offset sampled at midday to avoid landing on a transition hour.
+  const offset = easternOffset(new Date(`${yesterday}T12:00:00Z`));
+
+  try {
+    const token = await getAccessToken();
+    const query = `
+      query DaySales($filter: String!, $first: Int!, $after: String) {
+        orders(query: $filter first: $first sortKey: CREATED_AT after: $after) {
+          pageInfo { hasNextPage endCursor }
+          edges { node { id currentTotalPriceSet { shopMoney { amount currencyCode } } } }
+        }
+      }
+    `;
+
+    let cursor: string | null = null;
+    let revenue = 0;
+    let orders = 0;
+
+    // A single day of orders fits well inside one page; the loop is a guard,
+    // not an expectation.
+    for (let page = 0; page < 5; page++) {
+      const res: Response = await fetch(
+        `https://${store}/admin/api/${API_VERSION}/graphql.json`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Shopify-Access-Token": token,
+          },
+          body: JSON.stringify({
+            query,
+            variables: {
+              filter:
+                `created_at:>='${yesterday}T00:00:00${offset}' ` +
+                `created_at:<'${today}T00:00:00${offset}' financial_status:paid`,
+              first: 250,
+              after: cursor,
+            },
+          }),
+          cache: "no-store",
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error(`Shopify GraphQL ${res.status}: ${(await res.text()).slice(0, 200)}`);
+      }
+
+      const json = (await res.json()) as GraphQLOrdersResponse;
+      if (json.errors?.length) {
+        throw new Error(json.errors.map((e) => e.message).join("; "));
+      }
+      if (!json.data) throw new Error("Shopify GraphQL: missing data");
+
+      for (const edge of json.data.orders.edges) {
+        const amount = parseFloat(edge.node.currentTotalPriceSet.shopMoney.amount);
+        if (!Number.isNaN(amount)) revenue += amount;
+        orders++;
+      }
+
+      if (!json.data.orders.pageInfo.hasNextPage) break;
+      cursor = json.data.orders.pageInfo.endCursor;
+    }
+
+    return { revenue, orders, dateISO: yesterday };
+  } catch (err) {
+    console.error("[shopify] failed to fetch yesterday's sales:", err);
+    return null;
+  }
+}
+
 export function formatCurrency(n: number): string {
   if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(2)}M`;
   if (n >= 1_000) return `$${Math.round(n / 1000)}k`;

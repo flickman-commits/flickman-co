@@ -20,6 +20,8 @@ import {
   sendDigest,
 } from "../../../lib/digest/email";
 import { SECTIONS, type SectionId } from "../../../lib/digest/sources";
+import { getWeather } from "../../../lib/digest/weather";
+import { getYesterdaySales } from "../../../lib/shopify";
 
 /**
  * GET /api/digest — build and email the daily digest.
@@ -79,7 +81,15 @@ export async function GET(req: NextRequest) {
     DEFAULT_HOURS;
 
   try {
-    const { stories, failed } = await fetchAllStories(hours);
+    // Feeds, forecast, and sales are independent — fetch them together so the
+    // panel costs no extra wall-clock. Both panel sources resolve to null on
+    // failure rather than throwing, so neither can take the digest down.
+    const [{ stories, failed }, weather, sales] = await Promise.all([
+      fetchAllStories(hours),
+      getWeather(),
+      getYesterdaySales(),
+    ]);
+    const panel = { weather, sales };
     const bySection = storiesBySection(stories);
 
     // Sections are independent, so curate them concurrently — the whole run has
@@ -121,8 +131,9 @@ export async function GET(req: NextRequest) {
 
     const sections = buildSections(curated);
     const dateLabel = formatToday();
-    const html = renderHtml(sections, dateLabel, { ...usage, cost, model: CURATION_MODEL, degraded });
-    const text = renderText(sections, dateLabel, { ...usage, cost, model: CURATION_MODEL, degraded });
+    const run = { ...usage, cost, model: CURATION_MODEL, degraded };
+    const html = renderHtml(sections, dateLabel, run, panel);
+    const text = renderText(sections, dateLabel, run, panel);
     const count = sections.reduce((n, s) => n + s.stories.length, 0);
 
     if (preview) {
@@ -144,7 +155,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ ok: true, sent: false, count: 0, failed, curation });
     }
 
-    await sendDigest({ subject: `⛏ The Daily — ${dateLabel}`, html, text });
+    await sendDigest({ subject: `Flickman Daily Report - ${dateLabel}`, html, text });
     console.log(`[digest] sent ${count} stories across ${sections.length} sections`);
 
     return NextResponse.json({
@@ -154,6 +165,10 @@ export async function GET(req: NextRequest) {
       scanned: stories.length,
       failed,
       curation,
+      panel: {
+        weather: weather ? `${weather.high}/${weather.low}F` : null,
+        sales: sales ? `$${Math.round(sales.revenue)} / ${sales.orders} orders` : null,
+      },
     });
   } catch (err) {
     console.error("[digest] run failed:", err);

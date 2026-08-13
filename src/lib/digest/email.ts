@@ -1,4 +1,6 @@
 import type { CuratedStory } from "./curate";
+import type { Weather } from "./weather";
+import type { DaySales } from "../shopify";
 import { SECTIONS } from "./sources";
 
 export interface DigestSection {
@@ -105,6 +107,91 @@ function renderSection(section: DigestSection): string {
     </div>`;
 }
 
+/* ──────────────────────────────────────────────────────────────── */
+/* Top panel: weather + yesterday's sales                            */
+/* ──────────────────────────────────────────────────────────────── */
+
+export interface DailyPanel {
+  weather: Weather | null;
+  sales: DaySales | null;
+}
+
+function money(n: number): string {
+  return `$${Math.round(n).toLocaleString("en-US")}`;
+}
+
+/** "Tue Aug 12" from an ET calendar date, without re-crossing time zones. */
+function shortDate(dateISO: string): string {
+  const [y, m, d] = dateISO.split("-").map(Number);
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: "UTC",
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  }).format(new Date(Date.UTC(y, m - 1, d)));
+}
+
+function panelCell(label: string, accent: string, big: string, sub: string): string {
+  return `
+    <div style="background:${CREAM}; ${BLOCK} padding:13px 14px 12px;">
+      <div style="font-family:${PIXEL}; font-size:8px; line-height:1.6; color:${accent};">${escapeHtml(
+        label
+      )}</div>
+      <div style="margin-top:9px; font-family:${BODY}; font-size:23px; font-weight:800; line-height:1.15; color:${COAL};">${escapeHtml(
+        big
+      )}</div>
+      <!-- min-height keeps the two cells level when one caption wraps to a
+           second line; Outlook ignores it and simply falls back to ragged. -->
+      <div style="margin-top:4px; min-height:35px; font-family:${BODY}; font-size:12px; line-height:1.45; color:rgba(44,44,44,0.65);">${escapeHtml(
+        sub
+      )}</div>
+    </div>`;
+}
+
+/**
+ * Renders as a two-column table rather than flexbox — Outlook has no flex, and
+ * a table is the one layout every mail client agrees on. Either half can be
+ * missing; if both are, the panel disappears rather than showing empty boxes or
+ * a misleading $0.
+ */
+function renderPanel(panel: DailyPanel): string {
+  const cells: string[] = [];
+
+  if (panel.weather) {
+    const w = panel.weather;
+    const rain = w.precipChance != null && w.precipChance > 0 ? ` · ${w.precipChance}% rain` : "";
+    cells.push(
+      panelCell("TODAY'S WEATHER", "#4FC3F7", `${w.high}° / ${w.low}°`, `${w.summary}${rain}`)
+    );
+  }
+
+  if (panel.sales) {
+    const s = panel.sales;
+    cells.push(
+      panelCell(
+        "YESTERDAY'S SALES",
+        "#5D9C30",
+        money(s.revenue),
+        `${s.orders} ${s.orders === 1 ? "order" : "orders"} · ${shortDate(s.dateISO)}`
+      )
+    );
+  }
+
+  if (cells.length === 0) return "";
+
+  const row =
+    cells.length === 2
+      ? `<td width="49%" valign="top">${cells[0]}</td>
+         <td width="2%" style="font-size:0; line-height:0;">&nbsp;</td>
+         <td width="49%" valign="top">${cells[1]}</td>`
+      : `<td valign="top">${cells[0]}</td>`;
+
+  return `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 26px;">
+      <tr>${row}</tr>
+    </table>`;
+}
+
 export interface RunCost {
   inputTokens: number;
   outputTokens: number;
@@ -137,7 +224,8 @@ function formatCost(run: RunCost): string {
 export function renderHtml(
   sections: DigestSection[],
   dateLabel: string,
-  run: RunCost
+  run: RunCost,
+  panel: DailyPanel
 ): string {
   const body = sections.length
     ? sections.map(renderSection).join("")
@@ -149,7 +237,7 @@ export function renderHtml(
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-  <title>The Daily</title>
+  <title>Flickman Daily Report</title>
 </head>
 <body style="margin:0; padding:24px 12px; background:${SKY};">
   <div style="max-width:580px; margin:0 auto;">
@@ -158,14 +246,16 @@ export function renderHtml(
     <div style="border:3px solid ${COAL}; box-shadow:5px 5px 0 ${COAL};">
       <div style="background:${GRASS_LIGHT}; border-bottom:4px solid ${GRASS}; height:14px; line-height:14px; font-size:0;">&nbsp;</div>
       <div style="background:${DIRT}; border-top:3px solid ${DIRT_DARK}; padding:20px 20px 18px;">
-        <div style="font-family:${PIXEL}; font-size:19px; line-height:1.45; color:#FFFFFF;">THE DAILY</div>
+        <div style="font-family:${PIXEL}; font-size:19px; line-height:1.45; color:#FFFFFF;">FLICKMAN<br>DAILY REPORT</div>
         <div style="margin-top:10px; font-family:${PIXEL}; font-size:9px; line-height:1.6; color:rgba(255,255,255,0.82);">${escapeHtml(
           dateLabel.toUpperCase()
         )}</div>
       </div>
     </div>
 
-    <div style="height:26px; font-size:0;">&nbsp;</div>
+    <div style="height:22px; font-size:0;">&nbsp;</div>
+
+    ${renderPanel(panel)}
 
     ${body}
 
@@ -187,11 +277,25 @@ export function renderHtml(
 export function renderText(
   sections: DigestSection[],
   dateLabel: string,
-  run: RunCost
+  run: RunCost,
+  panel: DailyPanel
 ): string {
+  const panelLines: string[] = [];
+  if (panel.weather) {
+    const w = panel.weather;
+    const rain = w.precipChance != null && w.precipChance > 0 ? ` (${w.precipChance}% rain)` : "";
+    panelLines.push(`Weather: ${w.high}/${w.low}F — ${w.summary}${rain}`);
+  }
+  if (panel.sales) {
+    const s = panel.sales;
+    panelLines.push(
+      `Yesterday's sales: ${money(s.revenue)} across ${s.orders} ${s.orders === 1 ? "order" : "orders"} (${shortDate(s.dateISO)})`
+    );
+  }
+  const panelText = panelLines.length ? `${panelLines.join("\n")}\n\n` : "";
   const costLine = formatCost(run).replace(/&cent;/g, "c").replace(/&middot;/g, "·");
   if (!sections.length) {
-    return `THE DAILY — ${dateLabel}\n\nQuiet day. Nothing in the feeds worth mining.\n\n${costLine}`;
+    return `FLICKMAN DAILY REPORT — ${dateLabel}\n\n${panelText}Quiet day. Nothing in the feeds worth mining.\n\n${costLine}`;
   }
   const blocks = sections.map((section) => {
     const stories = section.stories
@@ -199,7 +303,7 @@ export function renderText(
       .join("\n\n");
     return `[ ${section.title.toUpperCase()} ]\n\n${stories}`;
   });
-  return `THE DAILY — ${dateLabel}\n\n${blocks.join("\n\n\n")}\n\nAuto-generated from RSS. Summaries are written by AI and can be wrong.\n${costLine}`;
+  return `FLICKMAN DAILY REPORT — ${dateLabel}\n\n${panelText}${blocks.join("\n\n\n")}\n\nAuto-generated from RSS. Summaries are written by AI and can be wrong.\n${costLine}`;
 }
 
 /* ──────────────────────────────────────────────────────────────── */
