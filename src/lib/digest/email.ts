@@ -75,9 +75,15 @@ function renderStory(story: CuratedStory, accent: string): string {
       <a href="${safeUrl(story.url)}" style="display:block; font-family:${BODY}; font-size:17px; line-height:1.35; font-weight:700; color:${COAL}; text-decoration:none;">${escapeHtml(
         story.title
       )}</a>
-      <div style="margin:8px 0 0; font-family:${BODY}; font-size:15px; line-height:1.55; color:rgba(44,44,44,0.78);">${escapeHtml(
-        story.summary
-      )}</div>
+      ${
+        // Some feed items (job listings especially) carry no description at
+        // all. An empty div just leaves a gap in the card.
+        story.summary.trim()
+          ? `<div style="margin:8px 0 0; font-family:${BODY}; font-size:15px; line-height:1.55; color:rgba(44,44,44,0.78);">${escapeHtml(
+              story.summary
+            )}</div>`
+          : ""
+      }
       <div style="margin:12px 0 0;">
         <span style="display:inline-block; background:${accent}; border:2px solid ${COAL}; padding:3px 6px; font-family:${PIXEL}; font-size:8px; line-height:1.5; color:${COAL};">${escapeHtml(
           story.source.toUpperCase()

@@ -47,7 +47,8 @@ const SECTION_BRIEF: Record<SectionId, string> = {
     "The reader follows the running industry closely: marathons and road racing, " +
     "race organizations and their business, elite results that actually matter, " +
     "participation trends, and Running USA-type industry news. Skip generic " +
-    "training tips, nutrition listicles, and gear-buying guides.",
+    "training tips, nutrition listicles, and gear-buying guides. The industry " +
+    "feeds also carry job listings and conference promos — drop those.",
   gear:
     "The reader cares about running companies as businesses and about product: " +
     "brand news, earnings and strategy, launches, notable shoe reviews, athlete " +
