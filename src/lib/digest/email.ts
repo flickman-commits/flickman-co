@@ -56,8 +56,8 @@ export function formatToday(now = new Date()): string {
  */
 
 const COAL = "#2C2C2C";
-const CREAM = "#FFF8F0";
-const SKY = "#87CEEB";
+const CREAM = "#FFFFFF";
+const SKY = "#EAE7DE";
 const STONE = "#7F8C8D";
 const GRASS = "#5D9C30";
 const GRASS_LIGHT = "#6AAF35";
@@ -68,29 +68,39 @@ const PIXEL = "'Press Start 2P', 'Courier New', Courier, monospace";
 const BODY =
   "Inter, ui-sans-serif, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
 
-/** The chunky outline + hard drop shadow that stands in for `.block-border`. */
-const BLOCK = `border:3px solid ${COAL}; box-shadow:4px 4px 0 ${COAL};`;
+/*
+ * Readability pass: the Minecraft identity is carried by the grass-block
+ * masthead, the palette, and blocky outlines — none of which you have to read.
+ * The pixel font at 8-10px was the problem, so it now appears only in the
+ * masthead, where it's large enough to scan. Everything you actually read
+ * (headlines, summaries, source labels, section names) is Inter.
+ *
+ * Borders also went from 3px + 4px shadow to 2px + 2px: still blocky, far less
+ * visual noise between you and the text.
+ */
+const BLOCK = `border:2px solid ${COAL}; box-shadow:2px 2px 0 ${COAL};`;
 
 function renderStory(story: CuratedStory, accent: string): string {
   return `
     <div style="background:${CREAM}; ${BLOCK} padding:16px 16px 14px; margin:0 0 16px;">
-      <a href="${safeUrl(story.url)}" style="display:block; font-family:${BODY}; font-size:17px; line-height:1.35; font-weight:700; color:${COAL}; text-decoration:none;">${escapeHtml(
+      <a href="${safeUrl(story.url)}" style="display:block; font-family:${BODY}; font-size:18px; line-height:1.4; font-weight:700; color:${COAL}; text-decoration:none;">${escapeHtml(
         story.title
       )}</a>
       ${
         // Some feed items (job listings especially) carry no description at
         // all. An empty div just leaves a gap in the card.
         story.summary.trim()
-          ? `<div style="margin:8px 0 0; font-family:${BODY}; font-size:15px; line-height:1.55; color:rgba(44,44,44,0.78);">${escapeHtml(
+          ? `<div style="margin:8px 0 0; font-family:${BODY}; font-size:15px; line-height:1.6; color:rgba(44,44,44,0.86);">${escapeHtml(
               story.summary
             )}</div>`
           : ""
       }
-      <div style="margin:12px 0 0;">
-        <span style="display:inline-block; background:${accent}; border:2px solid ${COAL}; padding:3px 6px; font-family:${PIXEL}; font-size:8px; line-height:1.5; color:${COAL};">${escapeHtml(
+      <div style="margin:11px 0 0; font-family:${BODY}; font-size:12px; line-height:1.5;">
+        <span style="display:inline-block; width:9px; height:9px; background:${accent}; border:1px solid ${COAL}; vertical-align:middle;">&nbsp;</span>
+        <span style="margin-left:6px; font-weight:700; letter-spacing:0.4px; color:rgba(44,44,44,0.62);">${escapeHtml(
           story.source.toUpperCase()
         )}</span>
-        <a href="${safeUrl(story.url)}" style="font-family:${BODY}; font-size:12px; font-weight:600; color:${STONE}; text-decoration:underline; margin-left:8px;">Read &rarr;</a>
+        <a href="${safeUrl(story.url)}" style="margin-left:8px; font-weight:600; color:${STONE}; text-decoration:underline;">Read &rarr;</a>
       </div>
     </div>`;
 }
@@ -99,7 +109,7 @@ function renderSection(section: DigestSection): string {
   return `
     <div style="margin:0 0 30px;">
       <div style="margin-bottom:14px;">
-        <span style="display:inline-block; background:${section.accent}; border:3px solid ${COAL}; box-shadow:3px 3px 0 ${COAL}; padding:8px 10px; font-family:${PIXEL}; font-size:10px; line-height:1.5; color:${section.accentInk};">${escapeHtml(
+        <span style="display:inline-block; background:${section.accent}; border:2px solid ${COAL}; box-shadow:2px 2px 0 ${COAL}; padding:7px 12px; font-family:${BODY}; font-size:14px; font-weight:800; letter-spacing:1.2px; line-height:1.3; color:${section.accentInk};">${escapeHtml(
           section.title.toUpperCase()
         )}</span>
       </div>
@@ -134,7 +144,7 @@ function shortDate(dateISO: string): string {
 function panelCell(label: string, accent: string, big: string, sub: string): string {
   return `
     <div style="background:${CREAM}; ${BLOCK} padding:13px 14px 12px;">
-      <div style="font-family:${PIXEL}; font-size:8px; line-height:1.6; color:${accent};">${escapeHtml(
+      <div style="font-family:${BODY}; font-size:11px; font-weight:800; letter-spacing:1px; line-height:1.5; color:rgba(44,44,44,0.55);">${escapeHtml(
         label
       )}</div>
       <div style="margin-top:9px; font-family:${BODY}; font-size:23px; font-weight:800; line-height:1.15; color:${COAL};">${escapeHtml(
@@ -260,7 +270,7 @@ export function renderHtml(
     ${body}
 
     <div style="background:${STONE}; border:3px solid ${COAL}; box-shadow:4px 4px 0 ${COAL}; padding:14px 16px;">
-      <div style="font-family:${PIXEL}; font-size:8px; line-height:1.9; color:#FFFFFF;">AUTO-GENERATED FROM RSS</div>
+      <div style="font-family:${BODY}; font-size:11px; font-weight:800; letter-spacing:1px; line-height:1.6; color:#FFFFFF;">AUTO-GENERATED FROM RSS</div>
       <div style="margin-top:8px; font-family:${BODY}; font-size:12px; line-height:1.6; color:rgba(255,255,255,0.9);">
         Summaries are written by AI and can be wrong. Click through before you rely on one.
       </div>

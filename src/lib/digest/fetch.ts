@@ -111,11 +111,17 @@ async function fetchFeed(feed: Feed, cutoff: number): Promise<Story[]> {
       400
     );
 
-    if (feed.require && !matchesAny(`${title} ${snippet}`, feed.require)) continue;
+    // Category tags carry the most reliable topic signal — several feeds ship
+    // an empty description but tag the item precisely.
+    const categories = (item.categories ?? []).join(" ");
+    const haystack = `${title} ${snippet} ${categories}`;
+
+    if (feed.require && !matchesAny(haystack, feed.require)) continue;
+    if (feed.exclude && matchesAny(haystack, feed.exclude)) continue;
 
     // A city-wide story about the neighborhood belongs in the neighborhood.
     const section: SectionId =
-      feed.section === "nyc" && matchesAny(`${title} ${snippet}`, WEST_VILLAGE_TERMS)
+      feed.section === "nyc" && matchesAny(haystack, WEST_VILLAGE_TERMS)
         ? "westvillage"
         : feed.section;
 

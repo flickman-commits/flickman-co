@@ -70,35 +70,82 @@ export interface Feed {
   url: string;
   section: SectionId;
   /**
-   * If set, an item is kept only when its title or summary matches one of these
-   * (case-insensitive substring). Used to carve a narrow slice out of a broad feed.
+   * If set, an item is kept only when it matches one of these (case-insensitive
+   * substring). Matched against title, summary, AND the item's own <category>
+   * tags — the tags are often the only precise signal, since several feeds ship
+   * empty descriptions. Used to carve a narrow slice out of a broad feed.
    */
   require?: string[];
+  /** Matched the same way; any hit drops the item even if `require` matched. */
+  exclude?: string[];
 }
 
-const SHOE_TERMS = [
+/*
+ * Matching a bare brand name does not mean a story is about running. Footwear
+ * News is a footwear trade publication, so "nike" alone let through Air Force 1
+ * college releases and a LeBron basketball shoe, and "sneaker" let through
+ * cow-print New Balance 327s. Those then reach the curator looking like
+ * legitimate brand news.
+ *
+ * So: require a term that establishes running specifically, and check it
+ * against the item's own <category> tags as well as its text. WWD tags stories
+ * precisely — "On vs. Nike: The New Race at Retail" carries no running word in
+ * its title and an empty description, but is tagged `Nike Running / On Running
+ * / Running`, while a StockX resale roundup is tagged `Air Jordan / Vans`.
+ */
+const RUNNING_TERMS = [
   "running",
   "runner",
   "marathon",
-  "sneaker",
-  "nike",
-  "hoka",
-  "on running",
-  "brooks",
-  "asics",
-  "saucony",
-  "new balance",
-  "adidas",
-  "altra",
-  "salomon",
-  "puma",
-  "under armour",
-  "tracksmith",
+  "5k",
+  "10k",
+  "trail run",
+  "ultramarathon",
+  "ultrarunning",
+  "track and field",
+  "road race",
+  "racing shoe",
+  "race day",
   "vaporfly",
   "alphafly",
   "supershoe",
   "super shoe",
-  "track and field",
+  "run club",
+  "footrace",
+  // Brands whose coverage is running essentially by definition. Deliberately
+  // omits Nike/adidas/New Balance/Puma/Under Armour, whose footwear coverage is
+  // mostly basketball and lifestyle — those need a running term alongside.
+  "hoka",
+  "asics",
+  "saucony",
+  "altra",
+  "on holding",
+  "tracksmith",
+  "topo athletic",
+  "norda",
+];
+
+/** Kills a story even when a running term matched — resale roundups tagged with
+ *  a running brand are the common case. */
+const NON_RUNNING_FOOTWEAR = [
+  "air force 1",
+  "air jordan",
+  "lebron",
+  "basketball",
+  "nba",
+  "wnba",
+  "dunk",
+  "air max",
+  "slipper",
+  "sandal",
+  "loafer",
+  "high heel",
+  "cow print",
+  "football",
+  "soccer",
+  "cleat",
+  "skate",
+  "clog",
 ];
 
 export const FEEDS: Feed[] = [
@@ -122,13 +169,15 @@ export const FEEDS: Feed[] = [
     name: "Footwear News",
     url: "https://wwd.com/footwear-news/feed/",
     section: "gear",
-    require: SHOE_TERMS,
+    require: RUNNING_TERMS,
+    exclude: NON_RUNNING_FOOTWEAR,
   },
   {
     name: "Sportico",
     url: "https://www.sportico.com/feed/",
     section: "gear",
-    require: SHOE_TERMS,
+    require: RUNNING_TERMS,
+    exclude: NON_RUNNING_FOOTWEAR,
   },
 
   // ── New York City ───────────────────────────────────────────────────────
