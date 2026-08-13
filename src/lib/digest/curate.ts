@@ -129,15 +129,14 @@ export async function curateSection(
   try {
     const client = new Anthropic();
     const response = await client.messages.create({
-      model: "claude-opus-5",
-      max_tokens: 8000,
-      // Selecting and summarizing from supplied text is not a deep-reasoning
-      // task, and this runs inside a 60s serverless budget. Raise to "medium"
-      // if the picks feel shallow.
-      output_config: {
-        effort: "low",
-        format: { type: "json_schema", schema: PICK_SCHEMA },
-      },
+      // Selecting and summarizing from text already supplied in the prompt is
+      // well within Haiku's range, and output tokens dominate the cost of this
+      // job. Note Haiku 4.5 rejects `output_config.effort` and doesn't take
+      // adaptive thinking — if you move this back to claude-opus-5, that's when
+      // effort becomes available again.
+      model: "claude-haiku-4-5",
+      max_tokens: 4000,
+      output_config: { format: { type: "json_schema", schema: PICK_SCHEMA } },
       system: SYSTEM,
       messages: [{ role: "user", content: prompt }],
     });
