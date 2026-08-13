@@ -101,6 +101,51 @@ discusses", no marketing voice, no exclamation points.
 /** Candidate cap per section — keeps the prompt small and the call fast. */
 const MAX_CANDIDATES = 30;
 
+/**
+ * Read and sanity-check the API key.
+ *
+ * Pasting a key from a doc or email can bring along wrapping quotes and, worse,
+ * typographic ones — `"` becomes `“…”`. The SDK puts the key straight into the
+ * `x-api-key` header, and headers are Latin-1, so a curly quote throws a
+ * ByteString conversion error that names a string index and nothing else. That
+ * is a genuinely hard error to trace back to "your key has smart quotes in it",
+ * so trim the usual paste artifacts and name the problem when one is left.
+ *
+ * Never returns or logs the key itself.
+ */
+function readApiKey():
+  | { ok: true; key: string }
+  | { ok: false; reason: string } {
+  const raw = process.env.ANTHROPIC_API_KEY;
+  if (!raw || !raw.trim()) return { ok: false, reason: "ANTHROPIC_API_KEY not set" };
+
+  const key = raw.trim().replace(/^["'“”‘’]+|["'“”‘’]+$/g, "");
+  if (!key) return { ok: false, reason: "ANTHROPIC_API_KEY is only quote characters" };
+
+  if (key !== raw) {
+    console.warn(
+      "[digest] ANTHROPIC_API_KEY had surrounding whitespace or quotes; using the trimmed value. Re-save it as raw text."
+    );
+  }
+
+  // Printable ASCII only — anything else cannot go in a header.
+  const bad = [...key].find((c) => c.charCodeAt(0) < 0x21 || c.charCodeAt(0) > 0x7e);
+  if (bad !== undefined) {
+    return {
+      ok: false,
+      reason:
+        `ANTHROPIC_API_KEY contains a non-ASCII character (U+${bad
+          .charCodeAt(0)
+          .toString(16)
+          .toUpperCase()
+          .padStart(4, "0")}). This is usually smart quotes or a stray space from ` +
+        "copy-paste. Re-add the key as plain text.",
+    };
+  }
+
+  return { ok: true, key };
+}
+
 function fallback(stories: Story[], limit: number): CuratedStory[] {
   return stories.slice(0, limit).map((s) => ({
     title: s.title,
@@ -124,12 +169,10 @@ export async function curateSection(
   limit: number
 ): Promise<CurationResult> {
   if (stories.length === 0) return { stories: [], mode: "empty" };
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return {
-      stories: fallback(stories, limit),
-      mode: "fallback",
-      reason: "ANTHROPIC_API_KEY not set",
-    };
+
+  const apiKey = readApiKey();
+  if (!apiKey.ok) {
+    return { stories: fallback(stories, limit), mode: "fallback", reason: apiKey.reason };
   }
 
   const candidates = stories.slice(0, MAX_CANDIDATES);
@@ -146,7 +189,8 @@ export async function curateSection(
     `Candidates:\n\n${list}`;
 
   try {
-    const client = new Anthropic();
+    // Pass the sanitized key rather than letting the SDK re-read the raw env var.
+    const client = new Anthropic({ apiKey: apiKey.key });
     const response = await client.messages.create({
       // Selecting and summarizing from text already supplied in the prompt is
       // well within Haiku's range, and output tokens dominate the cost of this
