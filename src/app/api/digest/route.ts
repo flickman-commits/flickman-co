@@ -80,16 +80,31 @@ export async function GET(req: NextRequest) {
     const results = await Promise.all(
       SECTIONS.map(async (section) => ({
         id: section.id,
-        stories: await curateSection(
+        ...(await curateSection(
           section.id,
           diversifyBySource(bySection[section.id]),
           LIMITS[section.id]
-        ),
+        )),
       }))
     );
 
     const curated: Record<string, CuratedStory[]> = {};
     for (const r of results) curated[r.id] = r.stories;
+
+    // If every section that had candidates fell back, the summaries are scraped
+    // feed text rather than written ones — worth knowing without reading logs.
+    const attempted = results.filter((r) => r.mode !== "empty");
+    const degraded =
+      attempted.length > 0 && attempted.every((r) => r.mode === "fallback");
+    const curation = {
+      degraded,
+      sections: Object.fromEntries(
+        results.map((r) => [r.id, r.reason ? `${r.mode}: ${r.reason}` : r.mode])
+      ),
+    };
+    if (degraded) {
+      console.error("[digest] all sections degraded to feed blurbs:", curation.sections);
+    }
 
     const sections = buildSections(curated);
     const dateLabel = formatToday();
@@ -99,14 +114,20 @@ export async function GET(req: NextRequest) {
 
     if (preview) {
       return new NextResponse(html, {
-        headers: { "Content-Type": "text/html; charset=utf-8" },
+        headers: {
+          "Content-Type": "text/html; charset=utf-8",
+          // Readable with `curl -I` — tells you which path produced the page
+          // without having to judge the prose by eye.
+          "X-Digest-Curation": degraded ? "fallback" : "ai",
+          "X-Digest-Detail": JSON.stringify(curation.sections),
+        },
       });
     }
 
     // Nothing to say is not a reason to send an empty email.
     if (count === 0) {
       console.log("[digest] no stories in window; skipping send");
-      return NextResponse.json({ ok: true, sent: false, count: 0, failed });
+      return NextResponse.json({ ok: true, sent: false, count: 0, failed, curation });
     }
 
     await sendDigest({ subject: `⛏ The Daily — ${dateLabel}`, html, text });
@@ -118,6 +139,7 @@ export async function GET(req: NextRequest) {
       count,
       scanned: stories.length,
       failed,
+      curation,
     });
   } catch (err) {
     console.error("[digest] run failed:", err);

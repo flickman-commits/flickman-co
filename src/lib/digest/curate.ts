@@ -11,6 +11,18 @@ export interface CuratedStory {
 }
 
 /**
+ * Whether a section's summaries were actually written by Claude or fell back to
+ * raw feed blurbs. Without this the degraded path is invisible: the digest still
+ * arrives every morning, just with scraped text instead of summaries, and
+ * nothing says so. `reason` carries the API error when there is one.
+ */
+export interface CurationResult {
+  stories: CuratedStory[];
+  mode: "ai" | "fallback" | "empty";
+  reason?: string;
+}
+
+/**
  * Selection is by index into the candidate list, never by URL. The model picks
  * which stories make the cut and writes the prose; the link and headline come
  * from the feed, so a fabricated URL can't reach the inbox.
@@ -110,9 +122,15 @@ export async function curateSection(
   section: SectionId,
   stories: Story[],
   limit: number
-): Promise<CuratedStory[]> {
-  if (stories.length === 0) return [];
-  if (!process.env.ANTHROPIC_API_KEY) return fallback(stories, limit);
+): Promise<CurationResult> {
+  if (stories.length === 0) return { stories: [], mode: "empty" };
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return {
+      stories: fallback(stories, limit),
+      mode: "fallback",
+      reason: "ANTHROPIC_API_KEY not set",
+    };
+  }
 
   const candidates = stories.slice(0, MAX_CANDIDATES);
   const list = candidates
@@ -163,9 +181,15 @@ export async function curateSection(
       });
       if (curated.length >= limit) break;
     }
-    return curated;
+    return { stories: curated, mode: "ai" };
   } catch (err) {
     console.error(`[digest] curation failed for "${section}":`, err);
-    return fallback(stories, limit);
+    return {
+      stories: fallback(stories, limit),
+      mode: "fallback",
+      // Surfaced in the API response, so keep it to the error's own text —
+      // never echo the request or anything carrying the key.
+      reason: err instanceof Error ? err.message.slice(0, 300) : String(err).slice(0, 300),
+    };
   }
 }
