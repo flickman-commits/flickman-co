@@ -105,7 +105,40 @@ function renderSection(section: DigestSection): string {
     </div>`;
 }
 
-export function renderHtml(sections: DigestSection[], dateLabel: string): string {
+export interface RunCost {
+  inputTokens: number;
+  outputTokens: number;
+  /** USD for this run's curation calls. */
+  cost: number;
+  model: string;
+  degraded: boolean;
+}
+
+/**
+ * Sub-cent costs read badly as "$0.0021", so show cents below a penny. The
+ * monthly figure is this issue's cost × 30 — a rate, not a forecast, since a
+ * busy news day costs more than a quiet one.
+ */
+function formatCost(run: RunCost): string {
+  if (run.degraded || (run.inputTokens === 0 && run.outputTokens === 0)) {
+    return "No API calls this issue — summaries came from the raw feeds.";
+  }
+  const each =
+    run.cost < 0.01
+      ? `${(run.cost * 100).toFixed(2)}&cent;`
+      : `$${run.cost.toFixed(3)}`;
+  const monthly = run.cost * 30;
+  const tokens = `${run.inputTokens.toLocaleString("en-US")} in / ${run.outputTokens.toLocaleString("en-US")} out`;
+  return `This issue cost ${each} &middot; ${tokens} tokens &middot; ${escapeHtml(
+    run.model
+  )} &middot; about $${monthly.toFixed(2)}/mo at this rate`;
+}
+
+export function renderHtml(
+  sections: DigestSection[],
+  dateLabel: string,
+  run: RunCost
+): string {
   const body = sections.length
     ? sections.map(renderSection).join("")
     : `<div style="background:${CREAM}; ${BLOCK} padding:18px; font-family:${BODY}; font-size:15px; color:${COAL};">Quiet day. Nothing in the feeds worth mining.</div>`;
@@ -141,6 +174,9 @@ export function renderHtml(sections: DigestSection[], dateLabel: string): string
       <div style="margin-top:8px; font-family:${BODY}; font-size:12px; line-height:1.6; color:rgba(255,255,255,0.9);">
         Summaries are written by AI and can be wrong. Click through before you rely on one.
       </div>
+      <div style="margin-top:10px; padding-top:9px; border-top:2px solid rgba(255,255,255,0.28); font-family:${BODY}; font-size:11px; line-height:1.6; color:rgba(255,255,255,0.82);">
+        ${formatCost(run)}
+      </div>
     </div>
 
     <div style="height:20px; font-size:0;">&nbsp;</div>
@@ -148,9 +184,14 @@ export function renderHtml(sections: DigestSection[], dateLabel: string): string
 </body></html>`;
 }
 
-export function renderText(sections: DigestSection[], dateLabel: string): string {
+export function renderText(
+  sections: DigestSection[],
+  dateLabel: string,
+  run: RunCost
+): string {
+  const costLine = formatCost(run).replace(/&cent;/g, "c").replace(/&middot;/g, "·");
   if (!sections.length) {
-    return `THE DAILY — ${dateLabel}\n\nQuiet day. Nothing in the feeds worth mining.`;
+    return `THE DAILY — ${dateLabel}\n\nQuiet day. Nothing in the feeds worth mining.\n\n${costLine}`;
   }
   const blocks = sections.map((section) => {
     const stories = section.stories
@@ -158,7 +199,7 @@ export function renderText(sections: DigestSection[], dateLabel: string): string
       .join("\n\n");
     return `[ ${section.title.toUpperCase()} ]\n\n${stories}`;
   });
-  return `THE DAILY — ${dateLabel}\n\n${blocks.join("\n\n\n")}\n\nAuto-generated from RSS. Summaries are written by AI and can be wrong.`;
+  return `THE DAILY — ${dateLabel}\n\n${blocks.join("\n\n\n")}\n\nAuto-generated from RSS. Summaries are written by AI and can be wrong.\n${costLine}`;
 }
 
 /* ──────────────────────────────────────────────────────────────── */

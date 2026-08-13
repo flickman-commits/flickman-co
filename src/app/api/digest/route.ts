@@ -4,7 +4,14 @@ import {
   fetchAllStories,
   storiesBySection,
 } from "../../../lib/digest/fetch";
-import { curateSection, type CuratedStory } from "../../../lib/digest/curate";
+import {
+  CURATION_MODEL,
+  ZERO_USAGE,
+  addUsage,
+  curateSection,
+  usageCost,
+  type CuratedStory,
+} from "../../../lib/digest/curate";
 import {
   buildSections,
   formatToday,
@@ -96,8 +103,14 @@ export async function GET(req: NextRequest) {
     const attempted = results.filter((r) => r.mode !== "empty");
     const degraded =
       attempted.length > 0 && attempted.every((r) => r.mode === "fallback");
+    const usage = results.reduce((acc, r) => addUsage(acc, r.usage), ZERO_USAGE);
+    const cost = usageCost(usage);
     const curation = {
       degraded,
+      model: CURATION_MODEL,
+      inputTokens: usage.inputTokens,
+      outputTokens: usage.outputTokens,
+      costUsd: Number(cost.toFixed(6)),
       sections: Object.fromEntries(
         results.map((r) => [r.id, r.reason ? `${r.mode}: ${r.reason}` : r.mode])
       ),
@@ -108,8 +121,8 @@ export async function GET(req: NextRequest) {
 
     const sections = buildSections(curated);
     const dateLabel = formatToday();
-    const html = renderHtml(sections, dateLabel);
-    const text = renderText(sections, dateLabel);
+    const html = renderHtml(sections, dateLabel, { ...usage, cost, model: CURATION_MODEL, degraded });
+    const text = renderText(sections, dateLabel, { ...usage, cost, model: CURATION_MODEL, degraded });
     const count = sections.reduce((n, s) => n + s.stories.length, 0);
 
     if (preview) {
@@ -120,6 +133,7 @@ export async function GET(req: NextRequest) {
           // without having to judge the prose by eye.
           "X-Digest-Curation": degraded ? "fallback" : "ai",
           "X-Digest-Detail": JSON.stringify(curation.sections),
+          "X-Digest-Cost-Usd": cost.toFixed(6),
         },
       });
     }

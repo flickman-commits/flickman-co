@@ -20,6 +20,37 @@ export interface CurationResult {
   stories: CuratedStory[];
   mode: "ai" | "fallback" | "empty";
   reason?: string;
+  usage: TokenUsage;
+}
+
+export interface TokenUsage {
+  inputTokens: number;
+  outputTokens: number;
+}
+
+export const ZERO_USAGE: TokenUsage = { inputTokens: 0, outputTokens: 0 };
+
+/** The model doing the curating. Pricing below is tied to it — change both together. */
+const MODEL = "claude-haiku-4-5";
+
+/** USD per million tokens for MODEL. Update whenever MODEL changes. */
+const PRICING = { inputPerMTok: 1, outputPerMTok: 5 };
+
+export const CURATION_MODEL = MODEL;
+
+export function addUsage(a: TokenUsage, b: TokenUsage): TokenUsage {
+  return {
+    inputTokens: a.inputTokens + b.inputTokens,
+    outputTokens: a.outputTokens + b.outputTokens,
+  };
+}
+
+/** What this run cost, in USD. */
+export function usageCost(usage: TokenUsage): number {
+  return (
+    (usage.inputTokens / 1_000_000) * PRICING.inputPerMTok +
+    (usage.outputTokens / 1_000_000) * PRICING.outputPerMTok
+  );
 }
 
 /**
@@ -180,11 +211,16 @@ export async function curateSection(
   stories: Story[],
   limit: number
 ): Promise<CurationResult> {
-  if (stories.length === 0) return { stories: [], mode: "empty" };
+  if (stories.length === 0) return { stories: [], mode: "empty", usage: ZERO_USAGE };
 
   const apiKey = readApiKey();
   if (!apiKey.ok) {
-    return { stories: fallback(stories, limit), mode: "fallback", reason: apiKey.reason };
+    return {
+      stories: fallback(stories, limit),
+      mode: "fallback",
+      reason: apiKey.reason,
+      usage: ZERO_USAGE,
+    };
   }
 
   const candidates = stories.slice(0, MAX_CANDIDATES);
@@ -209,7 +245,7 @@ export async function curateSection(
       // job. Note Haiku 4.5 rejects `output_config.effort` and doesn't take
       // adaptive thinking — if you move this back to claude-opus-5, that's when
       // effort becomes available again.
-      model: "claude-haiku-4-5",
+      model: MODEL,
       max_tokens: 4000,
       output_config: { format: { type: "json_schema", schema: PICK_SCHEMA } },
       system: SYSTEM,
@@ -237,7 +273,19 @@ export async function curateSection(
       });
       if (curated.length >= limit) break;
     }
-    return { stories: curated, mode: "ai" };
+    return {
+      stories: curated,
+      mode: "ai",
+      // Cache fields are zero here (nothing sets cache_control), but count them
+      // so the figure can't silently undercount if that ever changes.
+      usage: {
+        inputTokens:
+          response.usage.input_tokens +
+          (response.usage.cache_read_input_tokens ?? 0) +
+          (response.usage.cache_creation_input_tokens ?? 0),
+        outputTokens: response.usage.output_tokens,
+      },
+    };
   } catch (err) {
     console.error(`[digest] curation failed for "${section}":`, err);
     return {
@@ -246,6 +294,9 @@ export async function curateSection(
       // Surfaced in the API response, so keep it to the error's own text —
       // never echo the request or anything carrying the key.
       reason: err instanceof Error ? err.message.slice(0, 300) : String(err).slice(0, 300),
+      // A failed call may still have been billed; without a response there is
+      // no usage to read, so this undercounts rather than guesses.
+      usage: ZERO_USAGE,
     };
   }
 }
