@@ -5,6 +5,14 @@
  * 404ing the fetcher just skips it — a dead feed never breaks the digest — so
  * it's worth re-checking the list occasionally rather than trusting silence.
  *
+ * These are the *resolved* URLs, after redirects. Eight of them used to point
+ * at a 301: Village Preservation intermittently failed to parse through it, and
+ * every redirect is an extra round trip inside the fetch timeout. Two feeds have
+ * genuinely moved home — Footwear News is served from wwd.com now, and The City
+ * from thecityreporter.nyc — and the two Blogspot feeds started returning 403
+ * to direct requests, so they go via FeedBurner. When adding a feed, follow it
+ * to its final URL first (`curl -sSLo /dev/null -w '%{url_effective}' <url>`).
+ *
  * Two kinds of feed:
  *   - Dedicated: everything it publishes belongs in its section (LetsRun,
  *     Gothamist, West Village Patch).
@@ -95,24 +103,24 @@ const SHOE_TERMS = [
 
 export const FEEDS: Feed[] = [
   // ── Running & racing ────────────────────────────────────────────────────
-  { name: "Running USA", url: "https://www.runningusa.org/feed", section: "running" },
+  { name: "Running USA", url: "https://www.runningusa.org/feed/", section: "running" },
   { name: "LetsRun", url: "https://www.letsrun.com/feed/", section: "running" },
-  { name: "World Athletics", url: "https://worldathletics.org/rss", section: "running" },
+  { name: "World Athletics", url: "https://worldathletics.org/news/rss", section: "running" },
   { name: "Runner's World", url: "https://www.runnersworld.com/rss/all.xml/", section: "running" },
   { name: "Canadian Running", url: "https://runningmagazine.ca/feed/", section: "running" },
   { name: "Athletics Weekly", url: "https://athleticsweekly.com/feed/", section: "running" },
-  { name: "Competitor", url: "https://www.competitor.com/feed", section: "running" },
+  { name: "Competitor", url: "https://competitor.com/feed/", section: "running" },
 
   // ── Shoes & the companies behind them ───────────────────────────────────
   { name: "Believe in the Run", url: "https://believeintherun.com/feed/", section: "gear" },
   {
     name: "Road Trail Run",
-    url: "https://www.roadtrailrun.com/feeds/posts/default?alt=rss",
+    url: "https://feeds.feedburner.com/RoadTrailRun",
     section: "gear",
   },
   {
     name: "Footwear News",
-    url: "https://www.footwearnews.com/feed/",
+    url: "https://wwd.com/footwear-news/feed/",
     section: "gear",
     require: SHOE_TERMS,
   },
@@ -125,7 +133,7 @@ export const FEEDS: Feed[] = [
 
   // ── New York City ───────────────────────────────────────────────────────
   { name: "Gothamist", url: "https://gothamist.com/feed", section: "nyc" },
-  { name: "The City", url: "https://www.thecity.nyc/feed/", section: "nyc" },
+  { name: "The City", url: "https://www.thecityreporter.nyc/feed/", section: "nyc" },
   { name: "amNewYork", url: "https://www.amny.com/feed/", section: "nyc" },
   {
     name: "NYT Metro",
@@ -144,7 +152,7 @@ export const FEEDS: Feed[] = [
   },
   {
     name: "Village Preservation",
-    url: "https://www.villagepreservation.org/feed/",
+    url: "https://villagepreservation.org/feed/",
     section: "westvillage",
   },
   // Neighbors, not the neighborhood — only surfaced when they name it.
@@ -156,7 +164,7 @@ export const FEEDS: Feed[] = [
   },
   {
     name: "EV Grieve",
-    url: "https://evgrieve.com/feeds/posts/default?alt=rss",
+    url: "https://feeds.feedburner.com/EvGrieve",
     section: "westvillage",
     require: ["west village", "greenwich village", "washington square"],
   },
