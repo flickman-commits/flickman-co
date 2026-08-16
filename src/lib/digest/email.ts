@@ -1,6 +1,6 @@
 import type { CuratedStory } from "./curate";
 import type { Weather } from "./weather";
-import type { DaySales } from "../shopify";
+import type { DayFinancials, Financials } from "./financials";
 import { SECTIONS } from "./sources";
 
 export interface DigestSection {
@@ -41,96 +41,49 @@ export function formatToday(now = new Date()): string {
 }
 
 /* ──────────────────────────────────────────────────────────────── */
-/* Minecraft theme, translated for email                             */
+/* Design tokens                                                     */
 /* ──────────────────────────────────────────────────────────────── */
 
 /*
- * The site gets its look from globals.css: the Press Start 2P pixel font,
- * `.block-border`'s inset bevels, and the @theme palette. Email can't have most
- * of that — Gmail strips <style> blocks and @font-face, and Outlook ignores
- * inset box-shadow — so this rebuilds the same look from parts every client
- * renders: solid chunky borders, a hard offset shadow for pixel depth, and
- * flat palette colors. Apple Mail and iOS pick up the real pixel font from the
- * <link> below; everywhere else falls back to monospace, which still reads
- * retro rather than broken.
+ * Clean dashboard styling: near-white ground, white cards, one hairline
+ * border, generous whitespace, and color used only to carry meaning (up/down,
+ * which P&L line, which news section) rather than as decoration.
+ *
+ * Email constraints still apply: no <style> blocks (Gmail strips them), no
+ * flexbox (Outlook has none), so multi-column layout is tables throughout.
+ * border-radius degrades to square corners in Outlook, which is fine.
  */
 
-const COAL = "#2C2C2C";
-const CREAM = "#FFFFFF";
-const SKY = "#EAE7DE";
-const STONE = "#7F8C8D";
-const GRASS = "#5D9C30";
-const GRASS_LIGHT = "#6AAF35";
-const DIRT = "#8B6914";
-const DIRT_DARK = "#6B4F0E";
+const PAGE = "#F6F7F9";
+const CARD = "#FFFFFF";
+const LINE = "#E4E4E7";
+const INK = "#18181B";
+const MUTED = "#71717A";
+const FAINT = "#A1A1AA";
+const ACCENT = "#3ECF8E";
+const POS = "#16A34A";
+const NEG = "#DC2626";
 
-const PIXEL = "'Press Start 2P', 'Courier New', Courier, monospace";
-const BODY =
+/** P&L line colors — each item keeps the same hue in the bar and the row. */
+const C_COGS = "#F59E0B";
+const C_AD = "#8B5CF6";
+const C_MARGIN = "#10B981";
+
+const FONT =
   "Inter, ui-sans-serif, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
 
-/*
- * Readability pass: the Minecraft identity is carried by the grass-block
- * masthead, the palette, and blocky outlines — none of which you have to read.
- * The pixel font at 8-10px was the problem, so it now appears only in the
- * masthead, where it's large enough to scan. Everything you actually read
- * (headlines, summaries, source labels, section names) is Inter.
- *
- * Borders also went from 3px + 4px shadow to 2px + 2px: still blocky, far less
- * visual noise between you and the text.
- */
-const BLOCK = `border:2px solid ${COAL}; box-shadow:2px 2px 0 ${COAL};`;
-
-function renderStory(story: CuratedStory, accent: string): string {
-  return `
-    <div style="background:${CREAM}; ${BLOCK} padding:16px 16px 14px; margin:0 0 16px;">
-      <a href="${safeUrl(story.url)}" style="display:block; font-family:${BODY}; font-size:18px; line-height:1.4; font-weight:700; color:${COAL}; text-decoration:none;">${escapeHtml(
-        story.title
-      )}</a>
-      ${
-        // Some feed items (job listings especially) carry no description at
-        // all. An empty div just leaves a gap in the card.
-        story.summary.trim()
-          ? `<div style="margin:8px 0 0; font-family:${BODY}; font-size:15px; line-height:1.6; color:rgba(44,44,44,0.86);">${escapeHtml(
-              story.summary
-            )}</div>`
-          : ""
-      }
-      <div style="margin:11px 0 0; font-family:${BODY}; font-size:12px; line-height:1.5;">
-        <span style="display:inline-block; width:9px; height:9px; background:${accent}; border:1px solid ${COAL}; vertical-align:middle;">&nbsp;</span>
-        <span style="margin-left:6px; font-weight:700; letter-spacing:0.4px; color:rgba(44,44,44,0.62);">${escapeHtml(
-          story.source.toUpperCase()
-        )}</span>
-        <a href="${safeUrl(story.url)}" style="margin-left:8px; font-weight:600; color:${STONE}; text-decoration:underline;">Read &rarr;</a>
-      </div>
-    </div>`;
-}
-
-function renderSection(section: DigestSection): string {
-  return `
-    <div style="margin:0 0 30px;">
-      <div style="margin-bottom:14px;">
-        <span style="display:inline-block; background:${section.accent}; border:2px solid ${COAL}; box-shadow:2px 2px 0 ${COAL}; padding:7px 12px; font-family:${BODY}; font-size:14px; font-weight:800; letter-spacing:1.2px; line-height:1.3; color:${section.accentInk};">${escapeHtml(
-          section.title.toUpperCase()
-        )}</span>
-      </div>
-      ${section.stories.map((s) => renderStory(s, section.accent)).join("")}
-    </div>`;
-}
-
-/* ──────────────────────────────────────────────────────────────── */
-/* Top panel: weather + yesterday's sales                            */
-/* ──────────────────────────────────────────────────────────────── */
-
-export interface DailyPanel {
-  weather: Weather | null;
-  sales: DaySales | null;
-}
+const CARD_STYLE = `background:${CARD}; border:1px solid ${LINE}; border-radius:10px;`;
 
 function money(n: number): string {
-  return `$${Math.round(n).toLocaleString("en-US")}`;
+  const sign = n < 0 ? "-" : "";
+  return `${sign}$${Math.abs(Math.round(n)).toLocaleString("en-US")}`;
 }
 
-/** "Tue Aug 12" from an ET calendar date, without re-crossing time zones. */
+function pct(n: number): string {
+  return `${n >= 0 ? "+" : ""}${n.toFixed(1)}%`;
+}
+
+/** "Wed, Aug 12" from a plain ET calendar date, without re-crossing zones. */
 function shortDate(dateISO: string): string {
   const [y, m, d] = dateISO.split("-").map(Number);
   return new Intl.DateTimeFormat("en-US", {
@@ -141,65 +94,218 @@ function shortDate(dateISO: string): string {
   }).format(new Date(Date.UTC(y, m - 1, d)));
 }
 
-function panelCell(label: string, accent: string, big: string, sub: string): string {
+/* ──────────────────────────────────────────────────────────────── */
+/* Stat cards                                                        */
+/* ──────────────────────────────────────────────────────────────── */
+
+/**
+ * A day-over-day change is only meaningful against a non-zero base; a jump
+ * from $0 is infinite, not informative, so it renders as a dash.
+ */
+function deltaChip(current: number, prior: number | null): string {
+  if (prior == null || prior === 0) {
+    return `<span style="font-size:12px; color:${FAINT};">—</span>`;
+  }
+  const change = ((current - prior) / Math.abs(prior)) * 100;
+  const color = change >= 0 ? POS : NEG;
+  return `<span style="font-size:12px; font-weight:600; color:${color};">${escapeHtml(
+    pct(change)
+  )}</span>`;
+}
+
+function statCard(label: string, value: string, delta: string): string {
   return `
-    <div style="background:${CREAM}; ${BLOCK} padding:13px 14px 12px;">
-      <div style="font-family:${BODY}; font-size:11px; font-weight:800; letter-spacing:1px; line-height:1.5; color:rgba(44,44,44,0.55);">${escapeHtml(
+    <div style="${CARD_STYLE} padding:14px 16px 13px;">
+      <div style="font-family:${FONT}; font-size:11px; font-weight:600; letter-spacing:0.6px; text-transform:uppercase; color:${MUTED};">${escapeHtml(
         label
       )}</div>
-      <div style="margin-top:9px; font-family:${BODY}; font-size:23px; font-weight:800; line-height:1.15; color:${COAL};">${escapeHtml(
-        big
+      <div style="margin-top:8px; font-family:${FONT}; font-size:24px; font-weight:700; letter-spacing:-0.5px; line-height:1.1; color:${INK};">${escapeHtml(
+        value
       )}</div>
-      <!-- min-height keeps the two cells level when one caption wraps to a
-           second line; Outlook ignores it and simply falls back to ragged. -->
-      <div style="margin-top:4px; min-height:35px; font-family:${BODY}; font-size:12px; line-height:1.45; color:rgba(44,44,44,0.65);">${escapeHtml(
-        sub
-      )}</div>
+      <div style="margin-top:5px; font-family:${FONT};">${delta} <span style="font-size:11px; color:${FAINT};">vs prior day</span></div>
     </div>`;
 }
 
-/**
- * Renders as a two-column table rather than flexbox — Outlook has no flex, and
- * a table is the one layout every mail client agrees on. Either half can be
- * missing; if both are, the panel disappears rather than showing empty boxes or
- * a misleading $0.
- */
-function renderPanel(panel: DailyPanel): string {
-  const cells: string[] = [];
+function statRow(fin: Financials): string {
+  const y = fin.yesterday;
+  const p = fin.prior;
+  const cells = [
+    statCard("Revenue", money(y.revenue), deltaChip(y.revenue, p?.revenue ?? null)),
+    statCard(
+      "Gross profit",
+      money(y.grossProfit),
+      deltaChip(y.grossProfit, p?.grossProfit ?? null)
+    ),
+    statCard(
+      "Contribution",
+      money(y.contributionMargin),
+      deltaChip(y.contributionMargin, p?.contributionMargin ?? null)
+    ),
+  ];
+  return `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 14px;">
+      <tr>
+        <td width="32%" valign="top">${cells[0]}</td>
+        <td width="2%" style="font-size:0; line-height:0;">&nbsp;</td>
+        <td width="32%" valign="top">${cells[1]}</td>
+        <td width="2%" style="font-size:0; line-height:0;">&nbsp;</td>
+        <td width="32%" valign="top">${cells[2]}</td>
+      </tr>
+    </table>`;
+}
 
-  if (panel.weather) {
-    const w = panel.weather;
-    const rain = w.precipChance != null && w.precipChance > 0 ? ` · ${w.precipChance}% rain` : "";
-    cells.push(
-      panelCell("TODAY'S WEATHER", "#4FC3F7", `${w.high}° / ${w.low}°`, `${w.summary}${rain}`)
-    );
-  }
+/* ──────────────────────────────────────────────────────────────── */
+/* P&L card                                                          */
+/* ──────────────────────────────────────────────────────────────── */
 
-  if (panel.sales) {
-    const s = panel.sales;
-    cells.push(
-      panelCell(
-        "YESTERDAY'S SALES",
-        "#5D9C30",
-        money(s.revenue),
-        `${s.orders} ${s.orders === 1 ? "order" : "orders"} · ${shortDate(s.dateISO)}`
-      )
-    );
-  }
+function plRow(
+  label: string,
+  amount: string,
+  swatch: string | null,
+  opts: { bold?: boolean; rule?: boolean } = {}
+): string {
+  const weight = opts.bold ? 700 : 500;
+  const color = opts.bold ? INK : MUTED;
+  const border = opts.rule ? `border-top:1px solid ${LINE};` : "";
+  const dot = swatch
+    ? `<span style="display:inline-block; width:9px; height:9px; border-radius:2px; background:${swatch}; vertical-align:middle;">&nbsp;</span>&nbsp;&nbsp;`
+    : "";
+  return `
+    <tr>
+      <td style="${border} padding:9px 0 8px; font-family:${FONT}; font-size:14px; font-weight:${weight}; color:${color};">${dot}${escapeHtml(
+        label
+      )}</td>
+      <td align="right" style="${border} padding:9px 0 8px; font-family:${FONT}; font-size:14px; font-weight:${
+        opts.bold ? 700 : 600
+      }; color:${INK}; white-space:nowrap;">${escapeHtml(amount)}</td>
+    </tr>`;
+}
 
-  if (cells.length === 0) return "";
+/** Proportional bar: what share of revenue each line consumed. */
+function costBar(day: DayFinancials): string {
+  const base = day.revenue > 0 ? day.revenue : 0;
+  if (base === 0) return "";
+  const seg = (v: number) => Math.max(0, Math.min(100, (v / base) * 100));
+  const cogs = seg(day.cogs);
+  const ad = seg(day.adSpend);
+  const margin = Math.max(0, 100 - cogs - ad);
 
-  const row =
-    cells.length === 2
-      ? `<td width="49%" valign="top">${cells[0]}</td>
-         <td width="2%" style="font-size:0; line-height:0;">&nbsp;</td>
-         <td width="49%" valign="top">${cells[1]}</td>`
-      : `<td valign="top">${cells[0]}</td>`;
+  const cell = (w: number, c: string) =>
+    w <= 0
+      ? ""
+      : `<td width="${w.toFixed(2)}%" style="background:${c}; font-size:0; line-height:0; height:8px;">&nbsp;</td>`;
 
   return `
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 26px;">
-      <tr>${row}</tr>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 16px; border-radius:4px; overflow:hidden;">
+      <tr style="height:8px;">
+        ${cell(cogs, C_COGS)}${cell(ad, C_AD)}${cell(margin, C_MARGIN)}
+      </tr>
     </table>`;
+}
+
+function plCard(fin: Financials): string {
+  const d = fin.yesterday;
+  const marginPct = d.revenue > 0 ? (d.contributionMargin / d.revenue) * 100 : 0;
+
+  return `
+    <div style="${CARD_STYLE} padding:18px 18px 16px; margin:0 0 26px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:14px;">
+        <tr>
+          <td style="font-family:${FONT}; font-size:11px; font-weight:600; letter-spacing:0.6px; text-transform:uppercase; color:${MUTED};">Yesterday&rsquo;s P&amp;L</td>
+          <td align="right" style="font-family:${FONT}; font-size:12px; color:${FAINT};">${escapeHtml(
+            shortDate(d.dateISO)
+          )}</td>
+        </tr>
+      </table>
+
+      ${costBar(d)}
+
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+        ${plRow("Revenue", money(d.revenue), null, { bold: true })}
+        ${plRow("COGS", `-${money(d.cogs).replace("-", "")}`, C_COGS, { rule: true })}
+        ${plRow("Gross profit", money(d.grossProfit), null, { rule: true, bold: true })}
+        ${plRow("Ad spend", `-${money(d.adSpend).replace("-", "")}`, C_AD, { rule: true })}
+      </table>
+
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:14px; background:${C_MARGIN}; border-radius:8px;">
+        <tr>
+          <td style="padding:13px 15px; font-family:${FONT}; font-size:14px; font-weight:700; color:#FFFFFF;">Contribution margin</td>
+          <td align="right" style="padding:13px 15px; font-family:${FONT}; color:#FFFFFF; white-space:nowrap;">
+            <span style="font-size:19px; font-weight:700;">${escapeHtml(
+              money(d.contributionMargin)
+            )}</span>
+            <span style="font-size:13px; font-weight:600; opacity:0.85;">&nbsp;${marginPct.toFixed(
+              0
+            )}%</span>
+          </td>
+        </tr>
+      </table>
+    </div>`;
+}
+
+/* ──────────────────────────────────────────────────────────────── */
+/* Weather strip                                                     */
+/* ──────────────────────────────────────────────────────────────── */
+
+function weatherStrip(w: Weather): string {
+  const rain =
+    w.precipChance != null && w.precipChance > 0
+      ? ` &middot; ${w.precipChance}% rain`
+      : "";
+  return `
+    <div style="${CARD_STYLE} padding:12px 16px; margin:0 0 14px;">
+      <span style="font-family:${FONT}; font-size:11px; font-weight:600; letter-spacing:0.6px; text-transform:uppercase; color:${MUTED};">Today</span>
+      <span style="font-family:${FONT}; font-size:15px; font-weight:700; color:${INK}; margin-left:10px;">${w.high}&deg; / ${w.low}&deg;</span>
+      <span style="font-family:${FONT}; font-size:13px; color:${MUTED}; margin-left:8px;">${escapeHtml(
+        w.summary
+      )}${rain}</span>
+    </div>`;
+}
+
+/* ──────────────────────────────────────────────────────────────── */
+/* News                                                              */
+/* ──────────────────────────────────────────────────────────────── */
+
+function renderStory(story: CuratedStory, accent: string): string {
+  return `
+    <div style="${CARD_STYLE} padding:16px 17px 14px; margin:0 0 10px;">
+      <a href="${safeUrl(story.url)}" style="display:block; font-family:${FONT}; font-size:16px; line-height:1.45; font-weight:650; color:${INK}; text-decoration:none;">${escapeHtml(
+        story.title
+      )}</a>
+      ${
+        story.summary.trim()
+          ? `<div style="margin:7px 0 0; font-family:${FONT}; font-size:14px; line-height:1.6; color:${MUTED};">${escapeHtml(
+              story.summary
+            )}</div>`
+          : ""
+      }
+      <div style="margin:11px 0 0; font-family:${FONT}; font-size:12px;">
+        <span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:${accent}; vertical-align:middle;">&nbsp;</span>
+        <span style="margin-left:6px; font-weight:600; color:${FAINT};">${escapeHtml(
+          story.source
+        )}</span>
+        <a href="${safeUrl(story.url)}" style="margin-left:10px; font-weight:600; color:${ACCENT}; text-decoration:none;">Read &rarr;</a>
+      </div>
+    </div>`;
+}
+
+function renderSection(section: DigestSection): string {
+  return `
+    <div style="margin:0 0 24px;">
+      <div style="margin:0 0 10px; font-family:${FONT}; font-size:12px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; color:${section.accent};">${escapeHtml(
+        section.title
+      )}</div>
+      ${section.stories.map((s) => renderStory(s, section.accent)).join("")}
+    </div>`;
+}
+
+/* ──────────────────────────────────────────────────────────────── */
+/* Assembly                                                          */
+/* ──────────────────────────────────────────────────────────────── */
+
+export interface DailyPanel {
+  weather: Weather | null;
+  financials: Financials | null;
 }
 
 export interface RunCost {
@@ -221,14 +327,11 @@ function formatCost(run: RunCost): string {
     return "No API calls this issue — summaries came from the raw feeds.";
   }
   const each =
-    run.cost < 0.01
-      ? `${(run.cost * 100).toFixed(2)}&cent;`
-      : `$${run.cost.toFixed(3)}`;
-  const monthly = run.cost * 30;
+    run.cost < 0.01 ? `${(run.cost * 100).toFixed(2)}&cent;` : `$${run.cost.toFixed(3)}`;
   const tokens = `${run.inputTokens.toLocaleString("en-US")} in / ${run.outputTokens.toLocaleString("en-US")} out`;
   return `This issue cost ${each} &middot; ${tokens} tokens &middot; ${escapeHtml(
     run.model
-  )} &middot; about $${monthly.toFixed(2)}/mo at this rate`;
+  )} &middot; about $${(run.cost * 30).toFixed(2)}/mo at this rate`;
 }
 
 export function renderHtml(
@@ -237,49 +340,49 @@ export function renderHtml(
   run: RunCost,
   panel: DailyPanel
 ): string {
-  const body = sections.length
+  const news = sections.length
     ? sections.map(renderSection).join("")
-    : `<div style="background:${CREAM}; ${BLOCK} padding:18px; font-family:${BODY}; font-size:15px; color:${COAL};">Quiet day. Nothing in the feeds worth mining.</div>`;
+    : `<div style="${CARD_STYLE} padding:18px; font-family:${FONT}; font-size:14px; color:${MUTED};">Quiet news day — nothing in the feeds worth your time.</div>`;
 
   return `<!doctype html>
 <html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <title>Flickman Daily Report</title>
 </head>
-<body style="margin:0; padding:24px 12px; background:${SKY};">
-  <div style="max-width:580px; margin:0 auto;">
+<body style="margin:0; padding:26px 14px; background:${PAGE};">
+  <div style="max-width:600px; margin:0 auto;">
 
-    <!-- Grass block: green cap over dirt, same as the site's .grass-top -->
-    <div style="border:3px solid ${COAL}; box-shadow:5px 5px 0 ${COAL};">
-      <div style="background:${GRASS_LIGHT}; border-bottom:4px solid ${GRASS}; height:14px; line-height:14px; font-size:0;">&nbsp;</div>
-      <div style="background:${DIRT}; border-top:3px solid ${DIRT_DARK}; padding:20px 20px 18px;">
-        <div style="font-family:${PIXEL}; font-size:19px; line-height:1.45; color:#FFFFFF;">FLICKMAN<br>DAILY REPORT</div>
-        <div style="margin-top:10px; font-family:${PIXEL}; font-size:9px; line-height:1.6; color:rgba(255,255,255,0.82);">${escapeHtml(
-          dateLabel.toUpperCase()
-        )}</div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;">
+      <tr>
+        <td>
+          <div style="font-family:${FONT}; font-size:21px; font-weight:750; letter-spacing:-0.4px; color:${INK};">Flickman Daily Report</div>
+          <div style="margin-top:3px; font-family:${FONT}; font-size:13px; color:${MUTED};">${escapeHtml(
+            dateLabel
+          )}</div>
+        </td>
+        <td align="right" valign="top">
+          <div style="width:26px; height:5px; border-radius:3px; background:${ACCENT}; font-size:0; line-height:0;">&nbsp;</div>
+        </td>
+      </tr>
+    </table>
+
+    ${panel.weather ? weatherStrip(panel.weather) : ""}
+    ${panel.financials ? statRow(panel.financials) : ""}
+    ${panel.financials ? plCard(panel.financials) : ""}
+
+    ${news}
+
+    <div style="border-top:1px solid ${LINE}; padding-top:14px; margin-top:6px;">
+      <div style="font-family:${FONT}; font-size:12px; line-height:1.6; color:${FAINT};">
+        Auto-generated from RSS. Summaries are written by AI and can be wrong — click through before you rely on one.
       </div>
-    </div>
-
-    <div style="height:22px; font-size:0;">&nbsp;</div>
-
-    ${renderPanel(panel)}
-
-    ${body}
-
-    <div style="background:${STONE}; border:3px solid ${COAL}; box-shadow:4px 4px 0 ${COAL}; padding:14px 16px;">
-      <div style="font-family:${BODY}; font-size:11px; font-weight:800; letter-spacing:1px; line-height:1.6; color:#FFFFFF;">AUTO-GENERATED FROM RSS</div>
-      <div style="margin-top:8px; font-family:${BODY}; font-size:12px; line-height:1.6; color:rgba(255,255,255,0.9);">
-        Summaries are written by AI and can be wrong. Click through before you rely on one.
-      </div>
-      <div style="margin-top:10px; padding-top:9px; border-top:2px solid rgba(255,255,255,0.28); font-family:${BODY}; font-size:11px; line-height:1.6; color:rgba(255,255,255,0.82);">
+      <div style="margin-top:6px; font-family:${FONT}; font-size:11px; line-height:1.6; color:${FAINT};">
         ${formatCost(run)}
       </div>
     </div>
 
-    <div style="height:20px; font-size:0;">&nbsp;</div>
   </div>
 </body></html>`;
 }
@@ -290,35 +393,46 @@ export function renderText(
   run: RunCost,
   panel: DailyPanel
 ): string {
-  const panelLines: string[] = [];
+  const lines: string[] = [`FLICKMAN DAILY REPORT — ${dateLabel}`, ""];
+
   if (panel.weather) {
     const w = panel.weather;
-    const rain = w.precipChance != null && w.precipChance > 0 ? ` (${w.precipChance}% rain)` : "";
-    panelLines.push(`Weather: ${w.high}/${w.low}F — ${w.summary}${rain}`);
+    const rain =
+      w.precipChance != null && w.precipChance > 0 ? ` (${w.precipChance}% rain)` : "";
+    lines.push(`Weather: ${w.high}/${w.low}F — ${w.summary}${rain}`, "");
   }
-  if (panel.sales) {
-    const s = panel.sales;
-    panelLines.push(
-      `Yesterday's sales: ${money(s.revenue)} across ${s.orders} ${s.orders === 1 ? "order" : "orders"} (${shortDate(s.dateISO)})`
+
+  if (panel.financials) {
+    const d = panel.financials.yesterday;
+    const marginPct = d.revenue > 0 ? (d.contributionMargin / d.revenue) * 100 : 0;
+    lines.push(
+      `YESTERDAY'S P&L (${shortDate(d.dateISO)})`,
+      `  Revenue              ${money(d.revenue)}`,
+      `  COGS                -${money(d.cogs).replace("-", "")}`,
+      `  Gross profit         ${money(d.grossProfit)}`,
+      `  Ad spend            -${money(d.adSpend).replace("-", "")}`,
+      `  Contribution margin  ${money(d.contributionMargin)} (${marginPct.toFixed(0)}%)`,
+      ""
     );
   }
-  const panelText = panelLines.length ? `${panelLines.join("\n")}\n\n` : "";
-  const costLine = formatCost(run).replace(/&cent;/g, "c").replace(/&middot;/g, "·");
-  if (!sections.length) {
-    return `FLICKMAN DAILY REPORT — ${dateLabel}\n\n${panelText}Quiet day. Nothing in the feeds worth mining.\n\n${costLine}`;
-  }
-  const blocks = sections.map((section) => {
-    const stories = section.stories
-      .map((s) => `${s.title}\n${s.summary}\n${s.source} — ${s.url}`)
-      .join("\n\n");
-    return `[ ${section.title.toUpperCase()} ]\n\n${stories}`;
-  });
-  return `FLICKMAN DAILY REPORT — ${dateLabel}\n\n${panelText}${blocks.join("\n\n\n")}\n\nAuto-generated from RSS. Summaries are written by AI and can be wrong.\n${costLine}`;
-}
 
-/* ──────────────────────────────────────────────────────────────── */
-/* Sending                                                           */
-/* ──────────────────────────────────────────────────────────────── */
+  if (!sections.length) {
+    lines.push("Quiet news day — nothing in the feeds worth your time.");
+  } else {
+    for (const section of sections) {
+      lines.push(section.title.toUpperCase(), "");
+      for (const s of section.stories) {
+        lines.push(s.title, s.summary, `${s.source} — ${s.url}`, "");
+      }
+    }
+  }
+
+  lines.push(
+    "Auto-generated from RSS. Summaries are written by AI and can be wrong.",
+    formatCost(run).replace(/&cent;/g, "c").replace(/&middot;/g, "·")
+  );
+  return lines.join("\n");
+}
 
 export function buildSections(
   curated: Record<string, CuratedStory[]>
@@ -357,10 +471,7 @@ export async function sendDigest(opts: {
 
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${key}`,
-      "Content-Type": "application/json",
-    },
+    headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
     body: JSON.stringify({ from, to: [to], subject: opts.subject, html: opts.html, text: opts.text }),
   });
 

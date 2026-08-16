@@ -21,7 +21,7 @@ import {
 } from "../../../lib/digest/email";
 import { SECTIONS, type SectionId } from "../../../lib/digest/sources";
 import { getWeather } from "../../../lib/digest/weather";
-import { getYesterdaySales } from "../../../lib/shopify";
+import { getFinancials } from "../../../lib/digest/financials";
 
 /**
  * GET /api/digest — build and email the daily digest.
@@ -84,12 +84,12 @@ export async function GET(req: NextRequest) {
     // Feeds, forecast, and sales are independent — fetch them together so the
     // panel costs no extra wall-clock. Both panel sources resolve to null on
     // failure rather than throwing, so neither can take the digest down.
-    const [{ stories, failed }, weather, sales] = await Promise.all([
+    const [{ stories, failed }, weather, financials] = await Promise.all([
       fetchAllStories(hours),
       getWeather(),
-      getYesterdaySales(),
+      getFinancials(),
     ]);
-    const panel = { weather, sales };
+    const panel = { weather, financials };
     const bySection = storiesBySection(stories);
 
     // Sections are independent, so curate them concurrently — the whole run has
@@ -167,7 +167,9 @@ export async function GET(req: NextRequest) {
       curation,
       panel: {
         weather: weather ? `${weather.high}/${weather.low}F` : null,
-        sales: sales ? `$${Math.round(sales.revenue)} / ${sales.orders} orders` : null,
+        financials: financials
+          ? `rev ${Math.round(financials.yesterday.revenue)} / margin ${Math.round(financials.yesterday.contributionMargin)}`
+          : null,
       },
     });
   } catch (err) {

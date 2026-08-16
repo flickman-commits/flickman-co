@@ -27,7 +27,7 @@ export interface Section {
   id: SectionId;
   title: string;
   blurb: string;
-  /** Palette color for the section chip — matches globals.css @theme tokens. */
+  /** Section accent, used for the label and each story's source dot. */
   accent: string;
   /** Text color that stays readable on `accent`. */
   accentInk: string;
@@ -38,28 +38,28 @@ export const SECTIONS: Section[] = [
     id: "running",
     title: "Running & Racing",
     blurb: "Marathons, road racing, and the business of the running industry",
-    accent: "#5D9C30", // grass
+    accent: "#16A34A", // green
     accentInk: "#FFFFFF",
   },
   {
     id: "gear",
     title: "Shoes & Companies",
     blurb: "Brands, product launches, reviews, and industry moves",
-    accent: "#FFD700", // gold
+    accent: "#D97706", // amber
     accentInk: "#2C2C2C",
   },
   {
     id: "nyc",
     title: "New York City",
     blurb: "What's actually happening in the city",
-    accent: "#4FC3F7", // diamond
+    accent: "#2563EB", // blue
     accentInk: "#2C2C2C",
   },
   {
     id: "westvillage",
     title: "West Village",
     blurb: "Your block, more or less",
-    accent: "#A0522D", // wood
+    accent: "#7C3AED", // violet
     accentInk: "#FFFFFF",
   },
 ];
