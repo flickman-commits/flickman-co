@@ -22,6 +22,15 @@ import { buildDigest, runAndSend } from "../../../lib/digest/run";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
+/**
+ * HTTP header values are Latin-1, so any character above U+00FF throws when the
+ * response is constructed — turning a diagnostic into a 500. Diagnostics carry
+ * arbitrary upstream error text, so they get scrubbed rather than trusted.
+ */
+function headerSafe(value: string): string {
+  return value.replace(/[^\x20-\x7E]/g, " ").replace(/\s+/g, " ").trim();
+}
+
 function authorized(req: NextRequest, secret: string): boolean {
   if (req.headers.get("authorization") === `Bearer ${secret}`) return true;
   return req.nextUrl.searchParams.get("key") === secret;
@@ -49,11 +58,14 @@ export async function GET(req: NextRequest) {
           // Readable with `curl -I`: which path produced the page, what it cost,
           // and whether the calendar was actually reachable.
           "X-Digest-Curation": result.curation.degraded ? "fallback" : "ai",
-          "X-Digest-Model": result.curation.model,
+          "X-Digest-Model": headerSafe(result.curation.model),
           "X-Digest-Cost-Usd": result.curation.costUsd.toFixed(6),
-          "X-Digest-Location": `${result.location.place} (${result.location.source}, ${result.location.eventsSeen} events)${result.location.reason ? ` — ${result.location.reason}` : ""}`,
+          "X-Digest-Location": headerSafe(
+            `${result.location.place} (${result.location.source}, ${result.location.eventsSeen} events)` +
+              (result.location.reason ? `: ${result.location.reason}` : "")
+          ),
           "X-Digest-Financials": result.financialsLoaded ? "loaded" : "absent",
-          "X-Digest-Detail": JSON.stringify(result.curation.sections),
+          "X-Digest-Detail": headerSafe(JSON.stringify(result.curation.sections)),
         },
       });
     }
