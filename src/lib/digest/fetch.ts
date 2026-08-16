@@ -113,7 +113,15 @@ async function fetchFeed(feed: Feed, cutoff: number): Promise<Story[]> {
 
     // Category tags carry the most reliable topic signal — several feeds ship
     // an empty description but tag the item precisely.
-    const categories = (item.categories ?? []).join(" ");
+    //
+    // rss-parser yields a plain string only when the <category> has no
+    // attributes; with a domain attribute it yields {_: "Politics", $: {...}}.
+    // Joining those throws "Cannot convert object to primitive value", which
+    // killed NYT Metro and EV Grieve outright.
+    const categories = (item.categories ?? [])
+      .map((c) => (typeof c === "string" ? c : (c as { _?: string })?._ ?? ""))
+      .filter(Boolean)
+      .join(" ");
     const haystack = `${title} ${snippet} ${categories}`;
 
     if (feed.require && !matchesAny(haystack, feed.require)) continue;

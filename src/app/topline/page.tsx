@@ -2102,6 +2102,7 @@ const ROLE_OPTIONS = [
   "Not interested in business ownership",
 ];
 const PL_OPTIONS = ["Yes", "Maybe", "No"];
+const EMAIL_RX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function FieldLabel({ children }: { children: ReactNode }) {
   return (
@@ -2169,8 +2170,22 @@ function WaitlistForm() {
   const [reason, setReason] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
   const [error, setError] = useState("");
+  const [step, setStep] = useState<"email" | "survey">("email");
 
   const isOwner = role === "Current business owner";
+
+  function goNext(e: FormEvent) {
+    e.preventDefault();
+    const em = email.trim().toLowerCase();
+    if (!EMAIL_RX.test(em) || em.length > 160) {
+      setError("Please enter a valid email address.");
+      setStatus("error");
+      return;
+    }
+    setError("");
+    setStatus("idle");
+    setStep("survey");
+  }
 
   function clearError() {
     if (status === "error") {
@@ -2241,6 +2256,53 @@ function WaitlistForm() {
 
   const loading = status === "loading";
 
+  // Step 1 — just the email and a "Next" button. Clean and inviting.
+  if (step === "email") {
+    return (
+      <form onSubmit={goNext} style={{ margin: "32px 0 0" }}>
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 10,
+            justifyContent: "center",
+          }}
+        >
+          <input
+            type="email"
+            required
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              clearError();
+            }}
+            placeholder="you@email.com"
+            aria-label="Email address"
+            className="bm-waitlist-input"
+          />
+          <button type="submit" className="bm-btn-primary">
+            Next
+          </button>
+        </div>
+        <div
+          style={{
+            fontFamily: "var(--font-display), ui-sans-serif, system-ui, sans-serif",
+            fontSize: 13,
+            fontWeight: 500,
+            color: status === "error" ? TL.red : TL.muted,
+            marginTop: 14,
+            minHeight: 16,
+          }}
+        >
+          {status === "error"
+            ? error
+            : "Enter your email — two quick questions next."}
+        </div>
+      </form>
+    );
+  }
+
+  // Step 2 — the short survey.
   return (
     <form
       onSubmit={submit}
@@ -2255,23 +2317,51 @@ function WaitlistForm() {
         boxShadow: "0 16px 40px rgba(20,17,14,0.07)",
       }}
     >
-      <FieldLabel>Email</FieldLabel>
-      <input
-        type="email"
-        required
-        value={email}
-        onChange={(e) => {
-          setEmail(e.target.value);
-          clearError();
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "baseline",
+          gap: 8,
+          marginBottom: 20,
         }}
-        placeholder="you@email.com"
-        aria-label="Email address"
-        className="bm-waitlist-input"
-        style={{ width: "100%" }}
-        disabled={loading}
-      />
+      >
+        <span
+          style={{
+            fontSize: 13,
+            fontWeight: 500,
+            color: TL.muted,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
+          Joining as{" "}
+          <span style={{ color: TL.ink, fontWeight: 600 }}>{email}</span>
+        </span>
+        <button
+          type="button"
+          onClick={() => {
+            setStep("email");
+            clearError();
+          }}
+          disabled={loading}
+          style={{
+            background: "none",
+            border: "none",
+            padding: 0,
+            cursor: loading ? "default" : "pointer",
+            color: TL.red,
+            fontSize: 13,
+            fontWeight: 600,
+            fontFamily: "var(--font-display), ui-sans-serif, system-ui, sans-serif",
+            flexShrink: 0,
+          }}
+        >
+          Edit
+        </button>
+      </div>
 
-      <div style={{ height: 22 }} />
       <FieldLabel>Which of the following describes you?</FieldLabel>
       {ROLE_OPTIONS.map((opt) => (
         <ChoiceRow

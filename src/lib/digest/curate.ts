@@ -1,6 +1,13 @@
-import Anthropic from "@anthropic-ai/sdk";
 import type { Story } from "./fetch";
 import type { SectionId } from "./sources";
+import {
+  ZERO_USAGE,
+  getProvider,
+  type LlmProvider,
+  type TokenUsage,
+} from "./llm";
+
+export { ZERO_USAGE, addUsage, type TokenUsage } from "./llm";
 
 export interface CuratedStory {
   title: string;
@@ -11,46 +18,16 @@ export interface CuratedStory {
 }
 
 /**
- * Whether a section's summaries were actually written by Claude or fell back to
- * raw feed blurbs. Without this the degraded path is invisible: the digest still
- * arrives every morning, just with scraped text instead of summaries, and
- * nothing says so. `reason` carries the API error when there is one.
+ * Whether a section's summaries were actually written by a model or fell back
+ * to raw feed blurbs. Without this the degraded path is invisible: the digest
+ * still arrives every morning, just with scraped text instead of summaries, and
+ * nothing says so. `reason` carries the error when there is one.
  */
 export interface CurationResult {
   stories: CuratedStory[];
   mode: "ai" | "fallback" | "empty";
   reason?: string;
   usage: TokenUsage;
-}
-
-export interface TokenUsage {
-  inputTokens: number;
-  outputTokens: number;
-}
-
-export const ZERO_USAGE: TokenUsage = { inputTokens: 0, outputTokens: 0 };
-
-/** The model doing the curating. Pricing below is tied to it — change both together. */
-const MODEL = "claude-haiku-4-5";
-
-/** USD per million tokens for MODEL. Update whenever MODEL changes. */
-const PRICING = { inputPerMTok: 1, outputPerMTok: 5 };
-
-export const CURATION_MODEL = MODEL;
-
-export function addUsage(a: TokenUsage, b: TokenUsage): TokenUsage {
-  return {
-    inputTokens: a.inputTokens + b.inputTokens,
-    outputTokens: a.outputTokens + b.outputTokens,
-  };
-}
-
-/** What this run cost, in USD. */
-export function usageCost(usage: TokenUsage): number {
-  return (
-    (usage.inputTokens / 1_000_000) * PRICING.inputPerMTok +
-    (usage.outputTokens / 1_000_000) * PRICING.outputPerMTok
-  );
 }
 
 /**
@@ -132,63 +109,6 @@ discusses", no marketing voice, no exclamation points.
 /** Candidate cap per section — keeps the prompt small and the call fast. */
 const MAX_CANDIDATES = 30;
 
-/**
- * Read and sanity-check the API key.
- *
- * Pasting a key from a doc or email can bring along wrapping quotes and, worse,
- * typographic ones — `"` becomes `“…”`. The SDK puts the key straight into the
- * `x-api-key` header, and headers are Latin-1, so a curly quote throws a
- * ByteString conversion error that names a string index and nothing else. That
- * is a genuinely hard error to trace back to "your key has smart quotes in it",
- * so trim the usual paste artifacts and name the problem when one is left.
- *
- * Never returns or logs the key itself.
- */
-function readApiKey():
-  | { ok: true; key: string }
-  | { ok: false; reason: string } {
-  const raw = process.env.ANTHROPIC_API_KEY;
-  if (!raw || !raw.trim()) return { ok: false, reason: "ANTHROPIC_API_KEY not set" };
-
-  const key = raw.trim().replace(/^["'“”‘’]+|["'“”‘’]+$/g, "");
-  if (!key) return { ok: false, reason: "ANTHROPIC_API_KEY is only quote characters" };
-
-  if (key !== raw) {
-    console.warn(
-      "[digest] ANTHROPIC_API_KEY had surrounding whitespace or quotes; using the trimmed value. Re-save it as raw text."
-    );
-  }
-
-  // A real key is one unbroken run of printable ASCII. Anything outside that
-  // can't go in a header, and in practice means extra text came along with it.
-  const chars = [...key];
-  const at = chars.findIndex((c) => c.charCodeAt(0) < 0x21 || c.charCodeAt(0) > 0x7e);
-  if (at !== -1) {
-    const code = chars[at].charCodeAt(0);
-    const name =
-      code === 0x20
-        ? "a space"
-        : code === 0x0a || code === 0x0d
-          ? "a line break"
-          : code === 0x201c || code === 0x201d
-            ? "a curly quote"
-            : `U+${code.toString(16).toUpperCase().padStart(4, "0")}`;
-    // Length and offset describe the shape of the value, never its contents —
-    // and they're what actually identifies "you pasted more than the key".
-    return {
-      ok: false,
-      reason:
-        `ANTHROPIC_API_KEY doesn't look like a bare key: ${chars.length} characters, ` +
-        `with ${name} at index ${at}${
-          key.startsWith("sk-ant-") ? "" : ", and it doesn't start with 'sk-ant-'"
-        }. A key is a single unbroken token of about 108 characters. ` +
-        "Re-add just the key, with no surrounding text or line breaks.",
-    };
-  }
-
-  return { ok: true, key };
-}
-
 function fallback(stories: Story[], limit: number): CuratedStory[] {
   return stories.slice(0, limit).map((s) => ({
     title: s.title,
@@ -200,25 +120,26 @@ function fallback(stories: Story[], limit: number): CuratedStory[] {
 }
 
 /**
- * Ask Claude to choose and summarize the top stories for one section.
+ * Choose and summarize the top stories for one section.
  *
- * Falls back to the most recent stories with their raw feed summaries if the API
- * key is missing or the call fails — a digest with unpolished summaries beats no
- * digest at all.
+ * Falls back to the most recent stories with their raw feed summaries when no
+ * provider is configured or the call fails — a digest with unpolished summaries
+ * beats no digest at all.
  */
 export async function curateSection(
   section: SectionId,
   stories: Story[],
-  limit: number
+  limit: number,
+  provider: LlmProvider | null
 ): Promise<CurationResult> {
   if (stories.length === 0) return { stories: [], mode: "empty", usage: ZERO_USAGE };
 
-  const apiKey = readApiKey();
-  if (!apiKey.ok) {
+  const llm = provider;
+  if (!llm) {
     return {
       stories: fallback(stories, limit),
       mode: "fallback",
-      reason: apiKey.reason,
+      reason: "no LLM provider configured",
       usage: ZERO_USAGE,
     };
   }
@@ -237,23 +158,13 @@ export async function curateSection(
     `Candidates:\n\n${list}`;
 
   try {
-    // Pass the sanitized key rather than letting the SDK re-read the raw env var.
-    const client = new Anthropic({ apiKey: apiKey.key });
-    const response = await client.messages.create({
-      // Selecting and summarizing from text already supplied in the prompt is
-      // well within Haiku's range, and output tokens dominate the cost of this
-      // job. Note Haiku 4.5 rejects `output_config.effort` and doesn't take
-      // adaptive thinking — if you move this back to claude-opus-5, that's when
-      // effort becomes available again.
-      model: MODEL,
-      max_tokens: 4000,
-      output_config: { format: { type: "json_schema", schema: PICK_SCHEMA } },
+    const { text, usage } = await llm.complete({
       system: SYSTEM,
-      messages: [{ role: "user", content: prompt }],
+      prompt,
+      schema: PICK_SCHEMA as unknown as Record<string, unknown>,
+      schemaName: "section_picks",
+      maxTokens: 4000,
     });
-
-    const text = response.content.find((b) => b.type === "text")?.text;
-    if (!text) throw new Error("no text block in response");
 
     const parsed = JSON.parse(text) as {
       picks: { index: number; summary: string }[];
@@ -276,15 +187,7 @@ export async function curateSection(
     return {
       stories: curated,
       mode: "ai",
-      // Cache fields are zero here (nothing sets cache_control), but count them
-      // so the figure can't silently undercount if that ever changes.
-      usage: {
-        inputTokens:
-          response.usage.input_tokens +
-          (response.usage.cache_read_input_tokens ?? 0) +
-          (response.usage.cache_creation_input_tokens ?? 0),
-        outputTokens: response.usage.output_tokens,
-      },
+      usage,
     };
   } catch (err) {
     console.error(`[digest] curation failed for "${section}":`, err);

@@ -18,6 +18,18 @@ import { CALENDAR_SCOPE, getGoogleToken } from "./google";
  *   DIGEST_HOME_*       overrides for the home location
  */
 
+/**
+ * How the location was decided. Distinguishing these matters: "calendar read
+ * fine, you're home" and "calendar unreachable, assumed home" produce the same
+ * forecast, and without this you can't tell which happened — so a broken
+ * calendar integration would look exactly like a normal day at home.
+ */
+export type PlaceSource =
+  | "travel" // calendar put you somewhere far from home
+  | "home" // calendar read fine; nothing far away
+  | "unavailable" // calendar errored; fell back to home
+  | "no-credential"; // no service account configured
+
 export interface Place {
   /** Display name, e.g. "Austin" or "New York". */
   label: string;
@@ -25,14 +37,24 @@ export interface Place {
   lon: number;
   /** True when this came from the calendar rather than the home default. */
   travelling: boolean;
+  source: PlaceSource;
+  /** Calendar events considered; 0 when the calendar wasn't read. */
+  eventsSeen: number;
 }
 
-const HOME: Place = {
-  label: process.env.DIGEST_HOME_LABEL ?? "New York",
-  lat: Number(process.env.DIGEST_HOME_LAT ?? 40.7358),
-  lon: Number(process.env.DIGEST_HOME_LON ?? -74.0036),
-  travelling: false,
-};
+function home(source: PlaceSource, eventsSeen = 0): Place {
+  return {
+    label: process.env.DIGEST_HOME_LABEL ?? "New York",
+    lat: Number(process.env.DIGEST_HOME_LAT ?? 40.7358),
+    lon: Number(process.env.DIGEST_HOME_LON ?? -74.0036),
+    travelling: false,
+    source,
+    eventsSeen,
+  };
+}
+
+const HOME_LAT = Number(process.env.DIGEST_HOME_LAT ?? 40.7358);
+const HOME_LON = Number(process.env.DIGEST_HOME_LON ?? -74.0036);
 
 /** Below this, treat the calendar location as "still home". Miles. */
 const TRAVEL_THRESHOLD_MILES = 75;
@@ -68,9 +90,11 @@ interface CalEvent {
 }
 
 /** Today's events in New York terms, all-day events first — trips are all-day. */
-async function todaysLocations(now: Date): Promise<string[]> {
+async function todaysLocations(
+  now: Date
+): Promise<{ candidates: string[]; eventsSeen: number } | null> {
   const token = await getGoogleToken([CALENDAR_SCOPE]);
-  if (!token) return [];
+  if (!token) return null;
 
   const calendarId =
     process.env.DIGEST_CALENDAR_ID ??
@@ -113,7 +137,7 @@ async function todaysLocations(now: Date): Promise<string[]> {
       candidates.push(event.summary);
     }
   }
-  return candidates;
+  return { candidates, eventsSeen: items.length };
 }
 
 interface GeoHit {
@@ -147,22 +171,32 @@ async function geocode(query: string): Promise<GeoHit | null> {
  * get the home forecast, which is right far more often than it's wrong.
  */
 export async function getTodaysPlace(now = new Date()): Promise<Place> {
+  let read: { candidates: string[]; eventsSeen: number } | null;
   try {
-    const candidates = await todaysLocations(now);
-    for (const candidate of candidates.slice(0, 5)) {
+    read = await todaysLocations(now);
+  } catch (err) {
+    console.error("[digest] calendar read failed:", err);
+    return home("unavailable");
+  }
+  if (!read) return home("no-credential");
+
+  try {
+    for (const candidate of read.candidates.slice(0, 5)) {
       const hit = await geocode(candidate);
       if (!hit) continue;
-      const distance = milesBetween(HOME.lat, HOME.lon, hit.latitude, hit.longitude);
+      const distance = milesBetween(HOME_LAT, HOME_LON, hit.latitude, hit.longitude);
       if (distance < TRAVEL_THRESHOLD_MILES) continue; // still around home
       return {
         label: hit.name,
         lat: hit.latitude,
         lon: hit.longitude,
         travelling: true,
+        source: "travel",
+        eventsSeen: read.eventsSeen,
       };
     }
   } catch (err) {
-    console.error("[digest] location lookup failed:", err);
+    console.error("[digest] geocoding failed:", err);
   }
-  return HOME;
+  return home("home", read.eventsSeen);
 }
