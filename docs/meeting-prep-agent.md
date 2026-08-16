@@ -33,26 +33,43 @@ you, so write for someone walking into a meeting cold.
 
 ### 1. Get today's meetings
 
-Use Wispr Flow's `list_upcoming_meetings` with `window_hours: 24`. Keep only
-events that start **today** in America/New_York.
+Use the **Google Calendar** tool `list_events` on the primary calendar, bounded
+to today in America/New_York, ordered by start time.
 
-Skip: all-day events, anything cancelled, and anything Matt has declined. Skip
-solo blocks with no other attendees (focus time, reminders, "gym") — there's
-nothing to prepare for. If nothing survives, stop; write no rows.
+Use Google Calendar, not Wispr Flow, for this list. Wispr Flow only knows about
+meetings it has recorded, which is a small subset — it returned zero events on a
+day the calendar had three. Wispr Flow is for step 2, where it's excellent.
+
+Skip: all-day events, anything cancelled, anything Matt has declined, and
+personal blocks whose title makes clear there's nothing to prepare for (gym,
+focus, lunch, travel, commute, blocked, hold). If nothing survives, stop and
+write no rows.
+
+**Do not skip a meeting for having no attendees.** Matt creates most of his own
+events as blocks for calls he'll dial into, so the `attendees` array is usually
+absent — on a typical day, every single meeting. Judge by the title instead.
 
 ### 2. Research each meeting
 
-For each meeting, spend effort proportional to how much you don't already know.
-Work through these in order and stop when you have enough:
+**Start by reading the title for who and what.** Matt's titles carry the
+information the attendee list doesn't: "FOLLOW UP WITH GREG FROM EDGE" gives you
+a person (Greg) and a company (Edge); "ALISON / APEX SIZZLE + FOUNDER" gives you
+Alison, a company (Apex), a deliverable (a sizzle reel), and that a founder is
+joining. Extract those names first — they're what you search on.
 
-1. **Prior conversations** — `search_meetings` for the attendees or the topic.
+Then spend effort proportional to how much you don't already know. Work through
+these in order and stop when you have enough:
+
+1. **Prior conversations** — Wispr Flow `search_meetings` for the names or topic
+   you pulled from the title.
    If there's a previous meeting, `get_meeting` it and read the transcript
    rather than only the summary; the summary drops specifics. What was decided,
    what was promised, what's still open.
 2. **Your own notes** — `search_scratchpad_notes` for the person or company.
    Matt's own jottings are often the most useful thing available.
-3. **Recent email** — search Gmail for threads with the attendees in the last
-   ~60 days. What was the last exchange, and is anything unanswered?
+3. **Recent email** — search Gmail for the person or company name over the last
+   ~60 days. With no attendee emails to go on, the name from the title is your
+   query. What was the last exchange, and is anything unanswered?
 4. **Who they are** — only if the above turned up nothing useful, search the web
    for the person and their company. You're after their role and what the
    company does. Don't try to fetch LinkedIn directly; it blocks automated
@@ -82,7 +99,7 @@ One row per meeting in the database above.
 | --- | --- |
 | **Meeting** | The calendar event title, **copied exactly** |
 | **Date** | Today's date |
-| **Attendees** | Names, comma separated, excluding Matt |
+| **Attendees** | Who's actually on it, comma separated, excluding Matt. Usually you'll have inferred this from the title rather than the invite. Leave blank if you genuinely can't tell. |
 | **Context** | What you wrote in step 3 |
 | **Sources** | Which sources you actually used, e.g. `Wispr Flow, Gmail` |
 
@@ -99,10 +116,14 @@ context.
 ### If something is unavailable
 
 Wispr Flow's connector depends on the desktop app and may be unreachable when
-this runs unattended. Gmail may be rate-limited. **Continue with the sources you
-can reach** and name the shortfall in `Sources`, e.g. `Gmail only — Wispr Flow
-unavailable`. A row with thin context beats no row. Never fail the whole run
-because one source is down.
+this runs unattended, and it only covers meetings it recorded even when it is
+reachable. Gmail may be rate-limited. **Continue with the sources you can reach**
+and name the shortfall in `Sources`, e.g. `Gmail only — Wispr Flow unavailable`.
+A row with thin context beats no row. Never fail the whole run because one
+source is down.
+
+The one thing that must not fail is step 1: if Google Calendar is unreachable,
+stop and write nothing rather than guessing at a schedule.
 
 ---
 
@@ -118,6 +139,9 @@ curl -sSI "https://www.flickman.co/api/digest?preview=1&key=$CRON_SECRET" | grep
 - `prep ok, 0 matched, 3 unmatched` — the agent wrote rows whose titles don't
   match the calendar. This is the failure that hides itself; the section still
   renders, just with no context.
+- `prep ok, 0 matched, 0 unmatched` — the agent wrote no rows at all. Check that
+  it sourced meetings from Google Calendar, and that it didn't skip them for
+  having no attendees.
 - `prep no-credential` — `NOTION_TOKEN` isn't set on Vercel
 - `prep unavailable: Notion 404` — the integration isn't connected to the
   database (⋯ → Connections)
