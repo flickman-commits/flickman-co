@@ -40,10 +40,13 @@ export interface Place {
   source: PlaceSource;
   /** Calendar events considered; 0 when the calendar wasn't read. */
   eventsSeen: number;
+  /** Why the calendar wasn't used, when it wasn't. Surfaced in diagnostics. */
+  reason?: string;
 }
 
-function home(source: PlaceSource, eventsSeen = 0): Place {
+function home(source: PlaceSource, eventsSeen = 0, reason?: string): Place {
   return {
+    reason,
     label: process.env.DIGEST_HOME_LABEL ?? "New York",
     lat: Number(process.env.DIGEST_HOME_LAT ?? 40.7358),
     lon: Number(process.env.DIGEST_HOME_LON ?? -74.0036),
@@ -176,7 +179,11 @@ export async function getTodaysPlace(now = new Date()): Promise<Place> {
     read = await todaysLocations(now);
   } catch (err) {
     console.error("[digest] calendar read failed:", err);
-    return home("unavailable");
+    return home(
+      "unavailable",
+      0,
+      err instanceof Error ? err.message.slice(0, 200) : String(err).slice(0, 200)
+    );
   }
   if (!read) return home("no-credential");
 

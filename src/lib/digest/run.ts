@@ -46,7 +46,7 @@ export interface DigestResult {
     costUsd: number;
     sections: Record<string, string>;
   };
-  location: { place: string; source: string; eventsSeen: number };
+  location: { place: string; source: string; eventsSeen: number; reason?: string };
   financialsLoaded: boolean;
 }
 
@@ -133,6 +133,7 @@ export async function buildDigest(opts: { hours?: number } = {}): Promise<Digest
       place: resolvedPlace.label,
       source: resolvedPlace.source,
       eventsSeen: resolvedPlace.eventsSeen,
+      reason: resolvedPlace.reason,
     },
     financialsLoaded: financials != null,
   };

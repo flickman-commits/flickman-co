@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
           "X-Digest-Curation": result.curation.degraded ? "fallback" : "ai",
           "X-Digest-Model": result.curation.model,
           "X-Digest-Cost-Usd": result.curation.costUsd.toFixed(6),
-          "X-Digest-Location": `${result.location.place} (${result.location.source}, ${result.location.eventsSeen} events)`,
+          "X-Digest-Location": `${result.location.place} (${result.location.source}, ${result.location.eventsSeen} events)${result.location.reason ? ` — ${result.location.reason}` : ""}`,
           "X-Digest-Financials": result.financialsLoaded ? "loaded" : "absent",
           "X-Digest-Detail": JSON.stringify(result.curation.sections),
         },
