@@ -65,6 +65,11 @@ export async function GET(req: NextRequest) {
               (result.location.reason ? `: ${result.location.reason}` : "")
           ),
           "X-Digest-Financials": result.financialsLoaded ? "loaded" : "absent",
+          "X-Digest-Meetings": headerSafe(
+            `${result.meetingCount ?? "unavailable"} today; prep ${result.prep.status}, ` +
+              `${result.prep.matched} matched, ${result.prep.unmatched} unmatched` +
+              (result.prep.reason ? `: ${result.prep.reason}` : "")
+          ),
           "X-Digest-Detail": headerSafe(JSON.stringify(result.curation.sections)),
         },
       });
@@ -80,6 +85,8 @@ export async function GET(req: NextRequest) {
       curation: result.curation,
       location: result.location,
       financialsLoaded: result.financialsLoaded,
+      meetingCount: result.meetingCount,
+      prep: result.prep,
     });
   } catch (err) {
     console.error("[digest] run failed:", err);

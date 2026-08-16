@@ -7,7 +7,9 @@ import { getWeather } from "./weather";
 import { getTodaysPlace } from "./location";
 import { getFinancials } from "./financials";
 import { getTodaysEvents } from "./calendar";
-import { getTodaysMeetings } from "./meetings";
+import { applyPrep, getTodaysMeetings } from "./meetings";
+import { getMeetingPrep } from "./prep";
+import { easternDate } from "./calendar";
 
 /**
  * Builds the digest. Knows nothing about HTTP, Next.js, or Vercel.
@@ -51,6 +53,7 @@ export interface DigestResult {
   location: { place: string; source: string; eventsSeen: number; reason?: string };
   financialsLoaded: boolean;
   meetingCount: number | null;
+  prep: { status: string; matched: number; unmatched: number; reason?: string };
 }
 
 export async function buildDigest(opts: { hours?: number } = {}): Promise<DigestResult> {
@@ -64,13 +67,18 @@ export async function buildDigest(opts: { hours?: number } = {}): Promise<Digest
   const calendar = await getTodaysEvents();
   const place = await getTodaysPlace(calendar);
 
-  const [{ stories, failed }, weather, financials] = await Promise.all([
+  const [{ stories, failed }, weather, financials, prep] = await Promise.all([
     fetchAllStories(hours),
     getWeather(place),
     getFinancials(),
+    getMeetingPrep(easternDate(new Date())),
   ]);
   const resolvedPlace = place;
-  const panel = { weather, financials, meetings: getTodaysMeetings(calendar) };
+  // The calendar owns the schedule; Notion only supplies context per meeting,
+  // so an agent that didn't run costs you context rather than the whole section.
+  const calendarMeetings = getTodaysMeetings(calendar);
+  const merge = calendarMeetings ? applyPrep(calendarMeetings, prep) : null;
+  const panel = { weather, financials, meetings: merge?.meetings ?? null };
   const bySection = storiesBySection(stories);
 
   const providerResult = getProvider();
@@ -144,6 +152,12 @@ export async function buildDigest(opts: { hours?: number } = {}): Promise<Digest
     },
     financialsLoaded: financials != null,
     meetingCount: panel.meetings?.length ?? null,
+    prep: {
+      status: prep.status,
+      matched: merge?.matched ?? 0,
+      unmatched: merge?.unmatched ?? 0,
+      reason: prep.reason,
+    },
   };
 }
 

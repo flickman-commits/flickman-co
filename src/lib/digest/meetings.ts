@@ -1,5 +1,6 @@
 import { easternDate, type CalendarEvent, type CalendarRead } from "./calendar";
 import type { Meeting } from "./email";
+import { normalizeTitle, type PrepRead } from "./prep";
 
 /**
  * Today's meetings, derived from the calendar read.
@@ -80,4 +81,40 @@ export function getTodaysMeetings(read: CalendarRead, now = new Date()): Meeting
     }));
 
   return meetings;
+}
+
+export interface PrepMerge {
+  meetings: Meeting[];
+  /** How many meetings got context attached, and how many prep rows went unused. */
+  matched: number;
+  unmatched: number;
+}
+
+/**
+ * Attach prep context to the calendar's meetings, matching on normalized title.
+ *
+ * Unused prep rows are counted rather than ignored: if the agent starts writing
+ * titles that don't match the calendar, every meeting silently loses its context
+ * and the section still looks plausible. A non-zero `unmatched` is the signal
+ * that something drifted.
+ */
+export function applyPrep(meetings: Meeting[], prep: PrepRead): PrepMerge {
+  const used = new Set<string>();
+  let matched = 0;
+
+  const merged = meetings.map((m) => {
+    const key = normalizeTitle(m.title);
+    const hit = prep.byTitle.get(key);
+    if (!hit) return m;
+    used.add(key);
+    matched++;
+    return {
+      ...m,
+      // The calendar knows who was actually invited; prep only fills the gap.
+      attendees: m.attendees ?? hit.attendees,
+      context: hit.context,
+    };
+  });
+
+  return { meetings: merged, matched, unmatched: prep.byTitle.size - used.size };
 }
