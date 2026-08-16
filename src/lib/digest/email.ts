@@ -113,45 +113,70 @@ function deltaChip(current: number, prior: number | null): string {
   )}</span>`;
 }
 
-function statCard(label: string, value: string, delta: string): string {
+/** One tile in the top row. `foot` is pre-escaped HTML; `label`/`value` are not. */
+function tile(label: string, value: string, foot: string): string {
   return `
-    <div style="${CARD_STYLE} padding:14px 16px 13px;">
-      <div style="font-family:${FONT}; font-size:11px; font-weight:600; letter-spacing:0.6px; text-transform:uppercase; color:${MUTED};">${escapeHtml(
+    <div style="${CARD_STYLE} padding:10px 12px 9px;">
+      <div style="font-family:${FONT}; font-size:10px; font-weight:600; letter-spacing:0.5px; text-transform:uppercase; line-height:1.3; color:${MUTED};">${escapeHtml(
         label
       )}</div>
-      <div style="margin-top:8px; font-family:${FONT}; font-size:24px; font-weight:700; letter-spacing:-0.5px; line-height:1.1; color:${INK};">${escapeHtml(
+      <div style="margin-top:6px; font-family:${FONT}; font-size:20px; font-weight:700; letter-spacing:-0.4px; line-height:1.1; color:${INK}; white-space:nowrap;">${escapeHtml(
         value
       )}</div>
-      <div style="margin-top:5px; font-family:${FONT};">${delta} <span style="font-size:11px; color:${FAINT};">vs prior day</span></div>
+      <div style="margin-top:3px; font-family:${FONT}; font-size:11px; line-height:1.35; color:${FAINT};">${foot}</div>
     </div>`;
 }
 
-function statRow(fin: Financials): string {
-  const y = fin.yesterday;
-  const p = fin.prior;
-  const cells = [
-    statCard("Revenue", money(y.revenue), deltaChip(y.revenue, p?.revenue ?? null)),
-    statCard(
-      "Gross profit",
-      money(y.grossProfit),
-      deltaChip(y.grossProfit, p?.grossProfit ?? null)
-    ),
-    statCard(
-      "Contribution",
-      money(y.contributionMargin),
-      deltaChip(y.contributionMargin, p?.contributionMargin ?? null)
-    ),
-  ];
+/** Lays tiles out evenly with hairline gutters. Tables, because Outlook. */
+function tileRow(cells: string[]): string {
+  if (cells.length === 0) return "";
+  const gutter = 2;
+  const width = ((100 - gutter * (cells.length - 1)) / cells.length).toFixed(2);
+  const tds = cells
+    .map((c) => `<td width="${width}%" valign="top">${c}</td>`)
+    .join(`<td width="${gutter}%" style="font-size:0; line-height:0;">&nbsp;</td>`);
   return `
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 14px;">
-      <tr>
-        <td width="32%" valign="top">${cells[0]}</td>
-        <td width="2%" style="font-size:0; line-height:0;">&nbsp;</td>
-        <td width="32%" valign="top">${cells[1]}</td>
-        <td width="2%" style="font-size:0; line-height:0;">&nbsp;</td>
-        <td width="32%" valign="top">${cells[2]}</td>
-      </tr>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 10px;">
+      <tr>${tds}</tr>
     </table>`;
+}
+
+function weatherTile(w: Weather): string {
+  const rain =
+    w.precipChance != null && w.precipChance > 0 ? ` &middot; ${w.precipChance}% rain` : "";
+  // Naming the city every day is what makes it trustworthy on the day it
+  // changes — a silent switch would just look like a wrong forecast.
+  const label = w.travelling ? `${w.place} · travelling` : w.place;
+  return tile(
+    label,
+    `${w.high}° / ${w.low}°`,
+    `${escapeHtml(w.summary)}${rain}`
+  );
+}
+
+/** Weather, revenue, contribution. Gross profit lives in the P&L, not up here. */
+function topRow(weather: Weather | null, fin: Financials | null): string {
+  const cells: string[] = [];
+  if (weather) cells.push(weatherTile(weather));
+  if (fin) {
+    const y = fin.yesterday;
+    const p = fin.prior;
+    cells.push(
+      tile(
+        "Revenue",
+        money(y.revenue),
+        `${deltaChip(y.revenue, p?.revenue ?? null)} vs prior`
+      )
+    );
+    cells.push(
+      tile(
+        "Contribution",
+        money(y.contributionMargin),
+        `${deltaChip(y.contributionMargin, p?.contributionMargin ?? null)} vs prior`
+      )
+    );
+  }
+  return tileRow(cells);
 }
 
 /* ──────────────────────────────────────────────────────────────── */
@@ -172,10 +197,10 @@ function plRow(
     : "";
   return `
     <tr>
-      <td style="${border} padding:9px 0 8px; font-family:${FONT}; font-size:14px; font-weight:${weight}; color:${color};">${dot}${escapeHtml(
+      <td style="${border} padding:6px 0 5px; font-family:${FONT}; font-size:14px; font-weight:${weight}; color:${color};">${dot}${escapeHtml(
         label
       )}</td>
-      <td align="right" style="${border} padding:9px 0 8px; font-family:${FONT}; font-size:14px; font-weight:${
+      <td align="right" style="${border} padding:6px 0 5px; font-family:${FONT}; font-size:14px; font-weight:${
         opts.bold ? 700 : 600
       }; color:${INK}; white-space:nowrap;">${escapeHtml(amount)}</td>
     </tr>`;
@@ -206,7 +231,7 @@ function costBar(day: DayFinancials): string {
       : `<td width="${w.toFixed(2)}%" style="background:${c}; font-size:0; line-height:0; height:8px;">&nbsp;</td>`;
 
   return `
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 16px; border-radius:4px; overflow:hidden;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 11px; border-radius:4px; overflow:hidden;">
       <tr style="height:8px;">
         ${cell(cogs, C_COGS)}${cell(ad, C_AD)}${cell(margin, C_MARGIN)}
       </tr>
@@ -221,10 +246,10 @@ function plCard(fin: Financials): string {
   const barColor = d.contributionMargin < 0 ? NEG : C_MARGIN;
 
   return `
-    <div style="${CARD_STYLE} padding:18px 18px 16px; margin:0 0 26px;">
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:14px;">
+    <div style="${CARD_STYLE} padding:14px 15px 12px; margin:0 0 6px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:10px;">
         <tr>
-          <td style="font-family:${FONT}; font-size:11px; font-weight:600; letter-spacing:0.6px; text-transform:uppercase; color:${MUTED};">Yesterday&rsquo;s P&amp;L</td>
+          <td style="font-family:${FONT}; font-size:11px; font-weight:600; letter-spacing:0.6px; text-transform:uppercase; color:${MUTED};">Trackstar P&amp;L (Yesterday)</td>
           <td align="right" style="font-family:${FONT}; font-size:12px; color:${FAINT};">${escapeHtml(
             shortDate(d.dateISO)
           )}</td>
@@ -240,10 +265,10 @@ function plCard(fin: Financials): string {
         ${plRow("Ad spend", `-${money(d.adSpend).replace("-", "")}`, C_AD, { rule: true })}
       </table>
 
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:14px; background:${barColor}; border-radius:8px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:10px; background:${barColor}; border-radius:8px;">
         <tr>
-          <td style="padding:13px 15px; font-family:${FONT}; font-size:14px; font-weight:700; color:#FFFFFF;">Contribution margin</td>
-          <td align="right" style="padding:13px 15px; font-family:${FONT}; color:#FFFFFF; white-space:nowrap;">
+          <td style="padding:10px 14px; font-family:${FONT}; font-size:14px; font-weight:700; color:#FFFFFF;">Contribution margin</td>
+          <td align="right" style="padding:10px 14px; font-family:${FONT}; color:#FFFFFF; white-space:nowrap;">
             <span style="font-size:19px; font-weight:700;">${escapeHtml(
               money(d.contributionMargin)
             )}</span>
@@ -257,49 +282,23 @@ function plCard(fin: Financials): string {
 }
 
 /* ──────────────────────────────────────────────────────────────── */
-/* Weather strip                                                     */
-/* ──────────────────────────────────────────────────────────────── */
-
-function weatherStrip(w: Weather): string {
-  const rain =
-    w.precipChance != null && w.precipChance > 0
-      ? ` &middot; ${w.precipChance}% rain`
-      : "";
-  // Naming the city every day is what makes it trustworthy on the day it
-  // changes — a silent switch would just look like the forecast was wrong.
-  const badge = w.travelling
-    ? `<span style="display:inline-block; margin-left:8px; padding:2px 7px; border-radius:99px; background:${ACCENT}; font-size:10px; font-weight:700; letter-spacing:0.4px; color:#06281B; vertical-align:middle;">TRAVELLING</span>`
-    : "";
-  return `
-    <div style="${CARD_STYLE} padding:12px 16px; margin:0 0 14px;">
-      <span style="font-family:${FONT}; font-size:11px; font-weight:600; letter-spacing:0.6px; text-transform:uppercase; color:${MUTED};">Today in ${escapeHtml(
-        w.place
-      )}</span>${badge}
-      <span style="font-family:${FONT}; font-size:15px; font-weight:700; color:${INK}; margin-left:10px;">${w.high}&deg; / ${w.low}&deg;</span>
-      <span style="font-family:${FONT}; font-size:13px; color:${MUTED}; margin-left:8px;">${escapeHtml(
-        w.summary
-      )}${rain}</span>
-    </div>`;
-}
-
-/* ──────────────────────────────────────────────────────────────── */
 /* News                                                              */
 /* ──────────────────────────────────────────────────────────────── */
 
 function renderStory(story: CuratedStory, accent: string): string {
   return `
-    <div style="${CARD_STYLE} padding:16px 17px 14px; margin:0 0 10px;">
-      <a href="${safeUrl(story.url)}" style="display:block; font-family:${FONT}; font-size:16px; line-height:1.45; font-weight:650; color:${INK}; text-decoration:none;">${escapeHtml(
+    <div style="${CARD_STYLE} padding:12px 14px 10px; margin:0 0 7px;">
+      <a href="${safeUrl(story.url)}" style="display:block; font-family:${FONT}; font-size:16px; line-height:1.35; font-weight:650; color:${INK}; text-decoration:none;">${escapeHtml(
         story.title
       )}</a>
       ${
         story.summary.trim()
-          ? `<div style="margin:7px 0 0; font-family:${FONT}; font-size:14px; line-height:1.6; color:${MUTED};">${escapeHtml(
+          ? `<div style="margin:5px 0 0; font-family:${FONT}; font-size:14px; line-height:1.5; color:${MUTED};">${escapeHtml(
               story.summary
             )}</div>`
           : ""
       }
-      <div style="margin:11px 0 0; font-family:${FONT}; font-size:12px;">
+      <div style="margin:8px 0 0; font-family:${FONT}; font-size:12px;">
         <span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:${accent}; vertical-align:middle;">&nbsp;</span>
         <span style="margin-left:6px; font-weight:600; color:${FAINT};">${escapeHtml(
           story.source
@@ -311,8 +310,8 @@ function renderStory(story: CuratedStory, accent: string): string {
 
 function renderSection(section: DigestSection): string {
   return `
-    <div style="margin:0 0 24px;">
-      <div style="margin:0 0 10px; font-family:${FONT}; font-size:12px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; color:${section.accent};">${escapeHtml(
+    <div style="margin:0 0 16px;">
+      <div style="margin:0 0 7px; font-family:${FONT}; font-size:12px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; color:${section.accent};">${escapeHtml(
         section.title
       )}</div>
       ${section.stories.map((s) => renderStory(s, section.accent)).join("")}
@@ -323,9 +322,79 @@ function renderSection(section: DigestSection): string {
 /* Assembly                                                          */
 /* ──────────────────────────────────────────────────────────────── */
 
+/**
+ * One entry in Today's Meetings. Populated later by the prep agent; the section
+ * renders a placeholder until then so the slot is visible in the layout.
+ */
+export interface Meeting {
+  /** Local time, already formatted, e.g. "9:30 AM". */
+  time: string;
+  title: string;
+  attendees?: string;
+  /** A sentence or two of what you need to know walking in. */
+  context?: string;
+}
+
 export interface DailyPanel {
   weather: Weather | null;
   financials: Financials | null;
+  meetings: Meeting[] | null;
+}
+
+/** Top-level divider between the report's major parts. */
+function sectionHeader(title: string): string {
+  return `
+    <div style="margin:18px 0 9px; padding-top:12px; border-top:1px solid ${LINE};">
+      <span style="font-family:${FONT}; font-size:13px; font-weight:800; letter-spacing:0.9px; text-transform:uppercase; color:${INK};">${escapeHtml(
+        title
+      )}</span>
+    </div>`;
+}
+
+function renderMeetings(meetings: Meeting[] | null): string {
+  if (!meetings) {
+    return `
+    <div style="${CARD_STYLE} padding:12px 14px; font-family:${FONT}; font-size:13px; color:${FAINT};">
+      Meeting prep isn&rsquo;t connected yet.
+    </div>`;
+  }
+  if (meetings.length === 0) {
+    return `
+    <div style="${CARD_STYLE} padding:12px 14px; font-family:${FONT}; font-size:13px; color:${MUTED};">
+      Nothing on the calendar today.
+    </div>`;
+  }
+  return meetings
+    .map(
+      (m) => `
+    <div style="${CARD_STYLE} padding:12px 14px 10px; margin:0 0 7px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td style="font-family:${FONT}; font-size:15px; font-weight:700; line-height:1.35; color:${INK};">${escapeHtml(
+            m.title
+          )}</td>
+          <td align="right" valign="top" style="font-family:${FONT}; font-size:12px; font-weight:600; color:${ACCENT}; white-space:nowrap; padding-left:10px;">${escapeHtml(
+            m.time
+          )}</td>
+        </tr>
+      </table>
+      ${
+        m.attendees
+          ? `<div style="margin:4px 0 0; font-family:${FONT}; font-size:12px; color:${FAINT};">${escapeHtml(
+              m.attendees
+            )}</div>`
+          : ""
+      }
+      ${
+        m.context
+          ? `<div style="margin:6px 0 0; font-family:${FONT}; font-size:14px; line-height:1.5; color:${MUTED};">${escapeHtml(
+              m.context
+            )}</div>`
+          : ""
+      }
+    </div>`
+    )
+    .join("");
 }
 
 export interface RunCost {
@@ -371,10 +440,10 @@ export function renderHtml(
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Flickman Daily Report</title>
 </head>
-<body style="margin:0; padding:26px 14px; background:${PAGE};">
+<body style="margin:0; padding:20px 12px; background:${PAGE};">
   <div style="max-width:600px; margin:0 auto;">
 
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 14px;">
       <tr>
         <td>
           <div style="font-family:${FONT}; font-size:21px; font-weight:750; letter-spacing:-0.4px; color:${INK};">Flickman Daily Report</div>
@@ -388,13 +457,16 @@ export function renderHtml(
       </tr>
     </table>
 
-    ${panel.weather ? weatherStrip(panel.weather) : ""}
-    ${panel.financials ? statRow(panel.financials) : ""}
+    ${topRow(panel.weather, panel.financials)}
     ${panel.financials ? plCard(panel.financials) : ""}
 
+    ${sectionHeader("Today's Meetings")}
+    ${renderMeetings(panel.meetings)}
+
+    ${sectionHeader("News")}
     ${news}
 
-    <div style="border-top:1px solid ${LINE}; padding-top:14px; margin-top:6px;">
+    <div style="border-top:1px solid ${LINE}; padding-top:12px; margin-top:14px;">
       <div style="font-family:${FONT}; font-size:12px; line-height:1.6; color:${FAINT};">
         Auto-generated from RSS. Summaries are written by AI and can be wrong — click through before you rely on one.
       </div>
@@ -429,7 +501,7 @@ export function renderText(
     const d = panel.financials.yesterday;
     const marginPct = d.revenue > 0 ? (d.contributionMargin / d.revenue) * 100 : 0;
     lines.push(
-      `YESTERDAY'S P&L (${shortDate(d.dateISO)})`,
+      `TRACKSTAR P&L — YESTERDAY (${shortDate(d.dateISO)})`,
       `  Revenue              ${money(d.revenue)}`,
       `  COGS                -${money(d.cogs).replace("-", "")}`,
       `  Gross profit         ${money(d.grossProfit)}`,
@@ -439,6 +511,19 @@ export function renderText(
     );
   }
 
+  lines.push("TODAY'S MEETINGS", "");
+  if (!panel.meetings) lines.push("Meeting prep isn't connected yet.", "");
+  else if (panel.meetings.length === 0) lines.push("Nothing on the calendar today.", "");
+  else {
+    for (const m of panel.meetings) {
+      lines.push(`${m.time}  ${m.title}`);
+      if (m.attendees) lines.push(`  ${m.attendees}`);
+      if (m.context) lines.push(`  ${m.context}`);
+      lines.push("");
+    }
+  }
+
+  lines.push("NEWS", "");
   if (!sections.length) {
     lines.push("Quiet news day — nothing in the feeds worth your time.");
   } else {

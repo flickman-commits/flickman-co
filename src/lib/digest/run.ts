@@ -63,7 +63,9 @@ export async function buildDigest(opts: { hours?: number } = {}): Promise<Digest
     getFinancials(),
   ]);
   const resolvedPlace = await place;
-  const panel = { weather, financials };
+  // meetings: null until the prep agent lands; the section renders a
+  // placeholder so the slot is visible in the layout meanwhile.
+  const panel = { weather, financials, meetings: null };
   const bySection = storiesBySection(stories);
 
   const providerResult = getProvider();
