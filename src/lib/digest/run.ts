@@ -6,6 +6,8 @@ import { SECTIONS, type SectionId } from "./sources";
 import { getWeather } from "./weather";
 import { getTodaysPlace } from "./location";
 import { getFinancials } from "./financials";
+import { getTodaysEvents } from "./calendar";
+import { getTodaysMeetings } from "./meetings";
 
 /**
  * Builds the digest. Knows nothing about HTTP, Next.js, or Vercel.
@@ -48,6 +50,7 @@ export interface DigestResult {
   };
   location: { place: string; source: string; eventsSeen: number; reason?: string };
   financialsLoaded: boolean;
+  meetingCount: number | null;
 }
 
 export async function buildDigest(opts: { hours?: number } = {}): Promise<DigestResult> {
@@ -56,16 +59,18 @@ export async function buildDigest(opts: { hours?: number } = {}): Promise<Digest
   // Feeds, location/forecast, and the scoreboard are independent, so they run
   // together. Each resolves to null on failure rather than throwing, so no one
   // source can take the report down.
-  const place = getTodaysPlace();
+  // One calendar read serves both the forecast location and the meetings
+  // section, so today's events are fetched once rather than twice.
+  const calendar = await getTodaysEvents();
+  const place = await getTodaysPlace(calendar);
+
   const [{ stories, failed }, weather, financials] = await Promise.all([
     fetchAllStories(hours),
-    place.then(getWeather),
+    getWeather(place),
     getFinancials(),
   ]);
-  const resolvedPlace = await place;
-  // meetings: null until the prep agent lands; the section renders a
-  // placeholder so the slot is visible in the layout meanwhile.
-  const panel = { weather, financials, meetings: null };
+  const resolvedPlace = place;
+  const panel = { weather, financials, meetings: getTodaysMeetings(calendar) };
   const bySection = storiesBySection(stories);
 
   const providerResult = getProvider();
@@ -138,6 +143,7 @@ export async function buildDigest(opts: { hours?: number } = {}): Promise<Digest
       reason: resolvedPlace.reason,
     },
     financialsLoaded: financials != null,
+    meetingCount: panel.meetings?.length ?? null,
   };
 }
 

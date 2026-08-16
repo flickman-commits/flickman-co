@@ -113,18 +113,24 @@ function deltaChip(current: number, prior: number | null): string {
   )}</span>`;
 }
 
-/** One tile in the top row. `foot` is pre-escaped HTML; `label`/`value` are not. */
+/**
+ * Inner content of one tile. `foot` is pre-escaped HTML; `label`/`value` are not.
+ *
+ * The card border and padding live on the <td> rather than on a wrapper div —
+ * cells in the same table row are equal height for free, whereas divs inside
+ * them each size to their own content and come out ragged when one caption
+ * wraps. Weather captions vary from "Clear" to "Thunderstorms · 80% rain", so
+ * that ragging was guaranteed.
+ */
 function tile(label: string, value: string, foot: string): string {
   return `
-    <div style="${CARD_STYLE} padding:10px 12px 9px;">
       <div style="font-family:${FONT}; font-size:10px; font-weight:600; letter-spacing:0.5px; text-transform:uppercase; line-height:1.3; color:${MUTED};">${escapeHtml(
         label
       )}</div>
       <div style="margin-top:6px; font-family:${FONT}; font-size:20px; font-weight:700; letter-spacing:-0.4px; line-height:1.1; color:${INK}; white-space:nowrap;">${escapeHtml(
         value
       )}</div>
-      <div style="margin-top:3px; font-family:${FONT}; font-size:11px; line-height:1.35; color:${FAINT};">${foot}</div>
-    </div>`;
+      <div style="margin-top:3px; font-family:${FONT}; font-size:11px; line-height:1.35; color:${FAINT};">${foot}</div>`;
 }
 
 /** Lays tiles out evenly with hairline gutters. Tables, because Outlook. */
@@ -133,10 +139,13 @@ function tileRow(cells: string[]): string {
   const gutter = 2;
   const width = ((100 - gutter * (cells.length - 1)) / cells.length).toFixed(2);
   const tds = cells
-    .map((c) => `<td width="${width}%" valign="top">${c}</td>`)
+    .map(
+      (c) =>
+        `<td width="${width}%" valign="top" style="${CARD_STYLE} padding:10px 12px 9px;">${c}</td>`
+    )
     .join(`<td width="${gutter}%" style="font-size:0; line-height:0;">&nbsp;</td>`);
   return `
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 10px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 10px; border-collapse:separate;">
       <tr>${tds}</tr>
     </table>`;
 }

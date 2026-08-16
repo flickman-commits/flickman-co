@@ -1,4 +1,4 @@
-import { CALENDAR_SCOPE, getGoogleToken } from "./google";
+import type { CalendarRead } from "./calendar";
 
 /**
  * Where you are today, so the forecast is for the right city.
@@ -9,13 +9,10 @@ import { CALENDAR_SCOPE, getGoogleToken } from "./google";
  * while "Austin, TX" is 1,500 miles away and wins. Without that, every lunch
  * spot with a geocodable name would move your weather.
  *
- * Requires the calendar to be shared with the service account's client_email
- * (Google Calendar → Settings for that calendar → Share with specific people →
- * "See all event details"), and the Calendar API enabled on the project.
+ * Consumes the shared calendar read; see ./calendar for access requirements.
  *
  * Env:
- *   DIGEST_CALENDAR_ID  calendar to read; defaults to the digest recipient
- *   DIGEST_HOME_*       overrides for the home location
+ *   DIGEST_HOME_*  overrides for the home location
  */
 
 /**
@@ -86,51 +83,13 @@ function looksLikeAPlace(raw: string): boolean {
   return true;
 }
 
-interface CalEvent {
-  summary?: string;
-  location?: string;
-  start?: { date?: string; dateTime?: string };
-}
-
-/** Today's events in New York terms, all-day events first — trips are all-day. */
-async function todaysLocations(
-  now: Date
-): Promise<{ candidates: string[]; eventsSeen: number } | null> {
-  const token = await getGoogleToken([CALENDAR_SCOPE]);
-  if (!token) return null;
-
-  const calendarId =
-    process.env.DIGEST_CALENDAR_ID ??
-    process.env.DIGEST_TO_EMAIL ??
-    process.env.BOOKING_NOTIFY_EMAIL ??
-    "matt@flickmanmedia.com";
-
-  const dayStart = new Date(now);
-  dayStart.setUTCHours(0, 0, 0, 0);
-  const timeMin = new Date(dayStart.getTime() - 12 * 3600_000).toISOString();
-  const timeMax = new Date(dayStart.getTime() + 36 * 3600_000).toISOString();
-
-  const url =
-    `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events` +
-    `?timeMin=${encodeURIComponent(timeMin)}&timeMax=${encodeURIComponent(timeMax)}` +
-    `&singleEvents=true&orderBy=startTime&maxResults=50`;
-
-  const res = await fetch(url, {
-    headers: { Authorization: `Bearer ${token}` },
-    cache: "no-store",
-    signal: AbortSignal.timeout(8000),
-  });
-  if (!res.ok) {
-    throw new Error(`Calendar ${res.status}: ${(await res.text()).slice(0, 160)}`);
-  }
-
-  const json = (await res.json()) as { items?: CalEvent[] };
-  const items = json.items ?? [];
-
-  // An all-day event is far more likely to be "I am in Austin this week" than
-  // a 30-minute meeting is, so those are considered first.
-  const allDay = items.filter((e) => e.start?.date);
-  const timed = items.filter((e) => !e.start?.date);
+/**
+ * Location candidates from today's events. All-day entries come first: "I am in
+ * Austin this week" is far more often an all-day entry than a 30-minute meeting.
+ */
+function locationCandidates(read: CalendarRead): string[] {
+  const allDay = read.events.filter((e) => e.start?.date);
+  const timed = read.events.filter((e) => !e.start?.date);
 
   const candidates: string[] = [];
   for (const event of [...allDay, ...timed]) {
@@ -140,7 +99,7 @@ async function todaysLocations(
       candidates.push(event.summary);
     }
   }
-  return { candidates, eventsSeen: items.length };
+  return candidates;
 }
 
 interface GeoHit {
@@ -170,25 +129,16 @@ async function geocode(query: string): Promise<GeoHit | null> {
 }
 
 /**
- * Never throws and never returns null — an unreachable calendar just means you
+ * Never throws and never returns null — an unreadable calendar just means you
  * get the home forecast, which is right far more often than it's wrong.
  */
-export async function getTodaysPlace(now = new Date()): Promise<Place> {
-  let read: { candidates: string[]; eventsSeen: number } | null;
-  try {
-    read = await todaysLocations(now);
-  } catch (err) {
-    console.error("[digest] calendar read failed:", err);
-    return home(
-      "unavailable",
-      0,
-      err instanceof Error ? err.message.slice(0, 200) : String(err).slice(0, 200)
-    );
-  }
-  if (!read) return home("no-credential");
+export async function getTodaysPlace(read: CalendarRead): Promise<Place> {
+  if (read.status === "no-credential") return home("no-credential");
+  if (read.status === "unavailable") return home("unavailable", 0, read.reason);
 
+  const candidates = locationCandidates(read);
   try {
-    for (const candidate of read.candidates.slice(0, 5)) {
+    for (const candidate of candidates.slice(0, 5)) {
       const hit = await geocode(candidate);
       if (!hit) continue;
       const distance = milesBetween(HOME_LAT, HOME_LON, hit.latitude, hit.longitude);
@@ -199,11 +149,11 @@ export async function getTodaysPlace(now = new Date()): Promise<Place> {
         lon: hit.longitude,
         travelling: true,
         source: "travel",
-        eventsSeen: read.eventsSeen,
+        eventsSeen: read.events.length,
       };
     }
   } catch (err) {
     console.error("[digest] geocoding failed:", err);
   }
-  return home("home", read.eventsSeen);
+  return home("home", read.events.length);
 }
