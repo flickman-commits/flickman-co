@@ -181,14 +181,24 @@ function plRow(
     </tr>`;
 }
 
-/** Proportional bar: what share of revenue each line consumed. */
+/**
+ * Proportional bar: what share of revenue each line consumed.
+ *
+ * On a loss day spend exceeds revenue, so the raw shares total more than 100%
+ * and the cells would overflow the width. When that happens the bar switches to
+ * showing the split of total spend instead, with no margin segment — which is
+ * the honest picture: it was all cost.
+ */
 function costBar(day: DayFinancials): string {
   const base = day.revenue > 0 ? day.revenue : 0;
   if (base === 0) return "";
-  const seg = (v: number) => Math.max(0, Math.min(100, (v / base) * 100));
-  const cogs = seg(day.cogs);
-  const ad = seg(day.adSpend);
-  const margin = Math.max(0, 100 - cogs - ad);
+  const rawCogs = (day.cogs / base) * 100;
+  const rawAd = (day.adSpend / base) * 100;
+  const overspent = rawCogs + rawAd > 100;
+  const scale = overspent ? 100 / (rawCogs + rawAd) : 1;
+  const cogs = Math.max(0, rawCogs * scale);
+  const ad = Math.max(0, rawAd * scale);
+  const margin = overspent ? 0 : Math.max(0, 100 - cogs - ad);
 
   const cell = (w: number, c: string) =>
     w <= 0
@@ -206,6 +216,9 @@ function costBar(day: DayFinancials): string {
 function plCard(fin: Financials): string {
   const d = fin.yesterday;
   const marginPct = d.revenue > 0 ? (d.contributionMargin / d.revenue) * 100 : 0;
+  // A loss in a green success bar reads as a win at a glance, which is exactly
+  // the morning you most need to notice it.
+  const barColor = d.contributionMargin < 0 ? NEG : C_MARGIN;
 
   return `
     <div style="${CARD_STYLE} padding:18px 18px 16px; margin:0 0 26px;">
@@ -227,7 +240,7 @@ function plCard(fin: Financials): string {
         ${plRow("Ad spend", `-${money(d.adSpend).replace("-", "")}`, C_AD, { rule: true })}
       </table>
 
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:14px; background:${C_MARGIN}; border-radius:8px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:14px; background:${barColor}; border-radius:8px;">
         <tr>
           <td style="padding:13px 15px; font-family:${FONT}; font-size:14px; font-weight:700; color:#FFFFFF;">Contribution margin</td>
           <td align="right" style="padding:13px 15px; font-family:${FONT}; color:#FFFFFF; white-space:nowrap;">
