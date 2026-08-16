@@ -1,4 +1,4 @@
-import { JWT } from "google-auth-library";
+import { SHEETS_SCOPE, getGoogleToken } from "./google";
 
 /**
  * Trackstar's daily numbers, read straight from the Daily Scoreboard.
@@ -14,8 +14,7 @@ import { JWT } from "google-auth-library";
  * Contribution margin is derived: gross profit − ad spend.
  *
  * Env:
- *   GOOGLE_SERVICE_ACCOUNT_JSON  full service-account key JSON (read-only is
- *                                enough; share the sheet with its client_email)
+ *   GOOGLE_SERVICE_ACCOUNT_JSON  see ./google
  *   TRACKSTAR_SHEET_ID           overrides the default spreadsheet
  */
 
@@ -88,20 +87,10 @@ function rowToDay(row: unknown[], dateISO: string): DayFinancials {
  * "you made nothing yesterday" instead of "we couldn't reach the sheet".
  */
 export async function getFinancials(now = new Date()): Promise<Financials | null> {
-  const raw = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
-  if (!raw || !raw.trim()) return null;
+  const token = await getGoogleToken([SHEETS_SCOPE]);
+  if (!token) return null;
 
   try {
-    const creds = JSON.parse(raw) as { client_email: string; private_key: string };
-    const auth = new JWT({
-      email: creds.client_email,
-      // Vercel's env UI turns real newlines into "\n" often enough that this is
-      // worth normalizing rather than debugging a signature error later.
-      key: creds.private_key.replace(/\\n/g, "\n"),
-      scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
-    });
-    const { token } = await auth.getAccessToken();
-    if (!token) throw new Error("no access token");
 
     const url =
       `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/` +

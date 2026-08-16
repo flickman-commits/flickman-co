@@ -252,9 +252,16 @@ function weatherStrip(w: Weather): string {
     w.precipChance != null && w.precipChance > 0
       ? ` &middot; ${w.precipChance}% rain`
       : "";
+  // Naming the city every day is what makes it trustworthy on the day it
+  // changes — a silent switch would just look like the forecast was wrong.
+  const badge = w.travelling
+    ? `<span style="display:inline-block; margin-left:8px; padding:2px 7px; border-radius:99px; background:${ACCENT}; font-size:10px; font-weight:700; letter-spacing:0.4px; color:#06281B; vertical-align:middle;">TRAVELLING</span>`
+    : "";
   return `
     <div style="${CARD_STYLE} padding:12px 16px; margin:0 0 14px;">
-      <span style="font-family:${FONT}; font-size:11px; font-weight:600; letter-spacing:0.6px; text-transform:uppercase; color:${MUTED};">Today</span>
+      <span style="font-family:${FONT}; font-size:11px; font-weight:600; letter-spacing:0.6px; text-transform:uppercase; color:${MUTED};">Today in ${escapeHtml(
+        w.place
+      )}</span>${badge}
       <span style="font-family:${FONT}; font-size:15px; font-weight:700; color:${INK}; margin-left:10px;">${w.high}&deg; / ${w.low}&deg;</span>
       <span style="font-family:${FONT}; font-size:13px; color:${MUTED}; margin-left:8px;">${escapeHtml(
         w.summary
@@ -399,7 +406,10 @@ export function renderText(
     const w = panel.weather;
     const rain =
       w.precipChance != null && w.precipChance > 0 ? ` (${w.precipChance}% rain)` : "";
-    lines.push(`Weather: ${w.high}/${w.low}F — ${w.summary}${rain}`, "");
+    lines.push(
+      `Weather in ${w.place}${w.travelling ? " (travelling)" : ""}: ${w.high}/${w.low}F — ${w.summary}${rain}`,
+      ""
+    );
   }
 
   if (panel.financials) {

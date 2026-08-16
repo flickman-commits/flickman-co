@@ -1,75 +1,99 @@
-/**
- * Today's forecast from the National Weather Service.
- *
- * NWS is free, needs no API key, and has no rate limit worth worrying about at
- * one call a day. It does require a User-Agent identifying the caller —
- * requests without one are rejected.
- *
- * The documented entry point is /points/{lat},{lon}, which returns the URL of
- * the gridpoint forecast. That mapping is stable for a fixed coordinate, so the
- * resolved URL is hardcoded here and the lookup call skipped. To move the
- * location, re-resolve it:
- *   curl -A "flickman-digest" https://api.weather.gov/points/<lat>,<lon>
- * and take `.properties.forecast`. (OKX/33,43 is the West Village.)
- */
+import type { Place } from "./location";
 
-const FORECAST_URL = "https://api.weather.gov/gridpoints/OKX/33,43/forecast";
-const USER_AGENT = "flickman-digest/1.0 (matt@flickmanmedia.com)";
+/**
+ * Today's forecast for wherever you are.
+ *
+ * Open-Meteo rather than the National Weather Service: NWS is US-only, and the
+ * whole point of the location layer is that you might be somewhere else. This
+ * is free, needs no API key, and covers everywhere. It also means one provider
+ * for both travel and home instead of branching on country.
+ */
 
 export interface Weather {
   /** Daytime high, °F. */
   high: number;
   /** Overnight low, °F. */
   low: number;
-  /** e.g. "Chance Showers And Thunderstorms" */
   summary: string;
-  /** Chance of precipitation, 0-100, or null when NWS omits it. */
+  /** Chance of precipitation, 0-100, or null when unavailable. */
   precipChance: number | null;
+  /** Where this forecast is for, e.g. "Austin". */
+  place: string;
+  /** True when the location came from your calendar rather than home. */
+  travelling: boolean;
 }
 
-interface NwsPeriod {
-  isDaytime: boolean;
-  temperature: number;
-  temperatureUnit: string;
-  shortForecast: string;
-  probabilityOfPrecipitation?: { value: number | null } | null;
-}
+/** WMO weather interpretation codes, condensed to what a forecast line needs. */
+const WMO: Record<number, string> = {
+  0: "Clear",
+  1: "Mostly clear",
+  2: "Partly cloudy",
+  3: "Overcast",
+  45: "Fog",
+  48: "Freezing fog",
+  51: "Light drizzle",
+  53: "Drizzle",
+  55: "Heavy drizzle",
+  56: "Freezing drizzle",
+  57: "Freezing drizzle",
+  61: "Light rain",
+  63: "Rain",
+  65: "Heavy rain",
+  66: "Freezing rain",
+  67: "Freezing rain",
+  71: "Light snow",
+  73: "Snow",
+  75: "Heavy snow",
+  77: "Snow grains",
+  80: "Rain showers",
+  81: "Rain showers",
+  82: "Heavy rain showers",
+  85: "Snow showers",
+  86: "Heavy snow showers",
+  95: "Thunderstorms",
+  96: "Thunderstorms with hail",
+  99: "Thunderstorms with hail",
+};
 
 /**
- * Returns null on any failure. The digest is a newspaper, not a weather app —
- * a missing forecast should drop the panel, never block the send.
+ * Returns null on any failure — the digest is a newspaper, not a weather app,
+ * so a missing forecast drops the strip rather than blocking the send.
  */
-export async function getWeather(): Promise<Weather | null> {
+export async function getWeather(place: Place): Promise<Weather | null> {
   try {
-    const res = await fetch(FORECAST_URL, {
-      headers: { "User-Agent": USER_AGENT, Accept: "application/geo+json" },
+    const url =
+      "https://api.open-meteo.com/v1/forecast" +
+      `?latitude=${place.lat}&longitude=${place.lon}` +
+      "&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code" +
+      "&temperature_unit=fahrenheit&timezone=auto&forecast_days=1";
+
+    const res = await fetch(url, {
       cache: "no-store",
       signal: AbortSignal.timeout(8000),
     });
-    if (!res.ok) throw new Error(`NWS ${res.status}`);
+    if (!res.ok) throw new Error(`Open-Meteo ${res.status}`);
 
-    const json = (await res.json()) as { properties?: { periods?: NwsPeriod[] } };
-    const periods = json.properties?.periods ?? [];
-    if (periods.length === 0) throw new Error("no forecast periods");
+    const json = (await res.json()) as {
+      daily?: {
+        temperature_2m_max?: number[];
+        temperature_2m_min?: number[];
+        precipitation_probability_max?: (number | null)[];
+        weather_code?: number[];
+      };
+    };
+    const d = json.daily;
+    const high = d?.temperature_2m_max?.[0];
+    const low = d?.temperature_2m_min?.[0];
+    if (high == null || low == null) throw new Error("no daily temperatures");
 
-    // Running in the morning, periods[0] is the daytime block and [1] is the
-    // night. Running after dark it's the reverse, so pick by flag rather than
-    // by position and the panel stays correct either way.
-    const day = periods.find((p) => p.isDaytime);
-    const night = periods.find((p) => !p.isDaytime);
-    const lead = day ?? periods[0];
-
-    if (lead.temperatureUnit !== "F") {
-      // The gridpoint is a US one, so this shouldn't happen; bail rather than
-      // print a Celsius number under an F label.
-      throw new Error(`unexpected unit ${lead.temperatureUnit}`);
-    }
-
+    const code = d?.weather_code?.[0];
     return {
-      high: (day ?? lead).temperature,
-      low: (night ?? lead).temperature,
-      summary: lead.shortForecast,
-      precipChance: lead.probabilityOfPrecipitation?.value ?? null,
+      high: Math.round(high),
+      low: Math.round(low),
+      summary: (code != null && WMO[code]) || "—",
+      precipChance: d?.precipitation_probability_max?.[0] ?? null,
+      place: place.label,
+      travelling: place.travelling,
     };
   } catch (err) {
     console.error("[digest] weather fetch failed:", err);

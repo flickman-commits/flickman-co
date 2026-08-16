@@ -21,6 +21,7 @@ import {
 } from "../../../lib/digest/email";
 import { SECTIONS, type SectionId } from "../../../lib/digest/sources";
 import { getWeather } from "../../../lib/digest/weather";
+import { getTodaysPlace } from "../../../lib/digest/location";
 import { getFinancials } from "../../../lib/digest/financials";
 
 /**
@@ -84,9 +85,11 @@ export async function GET(req: NextRequest) {
     // Feeds, forecast, and sales are independent — fetch them together so the
     // panel costs no extra wall-clock. Both panel sources resolve to null on
     // failure rather than throwing, so neither can take the digest down.
+    // Where you are decides which city's forecast to fetch, so that one pair is
+    // sequential; everything else runs alongside it.
     const [{ stories, failed }, weather, financials] = await Promise.all([
       fetchAllStories(hours),
-      getWeather(),
+      getTodaysPlace().then(getWeather),
       getFinancials(),
     ]);
     const panel = { weather, financials };
@@ -166,7 +169,9 @@ export async function GET(req: NextRequest) {
       failed,
       curation,
       panel: {
-        weather: weather ? `${weather.high}/${weather.low}F` : null,
+        weather: weather
+          ? `${weather.place} ${weather.high}/${weather.low}F${weather.travelling ? " (travelling)" : ""}`
+          : null,
         financials: financials
           ? `rev ${Math.round(financials.yesterday.revenue)} / margin ${Math.round(financials.yesterday.contributionMargin)}`
           : null,
