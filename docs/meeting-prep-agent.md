@@ -40,22 +40,34 @@ Use Google Calendar, not Wispr Flow, for this list. Wispr Flow only knows about
 meetings it has recorded, which is a small subset — it returned zero events on a
 day the calendar had three. Wispr Flow is for step 2, where it's excellent.
 
-Skip: all-day events, anything cancelled, anything Matt has declined, and
-personal blocks whose title makes clear there's nothing to prepare for (gym,
-focus, lunch, travel, commute, blocked, hold). If nothing survives, stop and
-write no rows.
+Read **every** calendar he has, not just the primary — he keeps two Google
+accounts and most invited meetings land on the second one.
 
-**Do not skip a meeting for having no attendees.** Matt creates most of his own
-events as blocks for calls he'll dial into, so the `attendees` array is usually
-absent — on a typical day, every single meeting. Judge by the title instead.
+Skip: all-day events, anything cancelled, and anything Matt has declined.
+
+Then apply the same test the report uses, so the two agree. Prep for a meeting
+the report filters out is wasted, and shows up as `unmatched` in diagnostics.
+
+**An event with other invitees is always a meeting.** That's Matt's own rule: he
+blocks time to hold it, and adds people once it becomes real.
+
+**An event with no invitees is a hold, a reminder or a task** unless the title
+states a live conversation at that time. The verb decides it, not the name:
+"CALL W/ LAILA" is a meeting, "FOLLOW UP WITH MAGNUS" is a reminder to send an
+email. Task lists ("TURN OFF PHONE / AD REPORT / FULFILL ORDERS"), admin, edits,
+workouts and travel are all out.
+
+If nothing survives, stop and write no rows.
 
 ### 2. Research each meeting
 
-**Start by reading the title for who and what.** Matt's titles carry the
-information the attendee list doesn't: "FOLLOW UP WITH GREG FROM EDGE" gives you
-a person (Greg) and a company (Edge); "ALISON / APEX SIZZLE + FOUNDER" gives you
-Alison, a company (Apex), a deliverable (a sizzle reel), and that a founder is
-joining. Extract those names first — they're what you search on.
+**Use the invitee list when there is one** — it gives you real email addresses,
+which are far better Gmail and transcript search keys than a name.
+
+When there are no invitees, read the title for who and what. Matt's titles carry
+what the invite doesn't: "ALISON / APEX SIZZLE + FOUNDER" gives you Alison, a
+company (Apex), a deliverable (a sizzle reel), and that a founder is joining.
+Extract those names first — they're what you search on.
 
 Then spend effort proportional to how much you don't already know. Work through
 these in order and stop when you have enough:
