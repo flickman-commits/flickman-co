@@ -66,7 +66,11 @@ export async function GET(req: NextRequest) {
           ),
           "X-Digest-Financials": result.financialsLoaded ? "loaded" : "absent",
           "X-Digest-Meetings": headerSafe(
-            `${result.meetingCount ?? "unavailable"} today; prep ${result.prep.status}, ` +
+            `${result.meetingCount ?? "unavailable"} today` +
+              (result.meetingFilter
+                ? ` (${result.meetingFilter.dropped} filtered, ${result.meetingFilter.mode})`
+                : "") +
+              `; prep ${result.prep.status}, ` +
               `${result.prep.matched} matched, ${result.prep.unmatched} unmatched` +
               (result.prep.reason ? `: ${result.prep.reason}` : "")
           ),
@@ -87,6 +91,7 @@ export async function GET(req: NextRequest) {
       financialsLoaded: result.financialsLoaded,
       meetingCount: result.meetingCount,
       prep: result.prep,
+      meetingFilter: result.meetingFilter,
     });
   } catch (err) {
     console.error("[digest] run failed:", err);

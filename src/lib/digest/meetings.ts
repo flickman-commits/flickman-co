@@ -1,6 +1,7 @@
 import { easternDate, type CalendarEvent, type CalendarRead } from "./calendar";
 import type { Meeting } from "./email";
 import { normalizeTitle, type PrepRead } from "./prep";
+import type { LlmProvider } from "./llm";
 
 /**
  * Today's meetings, derived from the calendar read.
@@ -58,6 +59,14 @@ function attendeeList(event: CalendarEvent): string | undefined {
  * a genuinely clear day, and those render differently.
  */
 export function getTodaysMeetings(read: CalendarRead, now = new Date()): Meeting[] | null {
+  return getTodaysMeetingsDetailed(read, now)?.meetings ?? null;
+}
+
+/** Same, plus a per-meeting flag for whether the event had real invitees. */
+export function getTodaysMeetingsDetailed(
+  read: CalendarRead,
+  now = new Date()
+): { meetings: Meeting[]; hadInvitees: boolean[] } | null {
   if (read.status !== "ok") return null;
 
   const today = easternDate(now);
@@ -74,13 +83,19 @@ export function getTodaysMeetings(read: CalendarRead, now = new Date()): Meeting
       if (self?.responseStatus === "declined") return false;
       return true;
     })
-    .map<Meeting>((e) => ({
-      time: timeLabel(e.start!.dateTime!),
-      title: e.summary?.trim() || "(no title)",
-      attendees: attendeeList(e),
+    .map((e) => ({
+      meeting: {
+        time: timeLabel(e.start!.dateTime!),
+        title: e.summary?.trim() || "(no title)",
+        attendees: attendeeList(e),
+      } as Meeting,
+      hadInvitees: (e.attendees ?? []).some((a) => !a.resource && !a.self),
     }));
 
-  return meetings;
+  return {
+    meetings: meetings.map((m) => m.meeting),
+    hadInvitees: meetings.map((m) => m.hadInvitees),
+  };
 }
 
 export interface PrepMerge {
@@ -117,4 +132,103 @@ export function applyPrep(meetings: Meeting[], prep: PrepRead): PrepMerge {
   });
 
   return { meetings: merged, matched, unmatched: prep.byTitle.size - used.size };
+}
+
+/* ──────────────────────────────────────────────────────────────── */
+/* Telling meetings apart from time blocks                           */
+/* ──────────────────────────────────────────────────────────────── */
+
+const CLASSIFY_SCHEMA = {
+  type: "object",
+  properties: {
+    decisions: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          index: { type: "integer", description: "The number next to the entry." },
+          isMeeting: {
+            type: "boolean",
+            description: "True if this is time with another person.",
+          },
+        },
+        required: ["index", "isMeeting"],
+        additionalProperties: false,
+      },
+    },
+  },
+  required: ["decisions"],
+  additionalProperties: false,
+} as const;
+
+const CLASSIFY_SYSTEM = `Matt uses one calendar for both meetings and his to-do list, and almost never adds \
+invitees — he blocks time for calls he will dial into himself. So the invitee list tells you nothing, and \
+you must judge from the title alone.
+
+Mark isMeeting true when the entry is time spent with another person: a call, a sync, an intro, a \
+follow-up, an interview, a shoot with a crew, anything naming a person or an outside company he'd be \
+speaking to.
+
+Mark isMeeting false when it is work he does alone or a reminder to himself: task lists (often several \
+tasks separated by slashes), errands, admin, focus or writing blocks, workouts, travel, meal breaks.
+
+Two rules for the uncertain middle:
+- A person's name, or a company he would plausibly be talking to, is strong evidence of a meeting.
+- When you genuinely cannot tell, answer true. A stray block in his morning report costs him a glance; \
+a missing meeting costs him the prep for it.`;
+
+/**
+ * Drop personal time blocks, keeping only entries that are time with someone.
+ *
+ * A regex would be the obvious approach and it doesn't survive contact with real
+ * titles: "APEX + ALISON LEVINE EDITS" and "TURN OFF PHONE / AD REPORT / FULFILL
+ * ORDERS" are both all-caps fragments with punctuation, and only one is a
+ * meeting. This is judgment, so it goes to the model — one small call over a
+ * handful of titles, which costs a fraction of a cent.
+ *
+ * Anything with a real invitee skips the model entirely: that's a hard signal
+ * and doesn't need judging. With no provider, or on any failure, every entry is
+ * kept — over-including beats silently dropping the meeting you needed to
+ * prepare for.
+ */
+export async function keepRealMeetings(
+  meetings: Meeting[],
+  hadInvitees: boolean[],
+  provider: LlmProvider | null
+): Promise<{ meetings: Meeting[]; dropped: number; mode: "ai" | "kept-all" }> {
+  const undecided = meetings
+    .map((m, i) => ({ m, i }))
+    .filter(({ i }) => !hadInvitees[i]);
+
+  if (!provider || undecided.length === 0) {
+    return { meetings, dropped: 0, mode: "kept-all" };
+  }
+
+  const list = undecided.map(({ m }, n) => `[${n}] ${m.time} — ${m.title}`).join("\n");
+
+  try {
+    const { text } = await provider.complete({
+      system: CLASSIFY_SYSTEM,
+      prompt: `Classify each calendar entry.\n\n${list}`,
+      schema: CLASSIFY_SCHEMA as unknown as Record<string, unknown>,
+      schemaName: "meeting_classification",
+      maxTokens: 1000,
+    });
+
+    const parsed = JSON.parse(text) as {
+      decisions: { index: number; isMeeting: boolean }[];
+    };
+
+    const rejected = new Set<number>();
+    for (const d of parsed.decisions) {
+      const entry = undecided[d.index];
+      if (entry && !d.isMeeting) rejected.add(entry.i);
+    }
+
+    const kept = meetings.filter((_, i) => !rejected.has(i));
+    return { meetings: kept, dropped: rejected.size, mode: "ai" };
+  } catch (err) {
+    console.error("[digest] meeting classification failed:", err);
+    return { meetings, dropped: 0, mode: "kept-all" };
+  }
 }

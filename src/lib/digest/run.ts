@@ -7,7 +7,7 @@ import { getWeather } from "./weather";
 import { getTodaysPlace } from "./location";
 import { getFinancials } from "./financials";
 import { getTodaysEvents } from "./calendar";
-import { applyPrep, getTodaysMeetings } from "./meetings";
+import { applyPrep, getTodaysMeetingsDetailed, keepRealMeetings } from "./meetings";
 import { getMeetingPrep } from "./prep";
 import { easternDate } from "./calendar";
 
@@ -54,6 +54,7 @@ export interface DigestResult {
   financialsLoaded: boolean;
   meetingCount: number | null;
   prep: { status: string; matched: number; unmatched: number; reason?: string };
+  meetingFilter: { mode: string; dropped: number } | null;
 }
 
 export async function buildDigest(opts: { hours?: number } = {}): Promise<DigestResult> {
@@ -74,11 +75,6 @@ export async function buildDigest(opts: { hours?: number } = {}): Promise<Digest
     getMeetingPrep(easternDate(new Date())),
   ]);
   const resolvedPlace = place;
-  // The calendar owns the schedule; Notion only supplies context per meeting,
-  // so an agent that didn't run costs you context rather than the whole section.
-  const calendarMeetings = getTodaysMeetings(calendar);
-  const merge = calendarMeetings ? applyPrep(calendarMeetings, prep) : null;
-  const panel = { weather, financials, meetings: merge?.meetings ?? null };
   const bySection = storiesBySection(stories);
 
   const providerResult = getProvider();
@@ -86,6 +82,17 @@ export async function buildDigest(opts: { hours?: number } = {}): Promise<Digest
     console.error(`[digest] no LLM provider: ${providerResult.reason}`);
   }
   const provider = providerResult.ok ? providerResult.provider : null;
+
+  // The calendar owns the schedule; Notion only supplies context per meeting,
+  // so an agent that didn't run costs you context rather than the whole section.
+  // The calendar doubles as a to-do list, so entries are filtered to actual
+  // meetings before prep is attached.
+  const detail = getTodaysMeetingsDetailed(calendar);
+  const filtered = detail
+    ? await keepRealMeetings(detail.meetings, detail.hadInvitees, provider)
+    : null;
+  const merge = filtered ? applyPrep(filtered.meetings, prep) : null;
+  const panel = { weather, financials, meetings: merge?.meetings ?? null };
 
   // Sections are independent, so curate them concurrently — a hosted run has to
   // finish inside its function timeout.
@@ -158,6 +165,9 @@ export async function buildDigest(opts: { hours?: number } = {}): Promise<Digest
       unmatched: merge?.unmatched ?? 0,
       reason: prep.reason,
     },
+    meetingFilter: filtered
+      ? { mode: filtered.mode, dropped: filtered.dropped }
+      : null,
   };
 }
 
