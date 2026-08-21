@@ -51,6 +51,7 @@ export interface DigestResult {
     sections: Record<string, string>;
   };
   location: { place: string; source: string; eventsSeen: number; reason?: string };
+  calendars: string | null;
   financialsLoaded: boolean;
   meetingCount: number | null;
   prep: { status: string; matched: number; unmatched: number; reason?: string };
@@ -157,6 +158,7 @@ export async function buildDigest(opts: { hours?: number } = {}): Promise<Digest
       eventsSeen: resolvedPlace.eventsSeen,
       reason: resolvedPlace.reason,
     },
+    calendars: calendar.perCalendar ?? null,
     financialsLoaded: financials != null,
     meetingCount: panel.meetings?.length ?? null,
     prep: {

@@ -161,21 +161,27 @@ const CLASSIFY_SCHEMA = {
   additionalProperties: false,
 } as const;
 
-const CLASSIFY_SYSTEM = `Matt uses one calendar for both meetings and his to-do list, and almost never adds \
-invitees — he blocks time for calls he will dial into himself. So the invitee list tells you nothing, and \
-you must judge from the title alone.
+const CLASSIFY_SYSTEM = `Matt keeps one calendar for meetings, holds and his to-do list. His own rule:
+he blocks time first to hold it, and once it becomes a real meeting he adds the other people as invitees.
 
-Mark isMeeting true when the entry is time spent with another person: a call, a sync, an intro, a \
-follow-up, an interview, a shoot with a crew, anything naming a person or an outside company he'd be \
-speaking to.
+Every entry you are given has NO invitees, because the ones that do have already been kept. So each of
+these is a hold, a reminder, a task, or personal time — unless the title itself describes a conversation
+happening at that time.
 
-Mark isMeeting false when it is work he does alone or a reminder to himself: task lists (often several \
-tasks separated by slashes), errands, admin, focus or writing blocks, workouts, travel, meal breaks.
+Mark isMeeting false for:
+- Reminders to do something: "follow up with X", "email Y", "check in on Z". These are prompts to send a
+  message, not time booked with someone. This is the single most common false positive.
+- Task lists, often several items separated by slashes.
+- Admin and errands: paying bills, ads, orders, uploads, edits, prep.
+- Personal time: workouts, runs, meals, cleaning, travel, focus blocks.
 
-Two rules for the uncertain middle:
-- A person's name, or a company he would plausibly be talking to, is strong evidence of a meeting.
-- When you genuinely cannot tell, answer true. A stray block in his morning report costs him a glance; \
-a missing meeting costs him the prep for it.`;
+Mark isMeeting true only when the title states a live conversation at that time — "call with X", "X/Y"
+naming two people, an interview, a shoot with a crew, a scheduled intro.
+
+A person's name alone is NOT enough: "follow up with Magnus" is a reminder, "call w/ Magnus" is a meeting.
+The verb decides it, not the name.
+
+When genuinely torn, answer true — a stray row costs a glance, a missing meeting costs its prep.`;
 
 /**
  * Drop personal time blocks, keeping only entries that are time with someone.
@@ -186,10 +192,14 @@ a missing meeting costs him the prep for it.`;
  * meeting. This is judgment, so it goes to the model — one small call over a
  * handful of titles, which costs a fraction of a cent.
  *
- * Anything with a real invitee skips the model entirely: that's a hard signal
- * and doesn't need judging. With no provider, or on any failure, every entry is
- * kept — over-including beats silently dropping the meeting you needed to
- * prepare for.
+ * Anything with a real invitee skips the model entirely and is always kept —
+ * that's Matt's own rule (he adds people once a hold becomes a real meeting),
+ * so it's a hard signal needing no judgment. The model only sees the leftovers,
+ * which are holds and reminders far more often than meetings, and the prompt
+ * says so.
+ *
+ * With no provider, or on any failure, every entry is kept — over-including
+ * beats silently dropping the meeting you needed to prepare for.
  */
 export async function keepRealMeetings(
   meetings: Meeting[],

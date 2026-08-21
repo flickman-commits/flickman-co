@@ -64,6 +64,7 @@ export async function GET(req: NextRequest) {
             `${result.location.place} (${result.location.source}, ${result.location.eventsSeen} events)` +
               (result.location.reason ? `: ${result.location.reason}` : "")
           ),
+          "X-Digest-Calendars": headerSafe(result.calendars ?? "none"),
           "X-Digest-Financials": result.financialsLoaded ? "loaded" : "absent",
           "X-Digest-Meetings": headerSafe(
             `${result.meetingCount ?? "unavailable"} today` +
@@ -92,6 +93,7 @@ export async function GET(req: NextRequest) {
       meetingCount: result.meetingCount,
       prep: result.prep,
       meetingFilter: result.meetingFilter,
+      calendars: result.calendars,
     });
   } catch (err) {
     console.error("[digest] run failed:", err);
