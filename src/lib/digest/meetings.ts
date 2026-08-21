@@ -17,6 +17,17 @@ import type { LlmProvider } from "./llm";
  * event's own, so a day's meetings read as one consistent column.
  */
 
+/**
+ * Matt's convention for a time that's been proposed but not agreed. These are
+ * excluded before anything else looks at them — including the invitee fast path,
+ * since a proposed meeting can already carry invitees. It's a deliberate
+ * convention rather than a judgment call, so it belongs in code, not in a prompt.
+ *
+ * Matches (HOLD), [hold], ( Hold ) — bracketed only, so "household" and
+ * "holding pattern" in a real title don't trip it.
+ */
+const HOLD_MARKER = /[([]\s*hold\s*[)\]]/i;
+
 /** How many attendees to name before collapsing the rest into a count. */
 const MAX_NAMED_ATTENDEES = 4;
 
@@ -74,6 +85,8 @@ export function getTodaysMeetingsDetailed(
   const meetings = read.events
     .filter((e) => {
       if (e.status === "cancelled") return false;
+      // A proposed-but-unconfirmed time isn't on your day yet.
+      if (HOLD_MARKER.test(e.summary ?? "")) return false;
       // All-day entries are trips, birthdays and holidays, not meetings — and
       // the location layer already uses them for travel.
       if (!e.start?.dateTime) return false;

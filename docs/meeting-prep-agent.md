@@ -45,6 +45,11 @@ accounts and most invited meetings land on the second one.
 
 Skip: all-day events, anything cancelled, and anything Matt has declined.
 
+**Skip anything with (HOLD) in the title.** That's his convention for a time
+that's been proposed but not agreed — "CALL SHAWN (HOLD)". Skip it even when it
+has invitees; a proposed meeting often does. The report drops these outright, so
+prepping one is wasted work.
+
 Then apply the same test the report uses, so the two agree. Prep for a meeting
 the report filters out is wasted, and shows up as `unmatched` in diagnostics.
 
