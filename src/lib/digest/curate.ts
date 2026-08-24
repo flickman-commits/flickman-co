@@ -75,8 +75,8 @@ const SECTION_BRIEF: Record<SectionId, string> = {
     "and sponsorship deals. Skip fashion-only sneaker coverage and pure deal roundups.",
   nyc:
     "The reader lives in New York City. They want news that changes something " +
-    "about living here: transit, housing, city government, crime and safety, " +
-    "notable openings and closings, weather events, big local stories. Drop " +
+    "about living here: transit, housing and rents, city government and policy, " +
+    "notable openings and closings, construction, weather events. Drop " +
     "anything that isn't actually about New York City even when a New York " +
     "outlet published it — these feeds carry national and out-of-state crime " +
     "stories. Skip celebrity gossip, sponsored and event-promo posts, and " +
@@ -84,7 +84,7 @@ const SECTION_BRIEF: Record<SectionId, string> = {
   westvillage:
     "The reader lives in the West Village. They want neighborhood-level news: " +
     "restaurants and bars opening or closing, construction and development, " +
-    "street closures, local crime, landmark and preservation fights, events. " +
+    "street closures, landmark and preservation fights, events. " +
     "Only include a story if it is genuinely about the West Village, Greenwich " +
     "Village, Meatpacking, or Hudson Square. Neighborhood feeds syndicate " +
     "generic city-wide and statewide filler (lottery jackpots, statewide " +
@@ -104,7 +104,13 @@ and do not invent facts, numbers, or quotes.
 - Each summary is 1-2 sentences of plain prose. Lead with what happened. No preamble, no "this article \
 discusses", no marketing voice, no exclamation points.
 - If several candidates cover the same event, pick the single best one and drop the rest.
-- Order your picks most important first.`;
+- Order your picks most important first.
+
+He reads this to know what is going on, not to feel bad. Leave out the daily drumbeat of individual tragedy — shootings, assaults, deaths, fatal accidents, individual court cases, missing persons — and anything whose pull is alarm or outrage rather than information. He can't act on any of it and doesn't want it with breakfast.
+
+This is not an instruction to hide bad news. Include something difficult when it genuinely changes the city or his industry: a policy that passed, a company in trouble, an outage or closure, a storm that will affect his day, a scandal with real consequences. The test is whether he'd be worse off tomorrow for not having known.
+
+When in doubt, prefer the story that tells him something happened and what it means — openings and closings, prices and costs, transit and infrastructure, rules and decisions, deals and results — over the one that just tells him the world is frightening.`;
 
 /** Candidate cap per section — keeps the prompt small and the call fast. */
 const MAX_CANDIDATES = 30;
