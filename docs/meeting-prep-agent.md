@@ -33,36 +33,26 @@ you, so write for someone walking into a meeting cold.
 
 ### 1. Get today's meetings
 
-Use the **Google Calendar** tool `list_events` on the primary calendar, bounded
-to today in America/New_York, ordered by start time.
+Fetch the list from the report itself:
 
-Use Google Calendar, not Wispr Flow, for this list. Wispr Flow only knows about
-meetings it has recorded, which is a small subset — it returned zero events on a
-day the calendar had three. Wispr Flow is for step 2, where it's excellent.
+```
+GET https://www.flickman.co/api/digest/meetings?key=<CRON_SECRET>
+```
 
-Read **every** calendar he has, not just the primary — he keeps two Google
-accounts and most invited meetings land on the second one.
+Returns `{ date, count, meetings: [{ title, time, attendees }] }`.
 
-Skip: all-day events, anything cancelled, and anything Matt has declined.
+**Do not read the calendar yourself.** The report reads both of Matt's Google
+accounts through a service account and applies every filter: all-day events,
+cancelled, declined, (HOLD) holds, and the work blocks and reminders he keeps on
+the same calendar. Your Google connector only reaches one of the two accounts,
+so reading it directly misses exactly the meetings that matter -- the ones with
+real invitees, which live on the second account.
 
-**Skip anything with (HOLD) in the title.** That's his convention for a time
-that's been proposed but not agreed — "CALL SHAWN (HOLD)". Skip it even when it
-has invitees; a proposed meeting often does. The report drops these outright, so
-prepping one is wasted work.
+This also fixes the join. The `title` you get back is the report's own string,
+so writing it to Notion verbatim always matches.
 
-Then apply the same test the report uses, so the two agree. Prep for a meeting
-the report filters out is wasted, and shows up as `unmatched` in diagnostics.
-
-**An event with other invitees is always a meeting.** That's Matt's own rule: he
-blocks time to hold it, and adds people once it becomes real.
-
-**An event with no invitees is a hold, a reminder or a task** unless the title
-states a live conversation at that time. The verb decides it, not the name:
-"CALL W/ LAILA" is a meeting, "FOLLOW UP WITH MAGNUS" is a reminder to send an
-email. Task lists ("TURN OFF PHONE / AD REPORT / FULFILL ORDERS"), admin, edits,
-workouts and travel are all out.
-
-If nothing survives, stop and write no rows.
+If the list is empty, stop and write no rows. If the endpoint fails, stop --
+don't fall back to reading the calendar, or you'll prep the wrong things.
 
 ### 2. Research each meeting
 
@@ -114,13 +104,13 @@ One row per meeting in the database above.
 
 | Property | Value |
 | --- | --- |
-| **Meeting** | The calendar event title, **copied exactly** |
+| **Meeting** | The `title` from the endpoint, **copied exactly** |
 | **Date** | Today's date |
 | **Attendees** | Who's actually on it, comma separated, excluding Matt. Usually you'll have inferred this from the title rather than the invite. Leave blank if you genuinely can't tell. |
 | **Context** | What you wrote in step 3 |
 | **Sources** | Which sources you actually used, e.g. `Wispr Flow, Gmail` |
 
-**The title must match the calendar exactly.** It is the join key. If you
+**The title must match the endpoint's exactly.** It is the join key. If you
 reword, expand an abbreviation, or fix capitalization, the report will not find
 your row and the meeting will render with no context — and it will still look
 perfectly fine, so nobody will notice. Copy it verbatim.
@@ -139,8 +129,8 @@ and name the shortfall in `Sources`, e.g. `Gmail only — Wispr Flow unavailable
 A row with thin context beats no row. Never fail the whole run because one
 source is down.
 
-The one thing that must not fail is step 1: if Google Calendar is unreachable,
-stop and write nothing rather than guessing at a schedule.
+The one thing that must not fail is step 1: if the meetings endpoint is
+unreachable, stop and write nothing rather than guessing at a schedule.
 
 ---
 

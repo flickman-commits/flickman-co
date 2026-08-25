@@ -58,6 +58,43 @@ export interface DigestResult {
   meetingFilter: { mode: string; dropped: number } | null;
 }
 
+export interface MeetingList {
+  /** ET calendar date the list is for. */
+  date: string;
+  meetings: import("./email").Meeting[];
+  calendars: string | null;
+  filtered: number;
+  filterMode: string;
+}
+
+/**
+ * Today's meetings after every filter, with no news or financials.
+ *
+ * Exposed so the prep agent can ask the report what to prepare rather than
+ * deciding for itself. That removes the two ways the two used to disagree: the
+ * agent reading a different set of calendars, and writing titles that don't
+ * match. Titles here are the join key, verbatim.
+ */
+export async function buildMeetingList(): Promise<MeetingList> {
+  const calendar = await getTodaysEvents();
+  const detail = getTodaysMeetingsDetailed(calendar);
+
+  const providerResult = getProvider();
+  const provider = providerResult.ok ? providerResult.provider : null;
+
+  const filtered = detail
+    ? await keepRealMeetings(detail.meetings, detail.hadInvitees, provider)
+    : null;
+
+  return {
+    date: easternDate(new Date()),
+    meetings: filtered?.meetings ?? [],
+    calendars: calendar.perCalendar ?? null,
+    filtered: filtered?.dropped ?? 0,
+    filterMode: filtered?.mode ?? "unavailable",
+  };
+}
+
 export async function buildDigest(opts: { hours?: number } = {}): Promise<DigestResult> {
   const hours = opts.hours || Number(process.env.DIGEST_HOURS) || DEFAULT_HOURS;
 
