@@ -36,10 +36,17 @@ you, so write for someone walking into a meeting cold.
 Fetch the list from the report itself:
 
 ```
-GET https://www.flickman.co/api/digest/meetings?key=<CRON_SECRET>
+GET https://www.flickman.co/api/digest/meetings?key=YOUR_MEETINGS_READ_TOKEN
 ```
 
 Returns `{ date, count, meetings: [{ title, time, attendees }] }`.
+
+**Paste the real token into the prompt — a placeholder will 401.** A scheduled
+task has no environment to read a variable from, so the literal string is the
+only thing that works. It is deliberately a separate token from CRON_SECRET:
+this one only reads today's meeting list, whereas CRON_SECRET can trigger a
+send, and a value that has to live in plain text inside a prompt should be the
+least powerful one that does the job.
 
 **Do not read the calendar yourself.** The report reads both of Matt's Google
 accounts through a service account and applies every filter: all-day events,

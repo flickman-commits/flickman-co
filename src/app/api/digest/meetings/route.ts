@@ -13,19 +13,29 @@ import { buildMeetingList } from "../../../../lib/digest/run";
  * The `title` of each entry is the join key — the agent must write it back to
  * Notion verbatim.
  *
- * Auth is the same CRON_SECRET as the report, via header or ?key=.
+ * Auth accepts MEETINGS_READ_TOKEN or, failing that, CRON_SECRET — header or
+ * ?key=. The separate token exists because this value has to sit in plain text
+ * inside the scheduled task's prompt: a scheduled task has no environment to
+ * read from, so the literal string is the only option. CRON_SECRET can trigger
+ * a send, so it shouldn't be the thing living in a prompt. This one only reads
+ * today's meeting list, and rotating it doesn't touch the cron.
  */
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 
 export async function GET(req: NextRequest) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) {
+  const accepted = [process.env.MEETINGS_READ_TOKEN, process.env.CRON_SECRET]
+    .map((t) => t?.trim())
+    .filter((t): t is string => Boolean(t));
+  if (accepted.length === 0) {
     return NextResponse.json({ error: "Not configured" }, { status: 503 });
   }
-  const authed =
-    req.headers.get("authorization") === `Bearer ${secret}` ||
-    req.nextUrl.searchParams.get("key") === secret;
+
+  const header = req.headers.get("authorization");
+  const query = req.nextUrl.searchParams.get("key");
+  const authed = accepted.some(
+    (t) => header === `Bearer ${t}` || query === t
+  );
   if (!authed) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
