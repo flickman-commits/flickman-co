@@ -25,13 +25,35 @@ const DEFAULT_BASE = "https://fast.trackstar.art";
 /** The report runs to a couple of hundred findings; ?brief=1 is the email cut. */
 const REPORT_PATH = "/api/admin/nightly-sweep?cached=1&format=markdown&brief=1";
 
+/** The JSON form, for the timestamp the Markdown does not carry. */
+const REPORT_JSON_PATH = "/api/admin/nightly-sweep?cached=1";
+
+/**
+ * How old a report may be before the section says so.
+ *
+ * The sweep runs nightly, so anything past a day and a half means the routine
+ * did not run. Rendering those numbers as if they were this morning's is the
+ * failure worth avoiding: you would read "18 need attention, 0 fixed" every
+ * day and never notice the agent had been dead for a week. A stale-marked
+ * report is information; a silently stale one is not.
+ */
+const STALE_AFTER_MS = 36 * 60 * 60 * 1000;
+
 const TIMEOUT_MS = 8000;
 
 export interface SystemsReport {
   /** Markdown, already trimmed to what belongs in an email. */
   body: string | null;
-  status: "ok" | "no-report" | "unavailable" | "no-credential";
+  status: "ok" | "stale" | "no-report" | "unavailable" | "no-credential";
   reason?: string;
+}
+
+/** "yesterday", "3 days ago" - enough to tell if the routine has stopped. */
+function ageLabel(iso: string): string {
+  const hours = (Date.now() - new Date(iso).getTime()) / 3_600_000;
+  if (hours < 36) return "last night";
+  const days = Math.round(hours / 24);
+  return `${days} days ago`;
 }
 
 /**
@@ -68,10 +90,33 @@ export async function getSystemsReport(): Promise<SystemsReport> {
     }
 
     const body = (await res.text()).trim();
+
+    // When the report was actually written. Fetched separately because the
+    // brief Markdown deliberately carries no chrome.
+    let storedAt: string | null = null;
+    try {
+      const meta = await fetch(`${base}${REPORT_JSON_PATH}`, {
+        headers: { "x-report-token": token },
+        cache: "no-store",
+      });
+      if (meta.ok) storedAt = (await meta.json())?.storedAt ?? null;
+    } catch {
+      // The age is a nicety; never let it cost us the report itself.
+    }
     // The sweep writes nothing when there is nothing worth saying. Treat that
     // as "no report" so the email stays quiet rather than printing a heading
     // over empty space.
     if (!body) return { body: null, status: "no-report", reason: "sweep had nothing to report" };
+
+    if (storedAt && Date.now() - new Date(storedAt).getTime() > STALE_AFTER_MS) {
+      // Lead with the age so the numbers underneath are read for what they
+      // are: the last run's, not this morning's.
+      return {
+        body: `⚠️ **The overnight sweep has not run since ${ageLabel(storedAt)}.** Findings below are from then.\n\n${body}`,
+        status: "stale",
+        reason: `report stored ${storedAt}`,
+      };
+    }
 
     return { body, status: "ok" };
   } catch (err) {
