@@ -348,6 +348,48 @@ export interface DailyPanel {
   weather: Weather | null;
   financials: Financials | null;
   meetings: Meeting[] | null;
+  /** Overnight fulfillment-tool sweep. Null when it has nothing to say. */
+  systems: string | null;
+}
+
+/**
+ * The overnight sweep, rendered under the P&L.
+ *
+ * Placed there because the P&L answers "how did the business do yesterday" and
+ * this answers "is the machine that runs it still healthy" - both are Trackstar
+ * status and both belong before the day gets planned. Meetings and news are
+ * forward-looking; an operational alert after the news is one that gets
+ * skimmed past.
+ *
+ * The body arrives as light Markdown from the sweep. Rather than pull in a
+ * parser for two constructs, the bold and bullet handling is done inline -
+ * anything richer than that belongs in the full report, not in an email.
+ */
+function systemsCard(body: string): string {
+  const escape = (t: string) =>
+    t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const inline = (t: string) =>
+    escape(t).replace(/\*\*(.+?)\*\*/g, `<strong style="color:${INK};">$1</strong>`);
+
+  const rows = body
+    .split("\n")
+    .filter((line) => line.trim())
+    .map((line) => {
+      const bullet = line.match(/^\s*-\s+(.*)$/);
+      if (bullet) {
+        return `<div style="font-family:${FONT}; font-size:13px; line-height:1.6; color:${MUTED}; padding-left:12px; text-indent:-12px; margin-top:4px;">&bull;&nbsp;${inline(bullet[1])}</div>`;
+      }
+      return `<div style="font-family:${FONT}; font-size:13px; line-height:1.6; color:${MUTED}; margin-top:6px;">${inline(line)}</div>`;
+    })
+    .join("");
+
+  return `
+    <div style="border:1px solid ${LINE}; border-radius:10px; padding:14px 16px; margin-top:12px;">
+      <div style="font-family:${FONT}; font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:${FAINT};">
+        Trackstar Systems
+      </div>
+      ${rows}
+    </div>`;
 }
 
 /** Top-level divider between the report's major parts. */
@@ -468,6 +510,7 @@ export function renderHtml(
 
     ${topRow(panel.weather, panel.financials)}
     ${panel.financials ? plCard(panel.financials) : ""}
+    ${panel.systems ? systemsCard(panel.systems) : ""}
 
     ${sectionHeader("Today's Meetings")}
     ${renderMeetings(panel.meetings)}
@@ -518,6 +561,15 @@ export function renderText(
       `  Contribution margin  ${money(d.contributionMargin)} (${marginPct.toFixed(0)}%)`,
       ""
     );
+  }
+
+  if (panel.systems) {
+    lines.push("TRACKSTAR SYSTEMS", "");
+    // Strip the Markdown emphasis; the plain-text part has no use for it.
+    for (const line of panel.systems.split("\n")) {
+      lines.push(line.replace(/\*\*/g, ""));
+    }
+    lines.push("");
   }
 
   lines.push("TODAY'S MEETINGS", "");

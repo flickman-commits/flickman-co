@@ -9,6 +9,7 @@ import { getFinancials } from "./financials";
 import { getTodaysEvents } from "./calendar";
 import { applyPrep, getTodaysMeetingsDetailed, keepRealMeetings } from "./meetings";
 import { getMeetingPrep } from "./prep";
+import { getSystemsReport } from "./systems";
 import { easternDate } from "./calendar";
 
 /**
@@ -55,6 +56,7 @@ export interface DigestResult {
   financialsLoaded: boolean;
   meetingCount: number | null;
   prep: { status: string; matched: number; unmatched: number; reason?: string };
+  systems: { status: string; reason?: string };
   meetingFilter: { mode: string; dropped: number } | null;
 }
 
@@ -106,11 +108,12 @@ export async function buildDigest(opts: { hours?: number } = {}): Promise<Digest
   const calendar = await getTodaysEvents();
   const place = await getTodaysPlace(calendar);
 
-  const [{ stories, failed }, weather, financials, prep] = await Promise.all([
+  const [{ stories, failed }, weather, financials, prep, systems] = await Promise.all([
     fetchAllStories(hours),
     getWeather(place),
     getFinancials(),
     getMeetingPrep(easternDate(new Date())),
+    getSystemsReport(),
   ]);
   const resolvedPlace = place;
   const bySection = storiesBySection(stories);
@@ -130,7 +133,14 @@ export async function buildDigest(opts: { hours?: number } = {}): Promise<Digest
     ? await keepRealMeetings(detail.meetings, detail.hadInvitees, provider)
     : null;
   const merge = filtered ? applyPrep(filtered.meetings, prep) : null;
-  const panel = { weather, financials, meetings: merge?.meetings ?? null };
+  // The fulfillment sweep is context, not schedule: if the nightly agent never
+  // ran, the section is simply absent rather than the report failing to send.
+  const panel = {
+    weather,
+    financials,
+    meetings: merge?.meetings ?? null,
+    systems: systems.body,
+  };
 
   // Sections are independent, so curate them concurrently — a hosted run has to
   // finish inside its function timeout.
@@ -204,6 +214,7 @@ export async function buildDigest(opts: { hours?: number } = {}): Promise<Digest
       unmatched: merge?.unmatched ?? 0,
       reason: prep.reason,
     },
+    systems: { status: systems.status, reason: systems.reason },
     meetingFilter: filtered
       ? { mode: filtered.mode, dropped: filtered.dropped }
       : null,
