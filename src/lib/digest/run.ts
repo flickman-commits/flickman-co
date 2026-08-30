@@ -8,7 +8,7 @@ import { getTodaysPlace } from "./location";
 import { getFinancials } from "./financials";
 import { getTodaysEvents } from "./calendar";
 import { applyPrep, getTodaysMeetingsDetailed, keepRealMeetings } from "./meetings";
-import { getMeetingPrep } from "./prep";
+import { getMeetingPrep, seedMeetingRows, type SeedResult } from "./prep";
 import { getSystemsReport } from "./systems";
 import { easternDate } from "./calendar";
 
@@ -242,4 +242,26 @@ export async function runAndSend(
   });
   console.log(`[digest] sent ${result.storyCount} stories`);
   return { ...result, sent: true };
+}
+
+export interface SeedRun extends MeetingList {
+  seed: SeedResult;
+}
+
+/**
+ * Write today's meetings into Notion as empty rows, for the prep agent to fill.
+ *
+ * This runs on its own schedule, ahead of the agent, because the agent can't
+ * ask us for the list: its cloud environment's egress can't reach this domain.
+ * It can reach Notion, so the list goes there instead. The agent stops making
+ * HTTP calls entirely and just works the rows it finds.
+ *
+ * Deliberately separate from the report's own run. Seeding has to happen hours
+ * before the 7am send — after it, the rows would arrive too late to be
+ * researched — and a failure here should cost you context, not the report.
+ */
+export async function seedPrepRows(): Promise<SeedRun> {
+  const list = await buildMeetingList();
+  const seed = await seedMeetingRows(list.date, list.meetings);
+  return { ...list, seed };
 }
