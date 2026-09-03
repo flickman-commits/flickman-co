@@ -40,6 +40,26 @@ export interface Financials {
   prior: DayFinancials | null;
 }
 
+/**
+ * Why there are no numbers, when there are none.
+ *
+ * The report drops the P&L whenever this returns nothing, which is right — zeros
+ * would read as "you made nothing yesterday" rather than "we couldn't reach the
+ * sheet". But collapsing every cause into one absent block hid a real failure:
+ * a revoked share, a disabled API, and a scoreboard that simply hasn't been
+ * rolled to the new month all looked identical from outside, and only one of
+ * them is something the code can do anything about.
+ *
+ *   no-credential  GOOGLE_SERVICE_ACCOUNT_JSON missing or unusable
+ *   unavailable    Sheets refused or the fetch failed; `reason` has the status
+ *   no-row         the sheet was read fine, but yesterday isn't in rows 5-35
+ */
+export interface FinancialsRead {
+  data: Financials | null;
+  status: "ok" | "no-row" | "unavailable" | "no-credential";
+  reason?: string;
+}
+
 /** Sheets serial dates count days from 1899-12-30. */
 function serialToISO(serial: number): string {
   const ms = Date.UTC(1899, 11, 30) + Math.round(serial) * 86_400_000;
@@ -82,13 +102,12 @@ function rowToDay(row: unknown[], dateISO: string): DayFinancials {
 }
 
 /**
- * Returns null when the credential is absent or anything fails — the block is
- * then dropped from the email rather than rendering zeros, which would read as
- * "you made nothing yesterday" instead of "we couldn't reach the sheet".
+ * Never throws. `data` is null whenever anything went wrong, and `status` says
+ * what — see FinancialsRead.
  */
-export async function getFinancials(now = new Date()): Promise<Financials | null> {
+export async function getFinancials(now = new Date()): Promise<FinancialsRead> {
   const token = await getGoogleToken([SHEETS_SCOPE]);
-  if (!token) return null;
+  if (!token) return { data: null, status: "no-credential" };
 
   try {
 
@@ -120,19 +139,36 @@ export async function getFinancials(now = new Date()): Promise<Financials | null
     const yesterdayISO = shiftDays(easternDate(now), -1);
     const yesterdayRow = byDate.get(yesterdayISO);
     if (!yesterdayRow) {
-      console.warn(`[digest] no scoreboard row for ${yesterdayISO}`);
-      return null;
+      // The board holds one month at a time, so this is what a rollover looks
+      // like: the sheet reads fine and simply doesn't contain yesterday yet.
+      // Naming the dates it *does* have turns that into an obvious diagnosis
+      // rather than a guess about access.
+      const seen = [...byDate.keys()].sort();
+      const span = seen.length ? `${seen[0]}..${seen[seen.length - 1]}` : "none";
+      console.warn(`[digest] no scoreboard row for ${yesterdayISO}; sheet has ${span}`);
+      return {
+        data: null,
+        status: "no-row",
+        reason: `looked for ${yesterdayISO}, sheet has ${span}`,
+      };
     }
 
     const priorISO = shiftDays(yesterdayISO, -1);
     const priorRow = byDate.get(priorISO);
 
     return {
-      yesterday: rowToDay(yesterdayRow, yesterdayISO),
-      prior: priorRow ? rowToDay(priorRow, priorISO) : null,
+      data: {
+        yesterday: rowToDay(yesterdayRow, yesterdayISO),
+        prior: priorRow ? rowToDay(priorRow, priorISO) : null,
+      },
+      status: "ok",
     };
   } catch (err) {
     console.error("[digest] financials fetch failed:", err);
-    return null;
+    return {
+      data: null,
+      status: "unavailable",
+      reason: err instanceof Error ? err.message.slice(0, 200) : String(err).slice(0, 200),
+    };
   }
 }

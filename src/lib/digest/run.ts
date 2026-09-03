@@ -5,7 +5,7 @@ import { buildSections, formatToday, renderHtml, renderText, sendDigest } from "
 import { SECTIONS, type SectionId } from "./sources";
 import { getWeather } from "./weather";
 import { getTodaysPlace } from "./location";
-import { getFinancials } from "./financials";
+import { getFinancials, type FinancialsRead } from "./financials";
 import { getTodaysEvents } from "./calendar";
 import { applyPrep, getTodaysMeetingsDetailed, keepRealMeetings } from "./meetings";
 import { getMeetingPrep, seedMeetingRows, type SeedResult } from "./prep";
@@ -53,7 +53,7 @@ export interface DigestResult {
   };
   location: { place: string; source: string; eventsSeen: number; reason?: string };
   calendars: string | null;
-  financialsLoaded: boolean;
+  financials: { status: FinancialsRead["status"]; reason?: string };
   meetingCount: number | null;
   prep: { status: string; matched: number; unmatched: number; reason?: string };
   systems: { status: string; reason?: string };
@@ -108,7 +108,7 @@ export async function buildDigest(opts: { hours?: number } = {}): Promise<Digest
   const calendar = await getTodaysEvents();
   const place = await getTodaysPlace(calendar);
 
-  const [{ stories, failed }, weather, financials, prep, systems] = await Promise.all([
+  const [{ stories, failed }, weather, financialsRead, prep, systems] = await Promise.all([
     fetchAllStories(hours),
     getWeather(place),
     getFinancials(),
@@ -137,7 +137,7 @@ export async function buildDigest(opts: { hours?: number } = {}): Promise<Digest
   // ran, the section is simply absent rather than the report failing to send.
   const panel = {
     weather,
-    financials,
+    financials: financialsRead.data,
     meetings: merge?.meetings ?? null,
     systems: systems.body,
   };
@@ -206,7 +206,7 @@ export async function buildDigest(opts: { hours?: number } = {}): Promise<Digest
       reason: resolvedPlace.reason,
     },
     calendars: calendar.perCalendar ?? null,
-    financialsLoaded: financials != null,
+    financials: { status: financialsRead.status, reason: financialsRead.reason },
     meetingCount: panel.meetings?.length ?? null,
     prep: {
       status: prep.status,

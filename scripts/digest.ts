@@ -38,7 +38,7 @@ async function main() {
       `curation     ${result.curation.degraded ? "FALLBACK" : "ai"} via ${result.curation.model}`,
       `cost         $${result.curation.costUsd.toFixed(6)} (${result.curation.inputTokens} in / ${result.curation.outputTokens} out)`,
       `location     ${result.location.place} (${result.location.source}, ${result.location.eventsSeen} events)`,
-      `financials   ${result.financialsLoaded ? "loaded" : "absent"}`,
+      `financials   ${result.financials.status}${result.financials.reason ? `: ${result.financials.reason}` : ""}`,
       `feeds failed ${result.failedFeeds.length ? result.failedFeeds.join(", ") : "none"}`,
       send ? `sent         ${"sent" in result && result.sent ? "yes" : "no (nothing to send)"}` : "",
     ]

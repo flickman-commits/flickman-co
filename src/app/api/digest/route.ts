@@ -65,7 +65,10 @@ export async function GET(req: NextRequest) {
               (result.location.reason ? `: ${result.location.reason}` : "")
           ),
           "X-Digest-Calendars": headerSafe(result.calendars ?? "none"),
-          "X-Digest-Financials": result.financialsLoaded ? "loaded" : "absent",
+          "X-Digest-Financials": headerSafe(
+            result.financials.status +
+              (result.financials.reason ? `: ${result.financials.reason}` : "")
+          ),
           "X-Digest-Meetings": headerSafe(
             `${result.meetingCount ?? "unavailable"} today` +
               (result.meetingFilter
@@ -89,7 +92,7 @@ export async function GET(req: NextRequest) {
       failed: result.failedFeeds,
       curation: result.curation,
       location: result.location,
-      financialsLoaded: result.financialsLoaded,
+      financials: result.financials,
       meetingCount: result.meetingCount,
       prep: result.prep,
       meetingFilter: result.meetingFilter,
