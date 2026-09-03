@@ -102,6 +102,58 @@ function rowToDay(row: unknown[], dateISO: string): DayFinancials {
 }
 
 /**
+ * Read the range, once, with a deadline.
+ *
+ * This spreadsheet is not a flat table — it carries monthly roll-ups and a YTD
+ * summary that recompute on access, and a values.get against it regularly takes
+ * well over ten seconds. The original 10s deadline was therefore losing the P&L
+ * on a coin flip: two runs in three came back empty, and because every failure
+ * rendered as the same absent block, it read as lost access rather than a
+ * timeout.
+ *
+ * Two attempts rather than one, because the failure is latency and not a
+ * refusal — a second call often lands while the recalculation is still warm.
+ * The budget is deliberate: 15s each caps this at 30s inside a 60s function
+ * that still has curation to do afterwards.
+ */
+const ATTEMPT_MS = 15_000;
+const ATTEMPTS = 2;
+
+async function readRange(
+  url: string,
+  token: string
+): Promise<{ json: { values?: unknown[][] }; elapsedMs: number }> {
+  const started = Date.now();
+  let last: unknown;
+
+  for (let attempt = 1; attempt <= ATTEMPTS; attempt++) {
+    try {
+      const res = await fetch(url, {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store",
+        signal: AbortSignal.timeout(ATTEMPT_MS),
+      });
+      if (!res.ok) {
+        // A 401/403/404 is a decision, not a delay; retrying just burns the
+        // budget and buries the status that says what to actually fix.
+        throw new Error(`Sheets ${res.status}: ${(await res.text()).slice(0, 200)}`);
+      }
+      return {
+        json: (await res.json()) as { values?: unknown[][] },
+        elapsedMs: Date.now() - started,
+      };
+    } catch (err) {
+      last = err;
+      const timedOut = err instanceof Error && /abort|timeout/i.test(err.message);
+      if (!timedOut || attempt === ATTEMPTS) break;
+      console.warn(`[digest] sheets read timed out (attempt ${attempt}); retrying`);
+    }
+  }
+
+  throw last instanceof Error ? last : new Error(String(last));
+}
+
+/**
  * Never throws. `data` is null whenever anything went wrong, and `status` says
  * what — see FinancialsRead.
  */
@@ -115,16 +167,7 @@ export async function getFinancials(now = new Date()): Promise<FinancialsRead> {
       `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/` +
       `${encodeURIComponent(RANGE)}?valueRenderOption=UNFORMATTED_VALUE`;
 
-    const res = await fetch(url, {
-      headers: { Authorization: `Bearer ${token}` },
-      cache: "no-store",
-      signal: AbortSignal.timeout(10_000),
-    });
-    if (!res.ok) {
-      throw new Error(`Sheets ${res.status}: ${(await res.text()).slice(0, 200)}`);
-    }
-
-    const json = (await res.json()) as { values?: unknown[][] };
+    const { json, elapsedMs } = await readRange(url, token);
     const rows = json.values ?? [];
 
     // Unformatted dates come back as serials; index by ISO date so a moved or
@@ -135,6 +178,8 @@ export async function getFinancials(now = new Date()): Promise<FinancialsRead> {
       if (typeof cell !== "number") continue;
       byDate.set(serialToISO(cell), row);
     }
+
+    const took = `${Math.round(elapsedMs)}ms`;
 
     const yesterdayISO = shiftDays(easternDate(now), -1);
     const yesterdayRow = byDate.get(yesterdayISO);
@@ -149,7 +194,7 @@ export async function getFinancials(now = new Date()): Promise<FinancialsRead> {
       return {
         data: null,
         status: "no-row",
-        reason: `looked for ${yesterdayISO}, sheet has ${span}`,
+        reason: `looked for ${yesterdayISO}, sheet has ${span} (${took})`,
       };
     }
 
@@ -162,6 +207,7 @@ export async function getFinancials(now = new Date()): Promise<FinancialsRead> {
         prior: priorRow ? rowToDay(priorRow, priorISO) : null,
       },
       status: "ok",
+      reason: took,
     };
   } catch (err) {
     console.error("[digest] financials fetch failed:", err);
