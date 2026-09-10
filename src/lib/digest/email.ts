@@ -546,8 +546,6 @@ export function renderHtml(
 <body style="margin:0; padding:20px 12px; background:${PAGE};">
   <div style="max-width:600px; margin:0 auto;">
 
-    ${renderWord(panel.word, panel.smsTo)}
-
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 14px;">
       <tr>
         <td>
@@ -562,6 +560,7 @@ export function renderHtml(
       </tr>
     </table>
 
+    ${renderWord(panel.word, panel.smsTo)}
     ${topRow(panel.weather, panel.financials)}
     ${panel.financials ? plCard(panel.financials) : ""}
     ${panel.systems ? systemsCard(panel.systems) : ""}
