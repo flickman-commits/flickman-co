@@ -2,6 +2,7 @@ import type { CuratedStory } from "./curate";
 import type { Weather } from "./weather";
 import type { DayFinancials, Financials } from "./financials";
 import { SECTIONS } from "./sources";
+import type { WordOfTheDay } from "./armenian";
 
 export interface DigestSection {
   title: string;
@@ -350,6 +351,55 @@ export interface DailyPanel {
   meetings: Meeting[] | null;
   /** Overnight fulfillment-tool sweep. Null when it has nothing to say. */
   systems: string | null;
+  /** Today's Armenian word. Null only if the feature is switched off. */
+  word: WordOfTheDay | null;
+  /** E.164 number "Text Nat" opens a message to. Null hides the link. */
+  smsTo: string | null;
+}
+
+/* ──────────────────────────────────────────────────────────────── */
+/* Word of the day                                                   */
+/* ──────────────────────────────────────────────────────────────── */
+
+/**
+ * An sms: link, which safeUrl would refuse. The scheme is the point: it opens
+ * Messages with the number addressed and today's word already typed, so the
+ * tap goes straight to sending it to her. `?&body=` is the one form both iOS
+ * and Android honour.
+ */
+function smsLink(to: string, body: string): string {
+  const digits = to.replace(/[^\d+]/g, "");
+  return `sms:${digits}?&body=${encodeURIComponent(body)}`;
+}
+
+function renderWord(w: WordOfTheDay | null, smsTo: string | null): string {
+  if (!w) return "";
+  const { word, day } = w;
+  const link = smsTo
+    ? `<a href="${smsLink(smsTo, `${word.hy} (${word.roman})`)}" style="font-family:${FONT}; font-size:13px; font-weight:700; color:${ACCENT}; text-decoration:none; white-space:nowrap;">Text Nat &rarr;</a>`
+    : "";
+  return `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="${CARD_STYLE} margin:0 0 10px;">
+      <tr>
+        <td style="padding:10px 14px 9px;">
+          <div style="font-family:${FONT}; font-size:11px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; color:${FAINT};">Armenian &middot; Day ${day}</div>
+          <div style="margin-top:3px; font-family:${FONT}; font-size:22px; font-weight:700; line-height:1.2; color:${INK};">${escapeHtml(
+            word.hy
+          )}</div>
+          <div style="margin-top:2px; font-family:${FONT}; font-size:14px; line-height:1.4; color:${MUTED};"><i>${escapeHtml(
+            word.roman
+          )}</i> &middot; ${escapeHtml(word.en)}</div>
+          ${
+            word.note
+              ? `<div style="margin-top:3px; font-family:${FONT}; font-size:12px; line-height:1.4; color:${FAINT};">${escapeHtml(
+                  word.note
+                )}</div>`
+              : ""
+          }
+        </td>
+        <td align="right" valign="middle" style="padding:10px 14px 9px;">${link}</td>
+      </tr>
+    </table>`;
 }
 
 /**
@@ -508,6 +558,7 @@ export function renderHtml(
       </tr>
     </table>
 
+    ${renderWord(panel.word, panel.smsTo)}
     ${topRow(panel.weather, panel.financials)}
     ${panel.financials ? plCard(panel.financials) : ""}
     ${panel.systems ? systemsCard(panel.systems) : ""}
@@ -538,6 +589,14 @@ export function renderText(
   panel: DailyPanel
 ): string {
   const lines: string[] = [`FLICKMAN DAILY REPORT — ${dateLabel}`, ""];
+
+  if (panel.word) {
+    const { word, day } = panel.word;
+    lines.push(`ARMENIAN — DAY ${day}`, `${word.hy} — ${word.roman} — ${word.en}`);
+    if (word.note) lines.push(`  ${word.note}`);
+    if (panel.smsTo) lines.push(`  Text Nat: ${smsLink(panel.smsTo, `${word.hy} (${word.roman})`)}`);
+    lines.push("");
+  }
 
   if (panel.weather) {
     const w = panel.weather;

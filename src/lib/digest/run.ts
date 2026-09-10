@@ -11,6 +11,7 @@ import { applyPrep, getTodaysMeetingsDetailed, keepRealMeetings } from "./meetin
 import { getMeetingPrep, seedMeetingRows, type SeedResult } from "./prep";
 import { getSystemsReport } from "./systems";
 import { easternDate } from "./calendar";
+import { wordOfTheDay } from "./armenian";
 
 /**
  * Builds the digest. Knows nothing about HTTP, Next.js, or Vercel.
@@ -140,6 +141,9 @@ export async function buildDigest(opts: { hours?: number } = {}): Promise<Digest
     financials: financialsRead.data,
     meetings: merge?.meetings ?? null,
     systems: systems.body,
+    word: wordOfTheDay(easternDate(new Date())),
+    // Her number lives in the environment, not the source: this repo is public.
+    smsTo: process.env.DIGEST_WORD_SMS_TO?.trim() || null,
   };
 
   // Sections are independent, so curate them concurrently — a hosted run has to
