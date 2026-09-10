@@ -77,12 +77,14 @@ async function readOne(
   calendarId: string,
   token: string,
   timeMin: string,
-  timeMax: string
+  timeMax: string,
+  q?: string
 ): Promise<CalendarEvent[]> {
   const url =
     `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events` +
     `?timeMin=${encodeURIComponent(timeMin)}&timeMax=${encodeURIComponent(timeMax)}` +
-    `&singleEvents=true&orderBy=startTime&maxResults=50`;
+    `&singleEvents=true&orderBy=startTime&maxResults=50` +
+    (q ? `&q=${encodeURIComponent(q)}` : "");
 
   const res = await fetch(url, {
     headers: { Authorization: `Bearer ${token}` },
@@ -103,19 +105,39 @@ async function readOne(
  * quietly contributing nothing.
  */
 export async function getTodaysEvents(now = new Date()): Promise<CalendarRead> {
-  const token = await getGoogleToken([CALENDAR_SCOPE]);
-  if (!token) return { events: [], status: "no-credential" };
-
   // Generous either side of today in UTC terms so nothing near a boundary is
   // missed; callers narrow to the actual local day.
   const dayStart = new Date(now);
   dayStart.setUTCHours(0, 0, 0, 0);
   const timeMin = new Date(dayStart.getTime() - 12 * 3600_000).toISOString();
   const timeMax = new Date(dayStart.getTime() + 36 * 3600_000).toISOString();
+  return readAll(timeMin, timeMax);
+}
+
+/** How far back to look for the flight that put you where you are. */
+const FLIGHT_LOOKBACK_DAYS = 30;
+
+/**
+ * Flight events from the last month, across every calendar.
+ *
+ * Where you are today is decided by the last flight you took, not by anything
+ * on today's calendar — a trip's flights are days in the past by the time the
+ * report asks. Gmail files them automatically with "Flight" in the title, so a
+ * text search keeps the read cheap.
+ */
+export async function getRecentFlights(now = new Date()): Promise<CalendarRead> {
+  const timeMin = new Date(now.getTime() - FLIGHT_LOOKBACK_DAYS * 86_400_000).toISOString();
+  const timeMax = new Date(now.getTime() + 86_400_000).toISOString();
+  return readAll(timeMin, timeMax, "Flight");
+}
+
+async function readAll(timeMin: string, timeMax: string, q?: string): Promise<CalendarRead> {
+  const token = await getGoogleToken([CALENDAR_SCOPE]);
+  if (!token) return { events: [], status: "no-credential" };
 
   const ids = calendarIds();
   const settled = await Promise.allSettled(
-    ids.map((id) => readOne(id, token, timeMin, timeMax))
+    ids.map((id) => readOne(id, token, timeMin, timeMax, q))
   );
 
   const events: CalendarEvent[] = [];

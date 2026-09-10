@@ -1,15 +1,23 @@
-import type { CalendarRead } from "./calendar";
+import type { CalendarEvent, CalendarRead } from "./calendar";
 
 /**
  * Where you are today, so the forecast is for the right city.
  *
- * Reads today's calendar and looks for a location that implies you're somewhere
- * other than home. The guard that makes this safe is the distance check: a
- * meeting at "Chelsea Piers" geocodes a couple of miles away and is ignored,
- * while "Austin, TX" is 1,500 miles away and wins. Without that, every lunch
- * spot with a geocodable name would move your weather.
+ * Three signals, in order of trust:
  *
- * Consumes the shared calendar read; see ./calendar for access requirements.
+ *   1. An all-day event today with a far-away place — "Austin this week".
+ *   2. The last flight you took. This is the one that usually decides it: a
+ *      trip's flights are days in the past by the time the report asks, so
+ *      today's calendar alone would have you at home for the whole trip.
+ *   3. A timed event today with a far-away location.
+ *
+ * The guard that makes any of this safe is the distance check: a meeting at
+ * "Chelsea Piers" geocodes a couple of miles away and is ignored, while
+ * "Austin, TX" is 1,500 miles away and wins. Without that, every lunch spot
+ * with a geocodable name would move your weather. It also handles the flight
+ * home for free — "Flight to New York" geocodes to home, and you're home.
+ *
+ * Consumes the shared calendar reads; see ./calendar for access requirements.
  *
  * Env:
  *   DIGEST_HOME_*  overrides for the home location
@@ -22,7 +30,8 @@ import type { CalendarRead } from "./calendar";
  * calendar integration would look exactly like a normal day at home.
  */
 export type PlaceSource =
-  | "travel" // calendar put you somewhere far from home
+  | "travel" // an event today put you somewhere far from home
+  | "flight" // your last flight landed somewhere far from home
   | "home" // calendar read fine; nothing far away
   | "unavailable" // calendar errored; fell back to home
   | "no-credential"; // no service account configured
@@ -83,16 +92,69 @@ function looksLikeAPlace(raw: string): boolean {
   return true;
 }
 
-/**
- * Location candidates from today's events. All-day entries come first: "I am in
- * Austin this week" is far more often an all-day entry than a 30-minute meeting.
- */
-function locationCandidates(read: CalendarRead): string[] {
-  const allDay = read.events.filter((e) => e.start?.date);
-  const timed = read.events.filter((e) => !e.start?.date);
+/* ──────────────────────────────────────────────────────────────── */
+/* Flights                                                           */
+/* ──────────────────────────────────────────────────────────────── */
 
+/**
+ * Gmail files a booking as "Flight to San Diego (B6 189)". Other tools write
+ * "Flight: AA 7043 from FLR to LHR". Both carry the destination in the title
+ * and nowhere else — the event's `location` is the *departure* airport, which
+ * is exactly the wrong thing to geocode. That is why flights are parsed here
+ * rather than falling through the generic path below.
+ */
+const FLIGHT_TO = /^\s*flight to (.+?)\s*(?:\(|$)/i;
+const FLIGHT_CODES = /\bfrom ([A-Z]{3}) to ([A-Z]{3})\b/;
+
+/** Airports that show up as bare codes. Extend as needed; unknown codes skip. */
+const IATA: Record<string, string> = {
+  JFK: "New York", LGA: "New York", EWR: "Newark",
+  LAX: "Los Angeles", SNA: "Santa Ana", SAN: "San Diego", SFO: "San Francisco",
+  ORD: "Chicago", DEN: "Denver", DFW: "Dallas", IAH: "Houston", MIA: "Miami",
+  ATL: "Atlanta", BOS: "Boston", SEA: "Seattle", PDX: "Portland", AUS: "Austin",
+  LHR: "London", CDG: "Paris", FLR: "Florence", FCO: "Rome", AMS: "Amsterdam",
+};
+
+function isFlight(e: CalendarEvent): boolean {
+  const s = e.summary ?? "";
+  return FLIGHT_TO.test(s) || FLIGHT_CODES.test(s);
+}
+
+function flightDestination(e: CalendarEvent): string | null {
+  const s = e.summary ?? "";
+  const to = FLIGHT_TO.exec(s);
+  if (to) return to[1].trim();
+  const codes = FLIGHT_CODES.exec(s);
+  if (codes) return IATA[codes[2]] ?? null;
+  return null;
+}
+
+/**
+ * The most recent flight that has already landed. A flight later today hasn't
+ * moved you yet — at 7am you're still where you woke up.
+ */
+function lastLandedFlight(flights: CalendarRead, now: Date): CalendarEvent | null {
+  return (
+    flights.events
+      .filter((e) => e.status !== "cancelled" && isFlight(e) && e.end?.dateTime)
+      .filter((e) => new Date(e.end!.dateTime!).getTime() <= now.getTime())
+      .sort((a, b) => b.end!.dateTime!.localeCompare(a.end!.dateTime!))[0] ?? null
+  );
+}
+
+/* ──────────────────────────────────────────────────────────────── */
+/* Today's events                                                    */
+/* ──────────────────────────────────────────────────────────────── */
+
+/**
+ * Location candidates from today's events, all-day entries first: "I am in
+ * Austin this week" is far more often an all-day entry than a 30-minute
+ * meeting. Flights are excluded — their location is where you left from.
+ */
+function locationCandidates(events: CalendarEvent[]): string[] {
   const candidates: string[] = [];
-  for (const event of [...allDay, ...timed]) {
+  for (const event of events) {
+    if (isFlight(event)) continue;
     if (event.location && looksLikeAPlace(event.location)) candidates.push(event.location);
     // All-day events often carry the city in the title with no location set.
     else if (event.start?.date && event.summary && looksLikeAPlace(event.summary)) {
@@ -132,28 +194,65 @@ async function geocode(query: string): Promise<GeoHit | null> {
  * Never throws and never returns null — an unreadable calendar just means you
  * get the home forecast, which is right far more often than it's wrong.
  */
-export async function getTodaysPlace(read: CalendarRead): Promise<Place> {
+export async function getTodaysPlace(
+  read: CalendarRead,
+  flights: CalendarRead = { events: [], status: "ok" },
+  now = new Date()
+): Promise<Place> {
   if (read.status === "no-credential") return home("no-credential");
   if (read.status === "unavailable") return home("unavailable", 0, read.reason);
 
-  const candidates = locationCandidates(read);
+  const allDay = read.events.filter((e) => e.start?.date);
+  const timed = read.events.filter((e) => !e.start?.date);
+  const flight = lastLandedFlight(flights, now);
+  const flightDest = flight ? flightDestination(flight) : null;
+
+  // Each candidate carries how it was found, so the diagnostic can say
+  // "San Diego (flight: Flight to San Diego (B6 189), Sep 2)" rather than
+  // just "San Diego" — and a wrong answer is traceable to the event.
+  const candidates: { query: string; source: PlaceSource; why: string }[] = [
+    ...locationCandidates(allDay).map((q) => ({ query: q, source: "travel" as const, why: q })),
+    ...(flightDest
+      ? [{ query: flightDest, source: "flight" as const, why: `${flight!.summary}, ${flightDay(flight!)}` }]
+      : []),
+    ...locationCandidates(timed).map((q) => ({ query: q, source: "travel" as const, why: q })),
+  ];
+
   try {
-    for (const candidate of candidates.slice(0, 5)) {
-      const hit = await geocode(candidate);
+    for (const c of candidates.slice(0, 6)) {
+      const hit = await geocode(c.query);
       if (!hit) continue;
       const distance = milesBetween(HOME_LAT, HOME_LON, hit.latitude, hit.longitude);
-      if (distance < TRAVEL_THRESHOLD_MILES) continue; // still around home
+      if (distance < TRAVEL_THRESHOLD_MILES) {
+        // A flight home is the strongest possible "you're home": stop looking
+        // at weaker signals that might drag you back out.
+        if (c.source === "flight") break;
+        continue;
+      }
       return {
         label: hit.name,
         lat: hit.latitude,
         lon: hit.longitude,
         travelling: true,
-        source: "travel",
+        source: c.source,
         eventsSeen: read.events.length,
+        reason: c.why,
       };
     }
   } catch (err) {
     console.error("[digest] geocoding failed:", err);
   }
-  return home("home", read.events.length);
+  return home(
+    "home",
+    read.events.length,
+    flight ? `last flight: ${flight.summary}, ${flightDay(flight)}` : "no flights in 30 days"
+  );
+}
+
+function flightDay(e: CalendarEvent): string {
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    month: "short",
+    day: "numeric",
+  }).format(new Date(e.end!.dateTime!));
 }

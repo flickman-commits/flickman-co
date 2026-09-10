@@ -6,7 +6,7 @@ import { SECTIONS, type SectionId } from "./sources";
 import { getWeather } from "./weather";
 import { getTodaysPlace } from "./location";
 import { getFinancials, type FinancialsRead } from "./financials";
-import { getTodaysEvents } from "./calendar";
+import { getRecentFlights, getTodaysEvents } from "./calendar";
 import { applyPrep, getTodaysMeetingsDetailed, keepRealMeetings } from "./meetings";
 import { getMeetingPrep, seedMeetingRows, type SeedResult } from "./prep";
 import { getSystemsReport } from "./systems";
@@ -106,8 +106,8 @@ export async function buildDigest(opts: { hours?: number } = {}): Promise<Digest
   // source can take the report down.
   // One calendar read serves both the forecast location and the meetings
   // section, so today's events are fetched once rather than twice.
-  const calendar = await getTodaysEvents();
-  const place = await getTodaysPlace(calendar);
+  const [calendar, flights] = await Promise.all([getTodaysEvents(), getRecentFlights()]);
+  const place = await getTodaysPlace(calendar, flights);
 
   const [{ stories, failed }, weather, financialsRead, prep, systems] = await Promise.all([
     fetchAllStories(hours),
