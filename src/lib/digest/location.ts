@@ -245,7 +245,10 @@ export async function getTodaysPlace(
   return home(
     "home",
     read.events.length,
-    flight ? `last flight: ${flight.summary}, ${flightDay(flight)}` : "no flights in 30 days"
+    flight
+      ? `last flight: ${flight.summary}, ${flightDay(flight)}`
+      : `no flights in 30 days (read ${flights.perCalendar ?? flights.status}; ` +
+        `${flights.events.length} events, ${flights.events.filter((e) => !e.summary).length} untitled)`
   );
 }
 

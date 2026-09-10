@@ -78,12 +78,13 @@ async function readOne(
   token: string,
   timeMin: string,
   timeMax: string,
-  q?: string
+  q?: string,
+  maxResults = 50
 ): Promise<CalendarEvent[]> {
   const url =
     `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events` +
     `?timeMin=${encodeURIComponent(timeMin)}&timeMax=${encodeURIComponent(timeMax)}` +
-    `&singleEvents=true&orderBy=startTime&maxResults=50` +
+    `&singleEvents=true&orderBy=startTime&maxResults=${maxResults}` +
     (q ? `&q=${encodeURIComponent(q)}` : "");
 
   const res = await fetch(url, {
@@ -128,16 +129,21 @@ const FLIGHT_LOOKBACK_DAYS = 30;
 export async function getRecentFlights(now = new Date()): Promise<CalendarRead> {
   const timeMin = new Date(now.getTime() - FLIGHT_LOOKBACK_DAYS * 86_400_000).toISOString();
   const timeMax = new Date(now.getTime() + 86_400_000).toISOString();
-  return readAll(timeMin, timeMax, "Flight");
+  return readAll(timeMin, timeMax, undefined, 500);
 }
 
-async function readAll(timeMin: string, timeMax: string, q?: string): Promise<CalendarRead> {
+async function readAll(
+  timeMin: string,
+  timeMax: string,
+  q?: string,
+  maxResults?: number
+): Promise<CalendarRead> {
   const token = await getGoogleToken([CALENDAR_SCOPE]);
   if (!token) return { events: [], status: "no-credential" };
 
   const ids = calendarIds();
   const settled = await Promise.allSettled(
-    ids.map((id) => readOne(id, token, timeMin, timeMax, q))
+    ids.map((id) => readOne(id, token, timeMin, timeMax, q, maxResults))
   );
 
   const events: CalendarEvent[] = [];
