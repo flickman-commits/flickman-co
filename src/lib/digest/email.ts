@@ -384,11 +384,13 @@ function renderWord(w: WordOfTheDay | null, smsTo: string | null): string {
         <td style="padding:10px 14px 9px;">
           <div style="font-family:${FONT}; font-size:11px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; color:${FAINT};">Armenian &middot; Day ${day}</div>
           <div style="margin-top:3px; font-family:${FONT}; font-size:22px; font-weight:700; line-height:1.2; color:${INK};">${escapeHtml(
+            word.roman
+          )} <span style="font-size:15px; font-weight:400; color:${MUTED};">&middot; ${escapeHtml(
+            word.en
+          )}</span></div>
+          <div style="margin-top:2px; font-family:${FONT}; font-size:14px; line-height:1.4; color:${MUTED};">${escapeHtml(
             word.hy
           )}</div>
-          <div style="margin-top:2px; font-family:${FONT}; font-size:14px; line-height:1.4; color:${MUTED};"><i>${escapeHtml(
-            word.roman
-          )}</i> &middot; ${escapeHtml(word.en)}</div>
           ${
             word.note
               ? `<div style="margin-top:3px; font-family:${FONT}; font-size:12px; line-height:1.4; color:${FAINT};">${escapeHtml(
@@ -544,6 +546,8 @@ export function renderHtml(
 <body style="margin:0; padding:20px 12px; background:${PAGE};">
   <div style="max-width:600px; margin:0 auto;">
 
+    ${renderWord(panel.word, panel.smsTo)}
+
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 14px;">
       <tr>
         <td>
@@ -558,7 +562,6 @@ export function renderHtml(
       </tr>
     </table>
 
-    ${renderWord(panel.word, panel.smsTo)}
     ${topRow(panel.weather, panel.financials)}
     ${panel.financials ? plCard(panel.financials) : ""}
     ${panel.systems ? systemsCard(panel.systems) : ""}
@@ -592,7 +595,7 @@ export function renderText(
 
   if (panel.word) {
     const { word, day } = panel.word;
-    lines.push(`ARMENIAN — DAY ${day}`, `${word.hy} — ${word.roman} — ${word.en}`);
+    lines.push(`ARMENIAN — DAY ${day}`, `${word.roman} — ${word.en}  (${word.hy})`);
     if (word.note) lines.push(`  ${word.note}`);
     if (panel.smsTo) lines.push(`  Text Nat: ${smsLink(panel.smsTo, `${word.hy} (${word.roman})`)}`);
     lines.push("");
