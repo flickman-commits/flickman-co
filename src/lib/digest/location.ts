@@ -89,6 +89,12 @@ function looksLikeAPlace(raw: string): boolean {
   }
   // A bare room or desk name has no locality to geocode.
   if (/^(room|rm|conf|office|desk)\b/i.test(s)) return false;
+  // A short all-caps token is an abbreviation, not a place — and the geocoder
+  // will cheerfully resolve one. "RUN" on the calendar is a workout; to
+  // Open-Meteo it is Réunion's airport code, which put the forecast 9,000
+  // miles away in Saint-Denis. Ambiguous two-letter cities ("LA") lose here
+  // too, which is the right trade: guessing wrong moves your weather.
+  if (s.length <= 5 && !/[a-z]/.test(s)) return false;
   return true;
 }
 
@@ -170,6 +176,31 @@ interface GeoHit {
   longitude: number;
   admin1?: string;
   country_code?: string;
+  /** GeoNames class: PPL* is a populated place, AIRP an airport, PRK a park. */
+  feature_code?: string;
+  population?: number;
+}
+
+/**
+ * Only somewhere people live. Asking for "Orange County" returns Orange County
+ * Airport in *Texas* as its top hit — right name, wrong thing, wrong coast. A
+ * forecast is for a town, so anything that isn't one is not an answer.
+ */
+function isPopulatedPlace(hit: GeoHit): boolean {
+  return (hit.feature_code ?? "").startsWith("PPL");
+}
+
+/**
+ * The hit has to bear the name that was asked for. Geocoders would rather
+ * return something than nothing, and the something can be unrelated — "RUN"
+ * comes back as Saint-Denis. Requiring the names to overlap turns a confident
+ * wrong answer into no answer, which falls through to home.
+ */
+function nameMatches(query: string, hit: GeoHit): boolean {
+  const norm = (v: string) => v.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  const q = norm(query);
+  const n = norm(hit.name);
+  return q.length > 0 && n.length > 0 && (q.includes(n) || n.includes(q));
 }
 
 /** Open-Meteo geocoding: free, no key, global. */
@@ -179,7 +210,9 @@ async function geocode(query: string): Promise<GeoHit | null> {
   const locality = query.split(",").slice(-2).join(",").trim() || query;
   const url =
     "https://geocoding-api.open-meteo.com/v1/search" +
-    `?name=${encodeURIComponent(locality)}&count=1&language=en&format=json`;
+    // Several candidates rather than one: the top hit is often an airport or a
+    // park, and the town we want is a row or two down.
+    `?name=${encodeURIComponent(locality)}&count=5&language=en&format=json`;
 
   const res = await fetch(url, {
     cache: "no-store",
@@ -187,7 +220,11 @@ async function geocode(query: string): Promise<GeoHit | null> {
   });
   if (!res.ok) return null;
   const json = (await res.json()) as { results?: GeoHit[] };
-  return json.results?.[0] ?? null;
+  const usable = (json.results ?? []).filter(
+    (h) => isPopulatedPlace(h) && nameMatches(locality, h)
+  );
+  // Results arrive best-match first, so the first survivor is the answer.
+  return usable[0] ?? null;
 }
 
 /**
