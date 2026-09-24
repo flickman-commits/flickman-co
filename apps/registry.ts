@@ -77,6 +77,15 @@ export const apps: AppEntry[] = [
     url: "/topline",
     createdAt: "2026-06-29",
   },
+  {
+    slug: "bottom-line",
+    name: "Bottom Line",
+    icon: "🍋",
+    description:
+      "A game about the P&L. Run a lemonade stand, a burger joint, a gym. Every tap moves a line on the scoreboard.",
+    url: "/bottom-line",
+    createdAt: "2026-09-22",
+  },
 ];
 
 export function getApp(slug: string): AppEntry | undefined {
