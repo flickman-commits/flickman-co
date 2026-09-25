@@ -70,10 +70,10 @@ export const apps: AppEntry[] = [
   },
   {
     slug: "topline",
-    name: "Topline",
-    icon: "📊",
+    name: "Money Dinners",
+    icon: "🍽️",
     description:
-      "A database of verified P&Ls — learn how real businesses operate, margins, and industry standards.",
+      "A monthly group for business owners to look at their numbers together. Waitlist open.",
     url: "/topline",
     createdAt: "2026-06-29",
   },

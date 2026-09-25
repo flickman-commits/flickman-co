@@ -4,10 +4,11 @@ import { rateLimit } from "../../../lib/rate-limit";
 /**
  * POST /api/waitlist
  *
- * Body: { email, source? }
+ * Body: { name, email, businessName, industry, profit, source? }
  *
- * Validates the email and forwards it to a Formspree form endpoint, which
- * stores the submission and emails a notification. No database.
+ * Money Dinners waitlist (the /topline page). Validates the fields and
+ * forwards them to a Formspree form, which stores the submission and emails
+ * a notification. Formspree adds a column per field automatically.
  *
  * Env: FORMSPREE_ENDPOINT — the form URL, e.g. https://formspree.io/f/xxxxxxxx
  * Server-only so the endpoint isn't exposed in the browser.
@@ -15,6 +16,19 @@ import { rateLimit } from "../../../lib/rate-limit";
 export const dynamic = "force-dynamic";
 
 const EMAIL_RX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// Keep in sync with the options on src/app/topline/page.tsx.
+const PROFIT_RANGES = [
+  "Under $100k",
+  "$100k to $250k",
+  "$250k to $500k",
+  "$500k to $1M",
+  "Over $1M",
+];
+
+function str(v: unknown, max: number) {
+  return typeof v === "string" ? v.trim().slice(0, max) : "";
+}
 
 export async function POST(req: NextRequest) {
   const blocked = rateLimit(req, {
@@ -32,39 +46,28 @@ export async function POST(req: NextRequest) {
   }
 
   const obj = body as Record<string, unknown>;
-  const email = (typeof obj.email === "string" ? obj.email : "").trim().toLowerCase();
-  const source =
-    typeof obj.source === "string" ? obj.source.trim().slice(0, 80) : "topline";
-  const role = typeof obj.role === "string" ? obj.role.trim() : "";
-  const wouldSubmitPL =
-    typeof obj.wouldSubmitPL === "string" ? obj.wouldSubmitPL.trim() : "";
-  const reason =
-    typeof obj.reason === "string" ? obj.reason.trim().slice(0, 1000) : "";
+  const email = str(obj.email, 200).toLowerCase();
+  const name = str(obj.name, 100);
+  const businessName = str(obj.businessName, 120);
+  const industry = str(obj.industry, 80);
+  const profit = str(obj.profit, 40);
+  const source = str(obj.source, 80) || "money-dinners";
 
   if (!EMAIL_RX.test(email) || email.length > 160) {
-    return NextResponse.json(
-      { error: "Please enter a valid email address." },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Please enter a valid email address." }, { status: 400 });
   }
-
-  const ROLES = [
-    "Current business owner",
-    "Looking to start or buy a business",
-    "Not interested in business ownership",
-  ];
-  if (!ROLES.includes(role)) {
-    return NextResponse.json(
-      { error: "Please choose the option that best describes you." },
-      { status: 400 }
-    );
+  if (!name) {
+    return NextResponse.json({ error: "Please add your name." }, { status: 400 });
   }
-
-  // The P&L question only applies to current business owners.
-  const pl =
-    role === "Current business owner" && ["Yes", "Maybe", "No"].includes(wouldSubmitPL)
-      ? wouldSubmitPL
-      : "";
+  if (!businessName) {
+    return NextResponse.json({ error: "Please add your business name." }, { status: 400 });
+  }
+  if (!industry) {
+    return NextResponse.json({ error: "Please pick what kind of business it is." }, { status: 400 });
+  }
+  if (!PROFIT_RANGES.includes(profit)) {
+    return NextResponse.json({ error: "Please pick a yearly profit range." }, { status: 400 });
+  }
 
   const endpoint = process.env.FORMSPREE_ENDPOINT;
   if (!endpoint) {
@@ -83,28 +86,23 @@ export async function POST(req: NextRequest) {
         Accept: "application/json",
       },
       body: JSON.stringify({
+        name,
         email,
+        business_name: businessName,
+        industry,
+        yearly_profit: profit,
         source,
-        role,
-        would_submit_pl: pl,
-        reason,
-        _subject: "New Topline waitlist signup",
+        _subject: `Money Dinners waitlist: ${businessName} (${profit})`,
       }),
     });
     if (!res.ok) {
       const text = await res.text().catch(() => "");
       console.error("[waitlist] formspree rejected:", res.status, text.slice(0, 160));
-      return NextResponse.json(
-        { error: "Something went wrong. Please try again." },
-        { status: 502 }
-      );
+      return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 502 });
     }
   } catch (err) {
     console.error("[waitlist] formspree request failed:", err);
-    return NextResponse.json(
-      { error: "Something went wrong. Please try again." },
-      { status: 502 }
-    );
+    return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 502 });
   }
 
   return NextResponse.json({ ok: true });

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Press_Start_2P } from "next/font/google";
-import { Poppins } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import Script from "next/script";
 import "./globals.css";
@@ -19,11 +19,10 @@ const pixelFont = Press_Start_2P({
   variable: "--font-pixel",
 });
 
-// Display face for the Topline P&L page. Heavy geometric grotesque to match
-// the show's graphics. Not preloaded globally — only pages that reference
-// var(--font-display) pull it in.
-const poppins = Poppins({
-  weight: ["500", "600", "700", "800"],
+// Display face for the Topline pages — the font used in the show's graphics.
+// Not preloaded globally; only pages that reference var(--font-display) pull it in.
+const displayFont = Plus_Jakarta_Sans({
+  weight: ["400", "500", "600", "700", "800"],
   subsets: ["latin"],
   variable: "--font-display",
   preload: false,
@@ -45,7 +44,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://www.youtube.com" />
         <link rel="preconnect" href="https://i.ytimg.com" />
       </head>
-      <body className={`${inter.variable} ${pixelFont.variable} ${poppins.variable} font-[family-name:var(--font-body)] bg-cream text-coal antialiased`}>
+      <body className={`${inter.variable} ${pixelFont.variable} ${displayFont.variable} font-[family-name:var(--font-body)] bg-cream text-coal antialiased`}>
         {children}
         <Analytics />
         {/* Google Analytics 4 */}
