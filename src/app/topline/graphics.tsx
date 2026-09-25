@@ -337,10 +337,10 @@ export function TrackerPeek() {
 export const GRAPHICS_CSS = `
 /* falling dollars */
 .g-rain { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
-.g-drop { position: absolute; top: -60px; font-weight: 800; opacity: 0.5; line-height: 1;
+.g-drop { position: absolute; top: -60px; font-weight: 800; opacity: 0.32; line-height: 1;
   animation-name: g-fall; animation-timing-function: linear; animation-iteration-count: infinite; }
 .g-bill { font-size: 13px !important; width: 38px; height: 20px; border: 2px solid currentColor;
-  border-radius: 5px; display: flex; align-items: center; justify-content: center; opacity: 0.45; }
+  border-radius: 5px; display: flex; align-items: center; justify-content: center; opacity: 0.28; }
 @keyframes g-fall {
   0%   { transform: translate(0, 0) rotate(calc(var(--spin) * -14deg)); }
   25%  { transform: translate(14px, 27vh) rotate(calc(var(--spin) * 12deg)); }
@@ -356,21 +356,21 @@ export const GRAPHICS_CSS = `
 @keyframes g-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
 /* windows */
-.g-peeks { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 28px; }
+.g-peeks { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-top: 16px; }
 .g-win { overflow: hidden; height: 100%; }
-.g-win-bar { display: flex; align-items: center; gap: 6px; padding: 12px 14px; border-bottom: 1px solid var(--hair); }
+.g-win-bar { display: flex; align-items: center; gap: 6px; padding: 9px 12px; border-bottom: 1px solid var(--hair); }
 .g-win-bar i { width: 10px; height: 10px; border-radius: 50%; background: var(--track); }
 .g-win-bar span { margin-left: 8px; font-size: 12px; font-weight: 600; letter-spacing: 1.6px; text-transform: uppercase; color: var(--label); }
-.g-win-body { padding: 20px 20px 22px; }
+.g-win-body { padding: 16px 16px 18px; }
 
 /* notion */
 .g-np-icon { font-size: 30px; }
-.g-np-title { font-size: 22px; font-weight: 800; letter-spacing: -0.6px; margin: 6px 0 12px; }
+.g-np-title { font-size: 20px; font-weight: 800; letter-spacing: -0.6px; margin: 4px 0 10px; }
 .g-np-props { display: grid; grid-template-columns: 70px 1fr; gap: 6px 10px; font-size: 13px; color: var(--muted); font-weight: 500; }
 .g-np-props b { font-weight: 600; color: var(--ink); background: #FFE9DE; border-radius: 5px; padding: 1px 8px; justify-self: start; }
 .g-np-props b.g-plain { background: none; padding: 0; }
-.g-np-h { font-size: 15px; font-weight: 800; margin: 18px 0 8px; }
-.g-check { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 500; padding: 4px 0; }
+.g-np-h { font-size: 14px; font-weight: 800; margin: 14px 0 6px; }
+.g-check { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 500; padding: 3px 0; }
 .g-box { width: 16px; height: 16px; border: 2px solid var(--tan); border-radius: 4px; flex-shrink: 0; position: relative; }
 .g-box::after { content: "✓"; position: absolute; inset: -3px 0 0 1px; font-size: 13px; font-weight: 800; color: #fff; opacity: 0; }
 .g-play .g-box { animation: g-tick 300ms ease forwards; animation-delay: var(--d); }
@@ -379,14 +379,14 @@ export const GRAPHICS_CSS = `
 .g-play .g-check-text { animation: g-strike 300ms ease forwards; animation-delay: var(--d); }
 @keyframes g-strike { to { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--tan); } }
 .g-np-table { display: grid; grid-template-columns: 1fr auto; border-top: 1px solid var(--hair); font-size: 14px; }
-.g-np-table span { padding: 7px 0; border-bottom: 1px solid var(--hair); font-weight: 500; }
+.g-np-table span { padding: 5px 0; border-bottom: 1px solid var(--hair); font-weight: 500; }
 .g-np-table span:nth-child(even) { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
 .g-green-text { color: var(--green); }
 
 /* claude */
 .g-cl-you { display: inline-block; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px;
   background: var(--track); border-radius: 8px; padding: 7px 11px; margin-bottom: 14px; }
-.g-cl-line { display: flex; gap: 10px; font-size: 14px; font-weight: 500; line-height: 1.45; padding: 5px 0; }
+.g-cl-line { display: flex; gap: 10px; font-size: 14px; font-weight: 500; line-height: 1.4; padding: 3px 0; }
 .g-mark { width: 18px; flex-shrink: 0; font-weight: 800; color: var(--ink); text-align: center; }
 .g-mark-o { color: var(--orange); }
 .g-caret { display: inline-block; width: 8px; height: 16px; background: var(--orange); margin: 6px 0 0 28px; }
