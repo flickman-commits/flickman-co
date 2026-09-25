@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, type FormEvent } from "react";
 import { ClaudePeek, GRAPHICS_CSS, MoneyRain, NotionPeek, TrackerPeek } from "./graphics";
 
@@ -268,7 +269,8 @@ export default function MoneyDinnersPage() {
       </section>
 
       {/* Problem */}
-      <section className="md-wrap md-section">
+      <section className="md-section md-alt">
+        <div className="md-wrap">
         <div className="md-label">Sound familiar?</div>
         <h2 className="md-h2-gap">You&apos;re making decisions based on vibes.</h2>
         <ul className="md-rows">
@@ -281,10 +283,12 @@ export default function MoneyDinnersPage() {
           You&apos;re not bad at this. You just don&apos;t have a system, or anyone
           holding you to it.
         </p>
+        </div>
       </section>
 
       {/* Story */}
-      <section className="md-wrap md-section">
+      <section className="md-section">
+        <div className="md-wrap">
         <div className="md-label">Why I started this</div>
         <div className="md-story">
           <p>
@@ -320,10 +324,12 @@ export default function MoneyDinnersPage() {
           </p>
           <div className="md-sig">Matt, Topline</div>
         </div>
+        </div>
       </section>
 
       {/* The checklist */}
-      <section className="md-wrap md-section">
+      <section className="md-section md-alt">
+        <div className="md-wrap">
         <h2 className="md-h2-gap">What we go over each month</h2>
         <ol className="md-list">
           {CHECKLIST.map((item, i) => (
@@ -336,10 +342,12 @@ export default function MoneyDinnersPage() {
             </li>
           ))}
         </ol>
+        </div>
       </section>
 
       {/* How it works */}
-      <section className="md-wrap md-section">
+      <section className="md-section">
+        <div className="md-wrap">
         <div className="md-label">How it works</div>
         <h2 className="md-h2-gap">
           Make it a habit. Make it fun. Take out the friction.
@@ -398,10 +406,12 @@ export default function MoneyDinnersPage() {
           for the rest of your life.
         </p>
         <Cta />
+        </div>
       </section>
 
       {/* Fit */}
-      <section className="md-wrap md-section">
+      <section className="md-section md-alt">
+        <div className="md-wrap">
         <div className="md-fit">
           <div>
             <div className="md-label">It&apos;s for you if</div>
@@ -419,10 +429,12 @@ export default function MoneyDinnersPage() {
             </ul>
           </div>
         </div>
+        </div>
       </section>
 
       {/* Pricing */}
-      <section className="md-wrap md-section">
+      <section className="md-section">
+        <div className="md-wrap">
         <div className="md-label">What it costs</div>
         <div className="md-prices">
           <div className="md-price md-price-best">
@@ -444,26 +456,46 @@ export default function MoneyDinnersPage() {
           </div>
         </div>
         <Cta />
+        </div>
       </section>
 
       {/* Topline proof */}
-      <section className="md-wrap md-section">
-        <div className="md-label">About Topline</div>
-        <p className="md-proof">
-          I create a show on Instagram called Topline, where I break down the P&amp;Ls
-          of real local businesses. Turns out a lot of people are fascinated by the
-          numbers behind the places they walk past every day. Money Dinners is for the
-          owners who want to get their own numbers in order.
-        </p>
-        <div className="md-ig">
-          Watch it on{" "}
-          <a href={IG_TOPLINE} target="_blank" rel="noopener noreferrer">
-            @topline_________
-          </a>{" "}
-          and{" "}
-          <a href={IG_FLICKMAN} target="_blank" rel="noopener noreferrer">
-            @flickman
+      <section className="md-section md-alt">
+        <div className="md-wrap">
+        <div className="md-show">
+          <a
+            className="md-show-img"
+            href={IG_TOPLINE}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Image
+              src="/topline/episode.jpg"
+              alt="Matt filming a Topline episode on a New York street"
+              width={360}
+              height={640}
+            />
+            <span>▶ Watch on Instagram</span>
           </a>
+          <div>
+            <div className="md-label">About Topline</div>
+            <p className="md-proof">
+              I create a show on Instagram called Topline, where I break down the P&amp;Ls
+              of real local businesses. Turns out a lot of people are fascinated by the
+              numbers behind the places they walk past every day. Money Dinners is for the
+              owners who want to get their own numbers in order.
+            </p>
+            <div className="md-ig">
+              Watch it on{" "}
+              <a href={IG_TOPLINE} target="_blank" rel="noopener noreferrer">
+                @topline_________
+              </a>{" "}
+              and{" "}
+              <a href={IG_FLICKMAN} target="_blank" rel="noopener noreferrer">
+                @flickman
+              </a>
+            </div>
+          </div>
         </div>
         <div className="md-stats">
           <div>
@@ -479,16 +511,19 @@ export default function MoneyDinnersPage() {
             <span>followers across both accounts</span>
           </div>
         </div>
+        </div>
       </section>
 
       {/* Form */}
-      <section className="md-wrap md-section" id="join">
+      <section className="md-section" id="join">
+        <div className="md-wrap">
         <div className="md-join">
           <h2>Join the waitlist</h2>
           <p className="md-sub">
             Limited Spots. Only {SPOTS} to start. Takes about 30 seconds.
           </p>
           <SignupForm />
+        </div>
         </div>
       </section>
 
@@ -508,7 +543,8 @@ const CSS = `
   font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
 }
 .md * { box-sizing: border-box; }
-.md-wrap { max-width: 720px; margin: 0 auto; padding: 0 22px; }
+.md-wrap { max-width: 920px; margin: 0 auto; padding: 0 22px; }
+.md-story p, .md-proof, .md-punch { max-width: 680px; }
 .md-top { display: flex; justify-content: space-between; align-items: center;
   max-width: 1040px; margin: 0 auto; padding: 22px; }
 .md-logo { font-weight: 800; font-size: 20px; letter-spacing: -0.6px; }
@@ -518,19 +554,21 @@ const CSS = `
 .md-label { font-size: 13px; font-weight: 600; letter-spacing: 2.4px; text-transform: uppercase;
   color: var(--label); margin-bottom: 18px; }
 
-.md-hero-band { position: relative; overflow: hidden; padding-bottom: 40px; }
+.md-hero-band { position: relative; overflow: hidden; padding-bottom: 88px; }
 .md-hero { position: relative; z-index: 1; padding-top: clamp(56px, 10vw, 120px); }
 .md-h2-gap { margin-bottom: 26px !important; }
 .md-caption { font-size: 17px; font-weight: 500; color: var(--ink2); line-height: 1.55; margin: 20px 0 0; }
 .md-ig { font-size: 16px; font-weight: 600; margin: -10px 0 30px; color: var(--ink2); }
-.md-ig a { color: var(--ink); text-decoration: none; border-bottom: 3px solid var(--orange); }
+.md-ig a { color: var(--ink); text-decoration: none; font-weight: 800; }
+.md-ig a:hover { color: var(--orange); }
 .md h1 { font-size: clamp(42px, 7.5vw, 76px); font-weight: 800; line-height: 1.02;
   letter-spacing: -2.5px; margin: 0; }
 .md-under { background: linear-gradient(var(--orange), var(--orange)) no-repeat 0 92% / 100% 0.12em; }
 .md-lede { font-size: clamp(18px, 2.3vw, 21px); font-weight: 500; color: var(--ink2);
   line-height: 1.55; max-width: 600px; margin: 24px 0 0; }
 
-.md-section { padding-top: 88px; }
+.md-section { padding: 88px 0; }
+.md-alt { background: #F2EEE7; --hair: #E1DBD1; }
 .md h2 { font-size: clamp(32px, 5vw, 44px); font-weight: 800; letter-spacing: -1.4px; margin: 0; }
 .md h3 { font-size: 20px; font-weight: 700; letter-spacing: -0.4px; margin: 0 0 6px; }
 .md-sub { color: var(--ink2); font-weight: 500; margin: 10px 0 26px; }
@@ -590,6 +628,15 @@ const CSS = `
 .md-amount { font-size: 48px; font-weight: 800; letter-spacing: -1.8px; margin: 6px 0 10px; }
 .md-amount span { font-size: 17px; color: var(--muted); font-weight: 600; letter-spacing: 0; }
 
+.md-show { display: grid; gap: 28px; align-items: center; margin-bottom: 40px; }
+.md-show-img { display: block; text-decoration: none; text-align: center; }
+.md-show-img img { display: block; width: 100%; max-width: 230px; height: auto; margin: 0 auto;
+  border-radius: 22px; box-shadow: 0 18px 40px rgba(26,26,26,0.18); }
+.md-show-img span { display: inline-block; margin-top: 12px; font-size: 14px; font-weight: 700; color: var(--ink); }
+@media (min-width: 760px) {
+  .md-show { grid-template-columns: 250px 1fr; gap: 48px; }
+  .md-show-img img { max-width: none; }
+}
 .md-proof { font-size: 18px; line-height: 1.6; font-weight: 500; margin: 0 0 28px; color: var(--ink2); }
 .md-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 24px; }
 .md-stats div { border-top: 4px solid var(--orange); padding-top: 14px; }
@@ -615,5 +662,5 @@ const CSS = `
 .md-done p { color: var(--green-soft); font-weight: 600; margin: 6px 0 0; font-size: 16px; }
 
 .md-foot { text-align: center; font-size: 13px; font-weight: 600; color: var(--label);
-  padding: 80px 20px 48px; letter-spacing: 0.3px; }
+  padding: 32px 20px 48px; letter-spacing: 0.3px; }
 `;

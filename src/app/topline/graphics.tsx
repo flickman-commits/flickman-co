@@ -192,53 +192,109 @@ export function ClaudePeek() {
 
 /* ── Daily Financial Tracker (Google Sheet) ─────────────────────── */
 
-// Made-up numbers (not real Trackstar data).
-const DAYS = [
-  { day: "Mon 9/01", rev: 1240, cost: 512 },
-  { day: "Tue 9/02", rev: 980, cost: 431 },
-  { day: "Wed 9/03", rev: 1515, cost: 602 },
-  { day: "Thu 9/04", rev: 410, cost: 488 },
-  { day: "Fri 9/05", rev: 2130, cost: 845 },
-];
-
+// All made-up numbers (not real Trackstar data).
 const money = (n: number) =>
   n < 0 ? `($${Math.abs(n).toLocaleString("en-US")})` : `$${n.toLocaleString("en-US")}`;
 
-function TrackerBody({ play }: { play: boolean }) {
-  const rev = DAYS.reduce((s, x) => s + x.rev, 0);
-  const cost = DAYS.reduce((s, x) => s + x.cost, 0);
-  const totalAt = 500 + DAYS.length * 550;
+type SheetRow = { cells: string[]; profit?: number };
+type Sheet = { title: string; cols: string[]; rows: SheetRow[]; total?: SheetRow };
+
+function pnlRow(label: string, rev: number, cost: number): SheetRow {
+  return { cells: [label, money(rev), money(cost), money(rev - cost)], profit: rev - cost };
+}
+
+const SHEETS: Record<string, Sheet> = {
+  Daily: {
+    title: "Daily scoreboard · September",
+    cols: ["Date", "Revenue", "Costs", "Profit"],
+    rows: [
+      pnlRow("Mon 9/01", 1240, 512),
+      pnlRow("Tue 9/02", 980, 431),
+      pnlRow("Wed 9/03", 1515, 602),
+      pnlRow("Thu 9/04", 410, 488),
+      pnlRow("Fri 9/05", 2130, 845),
+    ],
+    total: pnlRow("Month to date", 6275, 2878),
+  },
+  Monthly: {
+    title: "Monthly · 2026",
+    cols: ["Month", "Revenue", "Costs", "Profit"],
+    rows: [
+      pnlRow("June", 38400, 29100),
+      pnlRow("July", 41250, 30800),
+      pnlRow("August", 36900, 31700),
+      pnlRow("Sept (so far)", 6275, 2878),
+    ],
+  },
+  YTD: {
+    title: "Year to date · 2026",
+    cols: ["Quarter", "Revenue", "Costs", "Profit"],
+    rows: [
+      pnlRow("Q1", 102300, 108900),
+      pnlRow("Q2", 118500, 97200),
+      pnlRow("Q3 (so far)", 84425, 65378),
+    ],
+    total: pnlRow("Year to date", 305225, 271478),
+  },
+  Expenses: {
+    title: "Expenses · August",
+    cols: ["Category", "Amount", "Share"],
+    rows: [
+      { cells: ["Production", "$12,680", "40%"] },
+      { cells: ["Shipping", "$6,340", "20%"] },
+      { cells: ["Payroll", "$5,706", "18%"] },
+      { cells: ["Platform fees", "$3,170", "10%"] },
+      { cells: ["Software", "$1,902", "6%"] },
+      { cells: ["Marketing", "$1,902", "6%"] },
+    ],
+    total: { cells: ["Total", "$31,700", "100%"] },
+  },
+};
+const TABS = Object.keys(SHEETS);
+
+function SheetRowView({ row, at, total }: { row: SheetRow; at: number; total?: boolean }) {
+  const last = row.cells.length - 1;
+  return (
+    <div className={total ? "g-sheet-row g-sheet-total" : "g-sheet-row"} style={d(at)}>
+      {row.cells.map((c, i) => (
+        <span
+          key={i}
+          className={
+            i === last && row.profit !== undefined ? (row.profit < 0 ? "g-neg" : "g-pos") : undefined
+          }
+        >
+          {c}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function TrackerBody({ sheet, play }: { sheet: Sheet; play: boolean }) {
+  const step = 380;
   return (
     <div className={play ? "g-sheet g-play" : "g-sheet"}>
-      <div className="g-sheet-title">Daily scoreboard · September</div>
-      <div className="g-sheet-grid">
-        <span className="g-sh">Date</span>
-        <span className="g-sh">Revenue</span>
-        <span className="g-sh">Costs</span>
-        <span className="g-sh">Profit</span>
-        {DAYS.map((x, i) => {
-          const p = x.rev - x.cost;
-          return (
-            <div key={x.day} className="g-sheet-row g-in" style={d(500 + i * 550)}>
-              <span>{x.day}</span>
-              <span>{money(x.rev)}</span>
-              <span>{money(x.cost)}</span>
-              <span className={p < 0 ? "g-neg" : "g-pos"}>{money(p)}</span>
-            </div>
-          );
-        })}
-        <div className="g-sheet-row g-sheet-total g-in" style={d(totalAt)}>
-          <span>Month to date</span>
-          <span>{money(rev)}</span>
-          <span>{money(cost)}</span>
-          <span className="g-pos">{money(rev - cost)}</span>
-        </div>
-      </div>
-      <div className="g-tabs">
-        <span className="g-tab-on">Daily</span>
-        <span>Monthly</span>
-        <span>YTD</span>
-        <span>Expenses</span>
+      <div className="g-sheet-title">{sheet.title}</div>
+      <div
+        className="g-sheet-grid"
+        style={{
+          gridTemplateColumns:
+            sheet.cols.length === 4
+              ? "minmax(0,1.3fr) repeat(3, minmax(0,1fr))"
+              : "minmax(0,1.6fr) repeat(2, minmax(0,1fr))",
+        }}
+      >
+        {sheet.cols.map((c) => (
+          <span key={c} className="g-sh">
+            {c}
+          </span>
+        ))}
+        {sheet.rows.map((r, i) => (
+          <SheetRowView key={r.cells[0]} row={r} at={200 + i * step} />
+        ))}
+        {sheet.total && (
+          <SheetRowView row={sheet.total} at={200 + sheet.rows.length * step} total />
+        )}
       </div>
     </div>
   );
@@ -246,11 +302,31 @@ function TrackerBody({ play }: { play: boolean }) {
 
 export function TrackerPeek() {
   const [ref, seen] = useInView<HTMLDivElement>();
-  const run = useReplay(seen, 9000);
+  const [tab, setTab] = useState(TABS[0]);
+  const [touched, setTouched] = useState(false);
+  // Auto-replays until someone clicks a tab, then stays put.
+  const run = useReplay(seen && !touched, 9000);
   return (
     <div ref={ref} className="g-peek-wide">
       <Window title="Daily Financial Tracker">
-        <TrackerBody key={run} play={run > 0} />
+        <TrackerBody key={`${tab}-${run}`} sheet={SHEETS[tab]} play={run > 0 || touched} />
+        <div className="g-tabs" role="tablist" aria-label="Tracker tabs">
+          {TABS.map((t) => (
+            <button
+              key={t}
+              type="button"
+              role="tab"
+              aria-selected={t === tab}
+              className={t === tab ? "g-tab g-tab-on" : "g-tab"}
+              onClick={() => {
+                setTab(t);
+                setTouched(true);
+              }}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
       </Window>
     </div>
   );
@@ -334,8 +410,18 @@ export const GRAPHICS_CSS = `
 .g-pos { color: var(--green); font-weight: 700 !important; }
 .g-neg { color: var(--orange); font-weight: 700 !important; }
 .g-tabs { display: flex; gap: 2px; margin-top: 10px; font-size: 12px; font-weight: 600; color: var(--muted); }
-.g-tabs span { padding: 6px 12px; border-radius: 0 0 6px 6px; background: var(--track); }
-.g-tabs .g-tab-on { background: #fff; color: var(--ink); border: 1px solid var(--hair); border-top: 2px solid var(--green); }
+.g-tab { font: inherit; font-size: 12px; font-weight: 600; color: var(--muted); cursor: pointer;
+  padding: 7px 12px; border: 1px solid transparent; border-radius: 0 0 6px 6px; background: var(--track);
+  transition: color 120ms ease, background 120ms ease; }
+.g-tab:hover { color: var(--ink); }
+.g-tab-on { background: #fff; color: var(--ink); border-color: var(--hair); border-top: 2px solid var(--green); }
+
+@media (max-width: 400px) {
+  .g-win-body { padding: 16px 14px 18px; }
+  .g-sheet-grid { font-size: 12.5px; }
+  .g-sheet-grid > span, .g-sheet-row > span { padding: 7px 6px; }
+  .g-sh { font-size: 10px; letter-spacing: 0.8px; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .g-drop { animation: none; display: none; }
