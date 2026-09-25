@@ -7,6 +7,10 @@ import { ClaudePeek, GRAPHICS_CSS, MoneyRain, NotionPeek, TrackerPeek } from "./
 /* ── Easy-to-change numbers ─────────────────────────────────────── */
 
 const SPOTS = 10;
+// Pricing is hidden while we test demand with the waitlist. Flip to true to
+// show it again (then swap md-alt between the Topline and form sections so
+// the card pattern keeps alternating).
+const SHOW_PRICING = false;
 const IG_TOPLINE = "https://www.instagram.com/topline_________/";
 const PRICE_3MO = 250; // per month, 3-month minimum
 const PRICE_MONTHLY = 350; // per month, cancel anytime
@@ -432,34 +436,36 @@ export default function MoneyDinnersPage() {
       </section>
 
       {/* Pricing */}
-      <section className="md-section">
-        <div className="md-wrap">
-        <div className="md-label">What it costs</div>
-        <div className="md-prices">
-          <div className="md-price md-price-best">
-            <div className="md-badge">Best value</div>
-            <h3>3-month plan</h3>
-            <div className="md-amount">
-              ${PRICE_3MO}
-              <span>/mo</span>
+      {SHOW_PRICING && (
+        <section className="md-section">
+          <div className="md-wrap">
+          <div className="md-label">What it costs</div>
+          <div className="md-prices">
+            <div className="md-price md-price-best">
+              <div className="md-badge">Best value</div>
+              <h3>3-month plan</h3>
+              <div className="md-amount">
+                ${PRICE_3MO}
+                <span>/mo</span>
+              </div>
+              <p>Billed monthly, 3 month minimum. Enough time to make it a habit.</p>
             </div>
-            <p>Billed monthly, 3 month minimum. Enough time to make it a habit.</p>
-          </div>
-          <div className="md-price">
-            <h3>Month to month</h3>
-            <div className="md-amount">
-              ${PRICE_MONTHLY}
-              <span>/mo</span>
+            <div className="md-price">
+              <h3>Month to month</h3>
+              <div className="md-amount">
+                ${PRICE_MONTHLY}
+                <span>/mo</span>
+              </div>
+              <p>Cancel anytime.</p>
             </div>
-            <p>Cancel anytime.</p>
           </div>
-        </div>
-        <Cta />
-        </div>
-      </section>
+          <Cta />
+          </div>
+        </section>
+      )}
 
       {/* Topline proof */}
-      <section className="md-section md-alt">
+      <section className="md-section">
         <div className="md-wrap">
         <div className="md-show">
           <div className="md-show-media">
@@ -521,7 +527,7 @@ export default function MoneyDinnersPage() {
       </section>
 
       {/* Form */}
-      <section className="md-section" id="join">
+      <section className="md-section md-alt" id="join">
         <div className="md-wrap">
         <div className="md-join">
           <h2>Join the waitlist</h2>
