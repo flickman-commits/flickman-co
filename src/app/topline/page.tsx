@@ -26,12 +26,12 @@ const INDUSTRIES = [
   "Other",
 ];
 
-const PROFIT_RANGES = [
-  "Under $100k",
-  "$100k to $250k",
+const REVENUE_RANGES = [
+  "Under $250k",
   "$250k to $500k",
   "$500k to $1M",
-  "Over $1M",
+  "$1M to $5M",
+  "Over $5M",
 ];
 
 // The monthly Money Dinner checklist (from the real template, business side).
@@ -88,7 +88,7 @@ function SignupForm() {
     businessName: "",
     industry: "",
     industryOther: "",
-    profit: "",
+    revenue: "",
   });
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
   const [error, setError] = useState("");
@@ -113,7 +113,7 @@ function SignupForm() {
           businessName: form.businessName,
           industry:
             form.industry === "Other" ? `Other: ${form.industryOther.trim()}` : form.industry,
-          profit: form.profit,
+          revenue: form.revenue,
           source: "money-dinners",
         }),
       });
@@ -208,23 +208,23 @@ function SignupForm() {
         </label>
       )}
       <label>
-        How much profit does it make a year?
+        How much revenue does it make a year?
         <select
           required
-          value={form.profit}
-          onChange={(e) => set("profit", e.target.value)}
+          value={form.revenue}
+          onChange={(e) => set("revenue", e.target.value)}
           disabled={loading}
         >
           <option value="" disabled>
             Pick one
           </option>
-          {PROFIT_RANGES.map((p) => (
+          {REVENUE_RANGES.map((p) => (
             <option key={p}>{p}</option>
           ))}
         </select>
       </label>
       <p className="md-why">
-        <strong>Why we ask about profit:</strong> this group is for owners who are
+        <strong>Why we ask about revenue:</strong> this group is for owners who are
         already up and running and ready to invest in their business. We don&apos;t
         want anyone spending money with us who shouldn&apos;t be. If you&apos;re not
         there yet, no hard feelings, just come back when you are.

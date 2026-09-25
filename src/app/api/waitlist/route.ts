@@ -4,7 +4,7 @@ import { rateLimit } from "../../../lib/rate-limit";
 /**
  * POST /api/waitlist
  *
- * Body: { name, email, businessName, industry, profit, source? }
+ * Body: { name, email, businessName, industry, revenue, source? }
  *
  * Money Dinners waitlist (the /topline page). Validates the fields and
  * forwards them to a Formspree form, which stores the submission and emails
@@ -18,12 +18,12 @@ export const dynamic = "force-dynamic";
 const EMAIL_RX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Keep in sync with the options on src/app/topline/page.tsx.
-const PROFIT_RANGES = [
-  "Under $100k",
-  "$100k to $250k",
+const REVENUE_RANGES = [
+  "Under $250k",
   "$250k to $500k",
   "$500k to $1M",
-  "Over $1M",
+  "$1M to $5M",
+  "Over $5M",
 ];
 
 function str(v: unknown, max: number) {
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
   const name = str(obj.name, 100);
   const businessName = str(obj.businessName, 120);
   const industry = str(obj.industry, 80);
-  const profit = str(obj.profit, 40);
+  const revenue = str(obj.revenue, 40);
   const source = str(obj.source, 80) || "money-dinners";
 
   if (!EMAIL_RX.test(email) || email.length > 160) {
@@ -65,8 +65,8 @@ export async function POST(req: NextRequest) {
   if (!industry) {
     return NextResponse.json({ error: "Please pick what kind of business it is." }, { status: 400 });
   }
-  if (!PROFIT_RANGES.includes(profit)) {
-    return NextResponse.json({ error: "Please pick a yearly profit range." }, { status: 400 });
+  if (!REVENUE_RANGES.includes(revenue)) {
+    return NextResponse.json({ error: "Please pick a yearly revenue range." }, { status: 400 });
   }
 
   const endpoint = process.env.FORMSPREE_ENDPOINT;
@@ -90,9 +90,9 @@ export async function POST(req: NextRequest) {
         email,
         business_name: businessName,
         industry,
-        yearly_profit: profit,
+        yearly_revenue: revenue,
         source,
-        _subject: `Money Dinners waitlist: ${businessName} (${profit})`,
+        _subject: `Money Dinners waitlist: ${businessName} (${revenue})`,
       }),
     });
     if (!res.ok) {
