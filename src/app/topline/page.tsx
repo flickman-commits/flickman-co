@@ -264,8 +264,8 @@ export default function MoneyDinnersPage() {
           </h1>
           <p className="md-lede">
             Money Dinners is a small group of business owners who sit down once a
-            month and actually look at their numbers. Together. It makes your
-            finances less scary, and a lot harder to ignore.
+            month and actually look at their numbers. Together. It demystifies your
+            finances, and makes them a lot harder to ignore.
           </p>
           <Cta />
         </div>
@@ -275,7 +275,7 @@ export default function MoneyDinnersPage() {
       <section className="md-section md-alt">
         <div className="md-wrap">
         <div className="md-label">Sound familiar?</div>
-        <h2 className="md-h2-gap">You&apos;re making decisions based on vibes.</h2>
+        <h2 className="md-h2-gap">You make financial decisions based on vibes.</h2>
         <ul className="md-rows">
           <li>You check your bank balance and call that bookkeeping.</li>
           <li>Your P&amp;L lives in a QuickBooks tab you haven&apos;t opened since tax season.</li>
