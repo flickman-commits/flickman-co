@@ -116,7 +116,7 @@ function NotionBody({ play }: { play: boolean }) {
   return (
     <div className={play ? "g-np g-play" : "g-np"}>
       <div className="g-np-icon">🤑</div>
-      <div className="g-np-title">Money Dinner 031</div>
+      <div className="g-np-title">Money Lunch 031</div>
       <div className="g-np-props">
         <span>Status</span>
         <b>Closing out</b>
@@ -166,7 +166,7 @@ const CLAUDE_LINES = [
 function ClaudeBody({ play }: { play: boolean }) {
   return (
     <div className={play ? "g-cl g-play" : "g-cl"}>
-      <div className="g-cl-you">/money-dinner march</div>
+      <div className="g-cl-you">/money-lunch march</div>
       {CLAUDE_LINES.map((l, i) => (
         <div key={l.text} className="g-cl-line g-in" style={d(700 + i * 750)}>
           <span className={l.mark === "!" ? "g-mark g-mark-o" : "g-mark"}>{l.mark}</span>

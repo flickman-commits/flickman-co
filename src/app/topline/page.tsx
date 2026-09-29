@@ -8,8 +8,8 @@ import { ClaudePeek, GRAPHICS_CSS, MoneyRain, NotionPeek, TrackerPeek } from "./
 
 const SPOTS = 10;
 // Pricing is hidden while we test demand with the waitlist. Flip to true to
-// show it again (then swap md-alt between the Topline and form sections so
-// the card pattern keeps alternating).
+// show it again (it sits between "What you get" and "The crowd"; check the
+// card backgrounds still alternate).
 const SHOW_PRICING = false;
 const IG_TOPLINE = "https://www.instagram.com/topline_________/";
 const PRICE_3MO = 250; // per month, 3-month minimum
@@ -34,36 +34,24 @@ const REVENUE_RANGES = [
   "Over $5M",
 ];
 
-// The monthly Money Dinner checklist (from the real template, business side).
-const CHECKLIST = [
+// What happens each month (the Money Lunch checklist).
+const STEPS = [
+  { lead: "Clean up.", text: "Every dollar goes in the right place." },
+  { lead: "Check your guess.", text: "Did last month go how you thought?" },
+  { lead: "The big reveal.", text: "What came in, what went out, what you kept." },
   {
-    title: "Reconcile your books",
-    body: "Categorize every transaction from the month so your reports are actually right.",
+    lead: "Look ahead.",
+    text: "What's locked in for next month and what still has to happen.",
   },
-  {
-    title: "Check last month's guess",
-    body: "Pull up what you projected you'd make this month. Were you close?",
-  },
-  {
-    title: "Read your P&L",
-    body: "Revenue, expenses, net income, your three biggest costs, and how much cash is in the bank.",
-  },
-  {
-    title: "Update your year to date",
-    body: "Add the month to a running total so you see the trend, not just one month.",
-  },
-  {
-    title: "Project next month",
-    body: "What money is already locked in for next month, and what still has to happen.",
-  },
-  {
-    title: "Update your net worth",
-    body: "Business and personal, one number, once a month. Watch it move.",
-  },
-  {
-    title: "Write your month in review",
-    body: "What worked, what didn't, and the one thing you'll do differently next month.",
-  },
+  { lead: "Pick one thing.", text: "One change you'll make before the next lunch." },
+];
+
+const INCLUDED = [
+  "A monthly call with a small group of owners like you",
+  "A daily tracker, so you know where you stand any day",
+  "The Money Lunch template that walks you through the month",
+  "A Claude skill that does the boring sorting for you",
+  "The research behind every Topline episode",
 ];
 
 /* ── Pieces ─────────────────────────────────────────────────────── */
@@ -72,11 +60,9 @@ function Cta() {
   return (
     <div className="md-cta">
       <a href="#join" className="md-btn">
-        Join the Waitlist
+        Save my seat
       </a>
-      <div className="md-cta-note">
-        Limited Spots. Only {SPOTS} to start.
-      </div>
+      <div className="md-cta-note">Only {SPOTS} seats in the first room.</div>
     </div>
   );
 }
@@ -114,7 +100,7 @@ function SignupForm() {
           industry:
             form.industry === "Other" ? `Other: ${form.industryOther.trim()}` : form.industry,
           revenue: form.revenue,
-          source: "money-dinners",
+          source: "money-lunches",
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -134,7 +120,7 @@ function SignupForm() {
     return (
       <div className="md-done">
         <div className="md-done-title">You&apos;re on the list.</div>
-        <p>We&apos;ll reach out before the first {SPOTS} spots open up.</p>
+        <p>We&apos;ll reach out before the first {SPOTS} seats open up.</p>
       </div>
     );
   }
@@ -224,18 +210,16 @@ function SignupForm() {
         </select>
       </label>
       <p className="md-why">
-        <strong>Why we ask about revenue:</strong> this group is for owners who are
-        already up and running and ready to invest in their business. We don&apos;t
-        want anyone spending money with us who shouldn&apos;t be. If you&apos;re not
-        there yet, no hard feelings, just come back when you are.
+        <strong>Why we ask:</strong> this room is for owners already up and running.
+        Not there yet? Come back when you are.
       </p>
       <button type="submit" className="md-btn md-btn-full" disabled={loading}>
-        {loading ? "Saving your spot…" : "Join the Waitlist"}
+        {loading ? "Saving your seat…" : "Join the waitlist"}
       </button>
       <div className={`md-form-note ${status === "error" ? "md-err" : ""}`}>
         {status === "error"
           ? error
-          : `Limited Spots. Only ${SPOTS} to start. Nothing gets charged to join the waitlist.`}
+          : "Nothing is charged to join."}
       </div>
     </form>
   );
@@ -243,15 +227,15 @@ function SignupForm() {
 
 /* ── Page ───────────────────────────────────────────────────────── */
 
-export default function MoneyDinnersPage() {
+export default function MoneyLunchesPage() {
   return (
     <main className="md">
       <style dangerouslySetInnerHTML={{ __html: CSS + GRAPHICS_CSS }} />
 
       <header className="md-top">
-        <div className="md-logo">Money Dinners</div>
+        <div className="md-logo">Money Lunches</div>
         <a href="#join" className="md-top-link">
-          Join the waitlist
+          Save my seat
         </a>
       </header>
 
@@ -259,287 +243,202 @@ export default function MoneyDinnersPage() {
       <section className="md-hero-band">
         <MoneyRain />
         <div className="md-hero md-wrap">
-          <h1>
-            Know <span className="md-under">WTF</span> is happening in your business
-          </h1>
+          <div className="md-label">Topline presents</div>
+          <div className="md-brand">Money Lunches</div>
+          <h1>You should know if your business is actually making money.</h1>
           <p className="md-lede">
-            Money Dinners is a small group of business owners who sit down once a
-            month and actually look at their numbers. Together. It demystifies your
-            finances, and makes them a lot harder to ignore.
+            Once a month, a small room of business owners opens their books together.
+            What you find might surprise you. It surprised me.
           </p>
           <Cta />
         </div>
       </section>
 
-      {/* Problem */}
+      {/* The reveal */}
       <section className="md-section md-alt">
         <div className="md-wrap">
-        <div className="md-label">Sound familiar?</div>
-        <h2 className="md-h2-gap">You make financial decisions based on vibes.</h2>
-        <ul className="md-rows">
-          <li>You check your bank balance and call that bookkeeping.</li>
-          <li>Your P&amp;L lives in a QuickBooks tab you haven&apos;t opened since tax season.</li>
-          <li>You think you&apos;re breaking even. You&apos;re not actually sure.</li>
-          <li>You know you should look at the numbers every month. You just don&apos;t.</li>
-        </ul>
-        <p className="md-punch">
-          You&apos;re not bad at this. You just don&apos;t have a system, or anyone
-          holding you to it.
-        </p>
-        </div>
-      </section>
-
-      {/* Story */}
-      <section className="md-section">
-        <div className="md-wrap">
-        <div className="md-label">Why I started this</div>
-        <div className="md-story">
-          <p>
-            I never got a proper business school education. I just started hustling
-            in college, trying to make money, and eventually started making some.
-          </p>
-          <p>
-            But for years I was making decisions based on vibes and whatever was in
-            the bank that day. It wasn&apos;t until about a year ago that I got
-            crystal clear on my numbers, and it was eye opening. I thought Trackstar
-            was breaking even in Q1. <strong>It was actually losing money.</strong>
-          </p>
-          <p>
-            So I changed a few things. I started doing a monthly round up I call a{" "}
-            <strong>money dinner</strong>. I turned on bank notifications so I see my
-            balance every morning, a tight feedback loop. And I built some tools to
-            make it easy: a daily financial tracker, a few Claude skills, and the
-            Money Dinner template.
-          </p>
-          <p>
-            Now I know where the ship stands every day. It actually pushed me to
-            switch my business model, because once I could see the numbers I could
-            see the flaws in the one I had (creative services, one-off projects
-            only).
-          </p>
-          <p>
-            The other thing nobody tells you: once your numbers are accurate, you can
-            use Claude as a real strategy partner. Bouncing ideas off your actual data
-            beats asking &ldquo;how do I grow my business?&rdquo;
-          </p>
-          <p className="md-story-punch">
-            Money Dinners is all of that, with a group of people doing it with you.
-          </p>
-          <div className="md-sig">Matt, Topline</div>
-        </div>
-        </div>
-      </section>
-
-      {/* The checklist */}
-      <section className="md-section md-alt">
-        <div className="md-wrap">
-        <h2 className="md-h2-gap">What we go over each month</h2>
-        <ol className="md-list">
-          {CHECKLIST.map((item, i) => (
-            <li key={item.title}>
-              <span className="md-list-num">{String(i + 1).padStart(2, "0")}</span>
-              <div>
-                <h3>{item.title}</h3>
-                <p>{item.body}</p>
-              </div>
-            </li>
-          ))}
-        </ol>
-        </div>
-      </section>
-
-      {/* How it works */}
-      <section className="md-section">
-        <div className="md-wrap">
-        <div className="md-label">How it works</div>
-        <h2 className="md-h2-gap">
-          Make it a habit. Make it fun. Take out the friction.
-        </h2>
-        <ol className="md-steps">
-          <li>
-            <span className="md-num">1</span>
-            <div>
-              <h3>Time set aside</h3>
-              <p>
-                One call at the end of every month. It&apos;s on the calendar, so it
-                happens. We start as one big group, then split into small groups of
-                owners with businesses like yours.
-              </p>
-            </div>
-          </li>
-          <li>
-            <span className="md-num">2</span>
-            <div>
-              <h3>Tools that make it easy</h3>
-              <p>
-                The hardest part of doing your numbers is getting started. These cut
-                that down to nothing, so showing up for yourself each month is easy:
-                a daily financial tracker so you know where you stand any day, the
-                Money Dinner template that walks you through the month, a Claude
-                skill that does the boring parts, and an accountant in the group for
-                questions.
-              </p>
-            </div>
-          </li>
-        </ol>
-        <div className="g-peeks">
-          <TrackerPeek />
-          <NotionPeek />
-          <ClaudePeek />
-        </div>
-        <p className="md-bonus">
-          <strong>Bonus:</strong> you also get all the research behind every Topline
-          episode, plus the Claude skills I use to make the show.
-        </p>
-        <ol className="md-steps md-steps-after" start={3}>
-          <li>
-            <span className="md-num">3</span>
-            <div>
-              <h3>A group that expects you</h3>
-              <p>
-                Your small group sees your numbers every month, and there&apos;s a
-                group chat in between. It&apos;s a lot harder to skip when people
-                notice.
-              </p>
-            </div>
-          </li>
-        </ol>
-        <p className="md-punch">
-          Do it every month and it stops being a chore. It becomes a habit you keep
-          for the rest of your life.
-        </p>
-        <Cta />
-        </div>
-      </section>
-
-      {/* Fit */}
-      <section className="md-section md-alt">
-        <div className="md-wrap">
-        <div className="md-fit">
-          <div>
-            <div className="md-label">It&apos;s for you if</div>
-            <ul className="md-checks">
-              <li>You own a business doing $500k+ a year in revenue</li>
-              <li>You know you should look at your finances more, but you never have the time</li>
-              <li>You don&apos;t have the system, the support, or someone keeping you honest</li>
-            </ul>
-          </div>
-          <div>
-            <div className="md-label">It&apos;s not for you if</div>
-            <ul className="md-crosses">
-              <li>You&apos;re just getting started and don&apos;t have customers yet</li>
-              <li>You already close your books every month and know your numbers cold (nice work, honestly)</li>
-            </ul>
+          <div className="md-label">The reveal</div>
+          <h2 className="md-h2-gap">I thought my business was breaking even. It wasn&apos;t.</h2>
+          <div className="md-story">
+            <p>
+              For years I ran my businesses on vibes. Then one day I finally sat down
+              and looked. <strong>Trackstar was losing money, and I had no idea.</strong>
+            </p>
+            <p>
+              One lunch a month fixed that. Now I know where every dollar goes, every
+              single day.
+            </p>
+            <div className="md-sig">Matt, host of Topline</div>
           </div>
         </div>
+      </section>
+
+      {/* Sound familiar */}
+      <section className="md-section">
+        <div className="md-wrap">
+          <div className="md-label">Sound familiar?</div>
+          <ul className="md-rows">
+            <li>The only number you look at is your bank balance.</li>
+            <li>You haven&apos;t opened QuickBooks since tax season.</li>
+            <li>You think you&apos;re making money. You&apos;re not sure.</li>
+          </ul>
+          <p className="md-punch">
+            You&apos;re not bad with money. You&apos;ve just never had a system, or
+            anyone watching.
+          </p>
         </div>
       </section>
 
-      {/* Pricing */}
+      {/* The main event */}
+      <section className="md-section md-alt">
+        <div className="md-wrap">
+          <div className="md-label">The main event</div>
+          <h2 className="md-h2-gap">What happens each month</h2>
+          <ol className="md-list">
+            {STEPS.map((step, i) => (
+              <li key={step.lead}>
+                <span className="md-list-num">{i + 1}</span>
+                <p>
+                  <strong>{step.lead}</strong> {step.text}
+                </p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      {/* What you get */}
+      <section className="md-section">
+        <div className="md-wrap">
+          <div className="md-label">More than the price of admission</div>
+          <h2 className="md-h2-gap">Here&apos;s everything you get</h2>
+          <ul className="md-checks">
+            {INCLUDED.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+          <div className="g-peeks">
+            <TrackerPeek />
+            <NotionPeek />
+            <ClaudePeek />
+          </div>
+          <p className="md-punch">We&apos;d rather give you too much than too little.</p>
+        </div>
+      </section>
+
+      {/* Pricing (hidden while testing demand) */}
       {SHOW_PRICING && (
         <section className="md-section">
           <div className="md-wrap">
-          <div className="md-label">What it costs</div>
-          <div className="md-prices">
-            <div className="md-price md-price-best">
-              <div className="md-badge">Best value</div>
-              <h3>3-month plan</h3>
-              <div className="md-amount">
-                ${PRICE_3MO}
-                <span>/mo</span>
+            <div className="md-label">What it costs</div>
+            <div className="md-prices">
+              <div className="md-price md-price-best">
+                <div className="md-badge">Best value</div>
+                <h3>3-month plan</h3>
+                <div className="md-amount">
+                  ${PRICE_3MO}
+                  <span>/mo</span>
+                </div>
+                <p>Billed monthly, 3 month minimum.</p>
               </div>
-              <p>Billed monthly, 3 month minimum. Enough time to make it a habit.</p>
-            </div>
-            <div className="md-price">
-              <h3>Month to month</h3>
-              <div className="md-amount">
-                ${PRICE_MONTHLY}
-                <span>/mo</span>
+              <div className="md-price">
+                <h3>Month to month</h3>
+                <div className="md-amount">
+                  ${PRICE_MONTHLY}
+                  <span>/mo</span>
+                </div>
+                <p>Cancel anytime.</p>
               </div>
-              <p>Cancel anytime.</p>
             </div>
-          </div>
-          <Cta />
           </div>
         </section>
       )}
 
-      {/* Topline proof */}
-      <section className="md-section">
+      {/* The crowd */}
+      <section className="md-section md-alt">
         <div className="md-wrap">
-        <div className="md-show">
-          <div className="md-show-media">
-            <a
-              className="md-show-img"
-              href={IG_TOPLINE}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Watch Topline on Instagram"
-            >
-              <Image
-                src="/topline/episode.jpg"
-                alt="Matt filming a Topline episode on a New York street"
-                width={360}
-                height={640}
-              />
-            </a>
-            <a
-              className="md-btn md-btn-ig"
-              href={IG_TOPLINE}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              ▶ Watch it on Instagram
-            </a>
-            <div className="md-handle">
-              <span className="md-sr">@topline_________</span>
-              <span aria-hidden="true">
-                @topline
-                <i className="md-us" />
-              </span>
+          <div className="md-label">The crowd</div>
+          <h2 className="md-h2-gap">People can&apos;t stop watching other businesses&apos; numbers.</h2>
+          <div className="md-stats">
+            <div>
+              <strong>245K</strong>
+              <span>average views per episode</span>
+            </div>
+            <div>
+              <strong>1M+</strong>
+              <span>views in the first month</span>
+            </div>
+            <div>
+              <strong>43K</strong>
+              <span>followers</span>
             </div>
           </div>
-          <div>
-            <div className="md-label">About Topline</div>
+          <div className="md-show">
+            <div className="md-show-media">
+              <a
+                className="md-show-img"
+                href={IG_TOPLINE}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Watch Topline on Instagram"
+              >
+                <Image
+                  src="/topline/episode.jpg"
+                  alt="Matt filming a Topline episode on a New York street"
+                  width={360}
+                  height={640}
+                />
+              </a>
+              <a
+                className="md-btn md-btn-ig"
+                href={IG_TOPLINE}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                ▶ Watch it on Instagram
+              </a>
+            </div>
             <p className="md-proof">
-              I create a show on Instagram called Topline, where I break down the P&amp;Ls
-              of real local businesses. Turns out a lot of people are fascinated by the
-              numbers behind the places they walk past every day. Money Dinners is for the
-              owners who want to get their own numbers in order.
+              You&apos;ve seen how Planet Fitness, Chipotle, and 16 Handles make money.
+              Now it&apos;s your turn to look at yours.
             </p>
           </div>
         </div>
-        <div className="md-stats">
-          <div>
-            <strong>1M+</strong>
-            <span>views in the first month</span>
-          </div>
-          <div>
-            <strong>100K</strong>
-            <span>average views per episode</span>
-          </div>
-          <div>
-            <strong>43K</strong>
-            <span>followers across both accounts</span>
-          </div>
-        </div>
+      </section>
+
+      {/* Admission */}
+      <section className="md-section">
+        <div className="md-wrap">
+          <div className="md-label">Admission</div>
+          <ul className="md-admit">
+            <li className="md-admit-in">
+              <strong>Come in</strong> if you do $500k+ a year, and you know you should
+              look at your numbers more but you don&apos;t.
+            </li>
+            <li className="md-admit-out">
+              <strong>Skip it</strong> if you don&apos;t have customers yet, or you
+              already close your books every month (nice work).
+            </li>
+          </ul>
         </div>
       </section>
 
-      {/* Form */}
+      {/* Last call */}
       <section className="md-section md-alt" id="join">
         <div className="md-wrap">
-        <div className="md-join">
-          <h2>Join the waitlist</h2>
-          <p className="md-sub">
-            Limited Spots. Only {SPOTS} to start. Takes about 30 seconds.
-          </p>
-          <SignupForm />
-        </div>
+          <div className="md-join">
+            <div className="md-label">Last call</div>
+            <h2>{SPOTS} seats. Then the doors close.</h2>
+            <p className="md-sub">
+              The first room is capped at {SPOTS} owners. When it fills, the next spot
+              opens with the next room.
+            </p>
+            <SignupForm />
+          </div>
         </div>
       </section>
 
-      <footer className="md-foot">Money Dinners, a Topline community</footer>
+      <footer className="md-foot">Money Lunches, a Topline community</footer>
     </main>
   );
 }
@@ -569,6 +468,16 @@ const CSS = `
 .md-hero-band { position: relative; overflow: hidden; padding-bottom: clamp(40px, 7vw, 72px); }
 .md-hero { position: relative; z-index: 1; padding-top: clamp(24px, 7vw, 88px); }
 .md-h2-gap { margin-bottom: 16px !important; }
+.md-brand { font-size: clamp(22px, 3.4vw, 30px); font-weight: 800; letter-spacing: -0.6px;
+  color: #E0561F; margin: -4px 0 10px; }
+.md-list strong, .md-proof strong { color: var(--ink); }
+.md-admit { list-style: none; padding: 0; margin: 0; border-top: 1px solid var(--hair); }
+.md-admit li { position: relative; padding: 14px 0 14px 30px; border-bottom: 1px solid var(--hair);
+  font-size: clamp(16.5px, 2.2vw, 19px); font-weight: 500; line-height: 1.4; color: var(--ink2); }
+.md-admit strong { color: var(--ink); }
+.md-admit-in::before { content: "✓"; color: var(--green); font-weight: 800; position: absolute; left: 4px; top: 14px; }
+.md-admit-out::before { content: "✕"; color: var(--label); font-weight: 800; position: absolute; left: 4px; top: 14px; }
+.md-join h2 { margin-bottom: 0; }
 .md h1 { font-size: clamp(38px, 7vw, 72px); font-weight: 800; line-height: 1;
   letter-spacing: -2px; margin: 0; }
 .md-under { background: linear-gradient(var(--orange), var(--orange)) no-repeat 0 92% / 100% 0.12em; }
@@ -637,7 +546,7 @@ const CSS = `
 .md-amount { font-size: 42px; font-weight: 800; letter-spacing: -1.6px; margin: 4px 0 8px; }
 .md-amount span { font-size: 16px; color: var(--muted); font-weight: 600; letter-spacing: 0; }
 
-.md-show { display: grid; gap: 18px; align-items: center; margin-bottom: 24px; }
+.md-show { display: grid; gap: 18px; align-items: center; margin-top: 24px; }
 .md-show-img { display: block; text-decoration: none; text-align: center; }
 .md-show-img img { display: block; width: 100%; max-width: 190px; height: auto; margin: 0 auto;
   border-radius: 20px; box-shadow: 0 14px 32px rgba(26,26,26,0.18); }

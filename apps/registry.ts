@@ -70,10 +70,10 @@ export const apps: AppEntry[] = [
   },
   {
     slug: "topline",
-    name: "Money Dinners",
+    name: "Money Lunches",
     icon: "🍽️",
     description:
-      "A monthly group for business owners to look at their numbers together. Waitlist open.",
+      "Once a month, a small room of business owners opens their books together. Waitlist open.",
     url: "/topline",
     createdAt: "2026-06-29",
   },

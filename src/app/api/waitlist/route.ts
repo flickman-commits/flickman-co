@@ -6,7 +6,7 @@ import { rateLimit } from "../../../lib/rate-limit";
  *
  * Body: { name, email, businessName, industry, revenue, source? }
  *
- * Money Dinners waitlist (the /topline page). Validates the fields and
+ * Money Lunches waitlist (the /topline page). Validates the fields and
  * forwards them to a Formspree form, which stores the submission and emails
  * a notification. Formspree adds a column per field automatically.
  *
@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
   const businessName = str(obj.businessName, 120);
   const industry = str(obj.industry, 80);
   const revenue = str(obj.revenue, 40);
-  const source = str(obj.source, 80) || "money-dinners";
+  const source = str(obj.source, 80) || "money-lunches";
 
   if (!EMAIL_RX.test(email) || email.length > 160) {
     return NextResponse.json({ error: "Please enter a valid email address." }, { status: 400 });
@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
         industry,
         yearly_revenue: revenue,
         source,
-        _subject: `Money Dinners waitlist: ${businessName} (${revenue})`,
+        _subject: `Money Lunches waitlist: ${businessName} (${revenue})`,
       }),
     });
     if (!res.ok) {
