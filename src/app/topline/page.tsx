@@ -34,24 +34,32 @@ const REVENUE_RANGES = [
   "Over $5M",
 ];
 
-// What happens each month (the Money Lunch checklist).
+// How it works: the monthly process.
 const STEPS = [
-  { lead: "Clean up.", text: "Every dollar goes in the right place." },
-  { lead: "Check your guess.", text: "Did last month go how you thought?" },
-  { lead: "The big reveal.", text: "What came in, what went out, what you kept." },
+  { lead: "Clean up your QuickBooks.", text: "" },
   {
-    lead: "Look ahead.",
-    text: "What's locked in for next month and what still has to happen.",
+    lead: "Check last month's projections.",
+    text: "Did the month pan out how you thought?",
   },
-  { lead: "Pick one thing.", text: "One change you'll make before the next lunch." },
+  {
+    lead: "Create your P&L.",
+    text: "What came in, what went out, and what you kept.",
+  },
+  {
+    lead: "Project next month.",
+    text: "What's coming down the pipeline in sales, what you expect to make, and what costs are coming.",
+  },
+  {
+    lead: "Pick your priorities.",
+    text: "Three things you want to attack next month.",
+  },
 ];
 
 const INCLUDED = [
-  "A monthly call with a small group of owners like you",
-  "A daily tracker, so you know where you stand any day",
-  "The Money Lunch template that walks you through the month",
-  "A Claude skill that does the boring sorting for you",
-  "The research behind every Topline episode",
+  "A monthly call with a small group of business owners like you",
+  "A daily tracker so you know where you stand",
+  "The Money Lunches Notion template that walks you through the month",
+  "A Claude skill that does the boring parts for you",
 ];
 
 /* ── Pieces ─────────────────────────────────────────────────────── */
@@ -243,31 +251,37 @@ export default function MoneyLunchesPage() {
       <section className="md-hero-band">
         <MoneyRain />
         <div className="md-hero md-wrap">
-          <div className="md-label">Topline presents</div>
-          <div className="md-brand">Money Lunches</div>
           <h1>You should know if your business is actually making money.</h1>
           <p className="md-lede">
-            Once a month, a small room of business owners opens their books together.
-            What you find might surprise you. It surprised me.
+            Money Lunches is a small group of business owners that meets once a month
+            to go over their finances together. The idea is to be accountable to your
+            group, trade resources, and stay on top of your finances.
           </p>
           <Cta />
         </div>
       </section>
 
-      {/* The reveal */}
+      {/* Story */}
       <section className="md-section md-alt">
         <div className="md-wrap">
-          <div className="md-label">The reveal</div>
           <h2 className="md-h2-gap">I thought my business was breaking even. It wasn&apos;t.</h2>
           <div className="md-story">
             <p>
-              For years I ran my businesses on vibes. Then one day I finally sat down
-              and looked. <strong>Trackstar was losing money, and I had no idea.</strong>
+              For years, I ran my businesses mostly on vibes. Then one day last year, I
+              sat down and built an actual daily profitability tracker and realized{" "}
+              <strong>I was losing money.</strong> I had no idea. I thought we were
+              doing okay.
             </p>
             <p>
-              One lunch a month fixed that. Now I know where every dollar goes, every
-              single day.
+              After that, I decided to sit down for lunch with myself once a month and
+              go over all the finances to see what was really happening in my business.
             </p>
+            <p>
+              Today, I know where every dollar is going, every single day. And at the
+              end of every month, I get to true up, see how the month looked, and see
+              what I need to change.
+            </p>
+            <p className="md-story-punch">Now I want to share this process with you.</p>
             <div className="md-sig">Matt, host of Topline</div>
           </div>
         </div>
@@ -276,30 +290,34 @@ export default function MoneyLunchesPage() {
       {/* Sound familiar */}
       <section className="md-section">
         <div className="md-wrap">
-          <div className="md-label">Sound familiar?</div>
+          <h2 className="md-h2-gap">Sound familiar?</h2>
           <ul className="md-rows">
             <li>The only number you look at is your bank balance.</li>
             <li>You haven&apos;t opened QuickBooks since tax season.</li>
-            <li>You think you&apos;re making money. You&apos;re not sure.</li>
+            <li>You&apos;re pretty sure you&apos;re making money, but you&apos;re not sure how much.</li>
           </ul>
           <p className="md-punch">
-            You&apos;re not bad with money. You&apos;ve just never had a system, or
-            anyone watching.
+            You&apos;re not bad with money. You&apos;ve just never had a system, or anyone
+            to keep you accountable.
           </p>
         </div>
       </section>
 
-      {/* The main event */}
+      {/* How it works */}
       <section className="md-section md-alt">
         <div className="md-wrap">
-          <div className="md-label">The main event</div>
-          <h2 className="md-h2-gap">What happens each month</h2>
+          <h2>How it works</h2>
+          <p className="md-sub">
+            Each month, you&apos;ll meet with a small group of business owners and work
+            through this process:
+          </p>
           <ol className="md-list">
             {STEPS.map((step, i) => (
               <li key={step.lead}>
                 <span className="md-list-num">{i + 1}</span>
                 <p>
-                  <strong>{step.lead}</strong> {step.text}
+                  <strong>{step.lead}</strong>
+                  {step.text && ` ${step.text}`}
                 </p>
               </li>
             ))}
@@ -310,19 +328,17 @@ export default function MoneyLunchesPage() {
       {/* What you get */}
       <section className="md-section">
         <div className="md-wrap">
-          <div className="md-label">More than the price of admission</div>
           <h2 className="md-h2-gap">Here&apos;s everything you get</h2>
           <ul className="md-checks">
             {INCLUDED.map((item) => (
               <li key={item}>{item}</li>
             ))}
           </ul>
-          <div className="g-peeks">
-            <TrackerPeek />
-            <NotionPeek />
-            <ClaudePeek />
-          </div>
-          <p className="md-punch">We&apos;d rather give you too much than too little.</p>
+        </div>
+        <div className="g-peeks">
+          <TrackerPeek />
+          <NotionPeek />
+          <ClaudePeek />
         </div>
       </section>
 
@@ -330,7 +346,7 @@ export default function MoneyLunchesPage() {
       {SHOW_PRICING && (
         <section className="md-section">
           <div className="md-wrap">
-            <div className="md-label">What it costs</div>
+            <h2 className="md-h2-gap">What it costs</h2>
             <div className="md-prices">
               <div className="md-price md-price-best">
                 <div className="md-badge">Best value</div>
@@ -354,25 +370,9 @@ export default function MoneyLunchesPage() {
         </section>
       )}
 
-      {/* The crowd */}
+      {/* Topline */}
       <section className="md-section md-alt">
         <div className="md-wrap">
-          <div className="md-label">The crowd</div>
-          <h2 className="md-h2-gap">People can&apos;t stop watching other businesses&apos; numbers.</h2>
-          <div className="md-stats">
-            <div>
-              <strong>245K</strong>
-              <span>average views per episode</span>
-            </div>
-            <div>
-              <strong>1M+</strong>
-              <span>views in the first month</span>
-            </div>
-            <div>
-              <strong>43K</strong>
-              <span>followers</span>
-            </div>
-          </div>
           <div className="md-show">
             <div className="md-show-media">
               <a
@@ -398,41 +398,57 @@ export default function MoneyLunchesPage() {
                 ▶ Watch it on Instagram
               </a>
             </div>
-            <p className="md-proof">
-              You&apos;ve seen how Planet Fitness, Chipotle, and 16 Handles make money.
-              Now it&apos;s your turn to look at yours.
-            </p>
+            <div>
+              <h2 className="md-h2-gap">
+                People are obsessed with learning about P&amp;Ls. Now it&apos;s time to
+                look at your own.
+              </h2>
+              <div className="md-stats">
+                <div>
+                  <strong>245K</strong>
+                  <span>average views per episode</span>
+                </div>
+                <div>
+                  <strong>1M+</strong>
+                  <span>views in the first month</span>
+                </div>
+                <div>
+                  <strong>43K</strong>
+                  <span>followers</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Admission */}
+      {/* Who it's for */}
       <section className="md-section">
         <div className="md-wrap">
-          <div className="md-label">Admission</div>
-          <ul className="md-admit">
-            <li className="md-admit-in">
-              <strong>Come in</strong> if you do $500k+ a year, and you know you should
-              look at your numbers more but you don&apos;t.
-            </li>
-            <li className="md-admit-out">
-              <strong>Skip it</strong> if you don&apos;t have customers yet, or you
-              already close your books every month (nice work).
-            </li>
-          </ul>
+          <div className="md-fit">
+            <div>
+              <h3 className="md-fit-h">Who it&apos;s for</h3>
+              <ul className="md-checks">
+                <li>You do $500k+ a year in revenue</li>
+                <li>You know you should look at your numbers more, but you don&apos;t</li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="md-fit-h">Who it&apos;s not for</h3>
+              <ul className="md-crosses">
+                <li>You don&apos;t have customers yet</li>
+                <li>You already close your books every month (nice work)</li>
+              </ul>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Last call */}
+      {/* Signup */}
       <section className="md-section md-alt" id="join">
         <div className="md-wrap">
           <div className="md-join">
-            <div className="md-label">Last call</div>
-            <h2>{SPOTS} seats. Then the doors close.</h2>
-            <p className="md-sub">
-              The first room is capped at {SPOTS} owners. When it fills, the next spot
-              opens with the next room.
-            </p>
+            <h2 className="md-h2-gap">{SPOTS} seats available.</h2>
             <SignupForm />
           </div>
         </div>
@@ -477,7 +493,7 @@ const CSS = `
 .md-admit strong { color: var(--ink); }
 .md-admit-in::before { content: "✓"; color: var(--green); font-weight: 800; position: absolute; left: 4px; top: 14px; }
 .md-admit-out::before { content: "✕"; color: var(--label); font-weight: 800; position: absolute; left: 4px; top: 14px; }
-.md-join h2 { margin-bottom: 0; }
+.md-fit-h { font-size: 20px; margin-bottom: 8px !important; }
 .md h1 { font-size: clamp(38px, 7vw, 72px); font-weight: 800; line-height: 1;
   letter-spacing: -2px; margin: 0; }
 .md-under { background: linear-gradient(var(--orange), var(--orange)) no-repeat 0 92% / 100% 0.12em; }
@@ -546,11 +562,11 @@ const CSS = `
 .md-amount { font-size: 42px; font-weight: 800; letter-spacing: -1.6px; margin: 4px 0 8px; }
 .md-amount span { font-size: 16px; color: var(--muted); font-weight: 600; letter-spacing: 0; }
 
-.md-show { display: grid; gap: 18px; align-items: center; margin-top: 24px; }
+.md-show { display: grid; gap: 22px; align-items: center; }
 .md-show-img { display: block; text-decoration: none; text-align: center; }
 .md-show-img img { display: block; width: 100%; max-width: 190px; height: auto; margin: 0 auto;
   border-radius: 20px; box-shadow: 0 14px 32px rgba(26,26,26,0.18); }
-.md-show-media { text-align: center; }
+.md-show-media { text-align: center; order: 2; }
 .md-btn-ig { margin-top: 14px; font-size: 15px; padding: 12px 20px; }
 .md-handle { margin-top: 8px; font-size: 13px; font-weight: 700; color: var(--ink2); }
 .md-us { display: inline-block; width: 4.4em; height: 2px; background: currentColor;
@@ -558,8 +574,10 @@ const CSS = `
 .md-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 @media (min-width: 760px) {
   .md-show { grid-template-columns: 240px 1fr; gap: 44px; }
+  .md-show-media { order: 0; }
   .md-show-img img { max-width: none; }
 }
+.md-show .md-stats { margin-top: 4px; }
 .md-proof { font-size: 16.5px; line-height: 1.5; font-weight: 500; margin: 0; color: var(--ink2); }
 .md-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
 .md-stats div { border-top: 3px solid var(--orange); padding-top: 8px; }
