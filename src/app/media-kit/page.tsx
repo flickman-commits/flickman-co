@@ -54,7 +54,7 @@ const PACKAGES = [
     includes: [
       "Everything in Dedicated Post",
       "Collabed with your brand's account",
-      "1 month of paid usage (whitelisting), at 25% of the total fee",
+      "1 month of paid usage (whitelisting)*",
     ],
   },
   {
@@ -65,12 +65,12 @@ const PACKAGES = [
     includes: [
       "3 posts over 3 months",
       "Everything in Brand Partnership, for each post",
-      "3 months of paid usage (whitelisting)",
+      "3 months of paid usage (whitelisting)*",
       "Plus a Story set with a link sticker",
     ],
   },
 ];
-const PACKAGES_NOTE = "Paid usage (whitelisting) is 25% of the total fee, per month. Extra months can be added at the same rate.";
+const PACKAGES_NOTE = "*Paid usage (whitelisting) is 25% of the total fee, per month. Extra months can be added at the same rate.";
 
 
 // @flickman Instagram insights. Fallbacks for when the live API (src/lib/instagram.ts) is not set up or fails.
@@ -341,7 +341,7 @@ export default async function MediaKitPage() {
               </div>
             ))}
           </div>
-          <p className="mk-fine">{PACKAGES_NOTE}</p>
+          <p className="mk-pkg-note">{PACKAGES_NOTE}</p>
         </div>
       </section>
 
@@ -408,7 +408,7 @@ const CSS = `
 .mk-handles a { font-size: 13px; font-weight: 700; text-decoration: none; background: #fff; border: 1px solid var(--hair);
   border-radius: 999px; padding: 6px 12px; color: var(--ink2) !important; }
 .mk-handles a:hover { color: var(--ink) !important; border-color: var(--ink2); }
-  box-shadow: 0 12px 30px rgba(26,26,26,0.16); border: 6px solid #fff; }
+.mk .mk-pkg-note { margin: 18px 4px 0; font-size: 14px; font-style: italic; font-weight: 500; line-height: 1.5; color: var(--muted); }
 .mk-fine { font-size: 12.5px; color: var(--label); font-weight: 500; margin: 18px 0 0; }
 .mk-packages { display: grid; gap: 14px; }
 @media (min-width: 860px) { .mk-packages { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
@@ -456,7 +456,6 @@ const CSS = `
 .mk-pill { display: inline-block; font-size: 11px; font-weight: 800; letter-spacing: 1.4px; text-transform: uppercase;
   background: var(--ink); color: #fff; border-radius: 999px; padding: 5px 11px; margin: 4px 0 8px; }
 .mk-rate span em { display: block; font-style: normal; font-size: 13px; color: var(--muted); font-weight: 500; line-height: 1.4; margin-top: 2px; }
-  color: #161616; background: #F1E9D6; border-radius: 999px; padding: 6px 12px; margin-bottom: 16px; }
 .mk-kicker { font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--orange-text); margin-bottom: 10px; }
 .mk h1 { font-size: clamp(36px, 6vw, 64px); font-weight: 800; line-height: 1.02; letter-spacing: -1.8px; margin: 0; }
 .mk-lede { font-size: clamp(16.5px, 2vw, 19px); font-weight: 500; line-height: 1.5; color: var(--ink2); margin: 16px 0 22px; max-width: 560px; }
