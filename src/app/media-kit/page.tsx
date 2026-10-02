@@ -19,11 +19,11 @@ const IG_TRACKSTAR = "https://www.instagram.com/trackstar_art/";
 const STATS_AS_OF = "October 2026";
 
 const STATS = [
-  { value: "45K", label: "followers across @flickman and Topline" },
-  { value: "290K", label: "average views per business breakdown" },
-  { value: "7M+", label: "total views on business breakdowns" },
-  { value: "853K", label: "views on the top breakdown" },
-];
+  { value: "45K", unit: "followers", label: <>across @flickman and <ToplineHandle /></> },
+  { value: "290K", unit: "views", label: "average per business breakdown" },
+  { value: "7M+", unit: "views", label: "total on business breakdowns" },
+  { value: "853K", unit: "views", label: "on the top breakdown" },
+]
 
 // Topline episodes, posted as collabs on both accounts. Views from the @flickman Reels tab.
 const TOP_VIDEOS = [
@@ -76,16 +76,14 @@ const RATES = {
     { item: "Sponsored episode", price: "$5,000" },
     { item: "P&L line item in an episode", price: "$2,500" },
     { item: "Collab Reel on Topline + @flickman", price: "$3,500" },
-    { item: "Carousel", price: "$1,500" },
   ],
   flickman: [
     { item: "Reel", price: "$1,000" },
     { item: "Story set (3, with link sticker)", price: "$400" },
-    { item: "Carousel", price: "$750" },
     { item: "Link in bio (30 days)", price: "$250" },
   ],
 };
-const RATES_NOTE = "Usage rights and whitelisting: +30% per month.";
+const RATES_NOTE = "Whitelisting: 50% of the upfront fee, for each month.";
 
 // @flickman Instagram insights. Reach is the last 90 days; demographics the last 30.
 const AUDIENCE_AS_OF = "October 2, 2026";
@@ -240,8 +238,10 @@ export default function MediaKitPage() {
         </div>
         <div className="mk-stats">
           {STATS.map((s) => (
-            <div key={s.label}>
-              <strong>{s.value}</strong>
+            <div key={s.value}>
+              <strong>
+                {s.value} <small>{s.unit}</small>
+              </strong>
               <span>{s.label}</span>
             </div>
           ))}
@@ -570,6 +570,7 @@ const CSS = `
 @media (min-width: 760px) { .mk-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .mk-stats div { border-top: 3px solid var(--orange); padding-top: 10px; }
 .mk-stats strong { display: block; font-size: clamp(30px, 5vw, 44px); font-weight: 800; letter-spacing: -1.4px; line-height: 1; }
+.mk-stats strong small { font-size: 0.5em; letter-spacing: -0.3px; font-weight: 800; }
 .mk-stats span { display: block; font-size: 13px; font-weight: 500; line-height: 1.35; color: var(--muted); margin-top: 6px; }
 .mk-asof { font-size: 12px; color: var(--label); margin-top: 14px; font-weight: 500; }
 
