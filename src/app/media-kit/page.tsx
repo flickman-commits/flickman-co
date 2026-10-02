@@ -23,35 +23,43 @@ const STATS = [
   { value: "290K", unit: "views", label: "average per business breakdown" },
   { value: "7M+", unit: "views", label: "total on business breakdowns" },
   { value: "853K", unit: "views", label: "on the top breakdown" },
-]
+];
 
 // Topline episodes, posted as collabs on both accounts. Views from the @flickman Reels tab.
 const TOP_VIDEOS = [
+  { name: "Planet Fitness", img: "/media-kit/planet-fitness.jpg", views: "830K", id: "Db52-XMoud0" },
+  { name: "Crumbl Cookies", img: "/media-kit/crumbl.jpg", views: "787K", id: "Dbvgj_oIpte" },
   { name: "AMC Theatres", img: "/media-kit/amc.jpg", views: "356K", id: "DcwIqH5oUAT" },
-  { name: "Crunch Fitness", img: "/media-kit/crunch.jpg", views: "355K", id: "DcjVsadI0S6" },
-  { name: "Popeyes", img: "/media-kit/popeyes.jpg", views: "253K", id: "DdomcCdoZwX" },
   { name: "Domino's", img: "/media-kit/dominos.jpg", views: "252K", id: "DdE4BXfIpY6" },
-  { name: "Potbelly", img: "/media-kit/potbelly.jpg", views: "235K", id: "DdPnFkXo9G5" },
-  { name: "CAVA", img: "/media-kit/cava.jpg", views: "223K", id: "DdXio0Oo91j" },
 ];
 
 // Paid partnership example. Add the reel ID (instagram.com/reel/<id>/) to link it.
 const FUNBOX = { id: "", views: "160K" };
 
+const SEGMENTS = {
+  topline: {
+    audience: ["Small business owners", "Franchise owners & buyers", "Operators", "The finance-curious"],
+    bestFor: ["Franchise brands", "B2B software for brick-and-mortar"],
+  },
+  flickman: {
+    audience: ["Runners", "New Yorkers", "Founders", "Creatives"],
+    bestFor: ["Running & fitness brands", "NYC lifestyle", "Creative & marketing tools"],
+  },
+};
+
 // Line-item rates per channel. Placeholders; edit freely.
 const RATES = {
   topline: [
-    { item: "Sponsored episode", note: "A full breakdown of your franchise or a business that runs on your product.", price: "$5,000" },
-    { item: "P&L line item", note: "Your product appears as a real line in an episode, like payroll or POS.", price: "$2,500" },
-    { item: "Collab Reel on Topline + @flickman", price: "$3,500" },
+    { item: "Sponsored episode", note: "A full breakdown of your franchise or a business that runs on your product, posted as a collab.", price: "$4,000" },
     { item: "Whitelisting, per month", price: "50% of fee" },
   ],
   flickman: [
-    { item: "Reel", note: "Running, New York City, business, or art and marketing.", price: "$1,000" },
+    { item: "Collab Reel", note: "Running, New York City, business, or art and marketing.", price: "$1,000" },
     { item: "Story set", note: "Three Stories with a link sticker.", price: "$400" },
     { item: "Whitelisting, per month", price: "50% of fee" },
   ],
-};const RATES_NOTE = "Whitelisting is billed each month at 50% of the upfront fee.";
+};
+const RATES_NOTE = "Whitelisting is billed each month at 50% of the upfront fee.";
 
 // @flickman Instagram insights. Reach is the last 90 days; demographics the last 30.
 const AUDIENCE_AS_OF = "October 2, 2026";
@@ -61,8 +69,8 @@ const REACH = [
   { value: "96%", label: "of views from people who don't follow yet" },
   { value: "31.8K", label: "accounts engaged in the last 30 days" },
 ];
+const GENDER = { men: 84.3, women: 15.7 };
 const DEMOS = [
-  { title: "Gender", rows: [["Men", "84%"], ["Women", "16%"]] },
   { title: "Age", rows: [["25-34", "32%"], ["35-44", "36%"], ["45-54", "19%"], ["Other", "13%"]] },
   { title: "Top countries", rows: [["United States", "66%"], ["Canada", "6%"], ["United Kingdom", "3%"]] },
   { title: "Top cities", rows: [["New York", "9.6%"], ["Los Angeles", "2.6%"], ["San Diego", "1.4%"], ["Toronto", "1.4%"]] },
@@ -80,7 +88,6 @@ const PRINTS = [
 // Paid brand partners. The section is hidden while this list is empty.
 const PAST_PARTNERS: { name: string; url?: string }[] = [];
 
-const FEATURED = ["Crunch Fitness", "AMC Theatres", "Popeyes", "Domino's", "CAVA", "Potbelly", "McDonald's"];
 
 /* ── Pieces ─────────────────────────────────────────────────────── */
 
@@ -93,6 +100,19 @@ function ToplineHandle() {
         <i className="mk-us" />
       </span>
     </span>
+  );
+}
+
+function Segments({ label, items }: { label: string; items: string[] }) {
+  return (
+    <div className="mk-seg">
+      <div className="mk-seg-label">{label}</div>
+      <ul>
+        {items.map((i) => (
+          <li key={i}>{i}</li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
@@ -143,10 +163,10 @@ export default function MediaKitPage() {
               <h1>Media Kit</h1>
             </div>
             <p className="mk-lede">
-              I&apos;m Matt Hickman. I make Topline, a show that breaks down the P&amp;Ls
-              of real local businesses, plus content on running and life in New York
-              City. My audience is business owners, operators, people who want to be
-              one, and runners.
+              I&apos;m Matt Hickman, a business owner, runner &amp; content creator based in NYC.
+              I have a video series called Topline that breaks down the P&amp;Ls of real local
+              businesses, and on top of that I create content about running, marketing &amp; life
+              in NYC.
             </p>
             <a className="mk-btn" href={`mailto:${EMAIL}?subject=Partnership`}>
               Work with me
@@ -183,6 +203,23 @@ export default function MediaKitPage() {
               </div>
             ))}
           </div>
+          <div className="mk-gender">
+            <h3>Gender</h3>
+            <div className="mk-gender-bar" role="img" aria-label={`${GENDER.men}% men, ${GENDER.women}% women`}>
+              <span style={{ width: `${GENDER.men}%` }} className="mk-g-men" />
+              <span style={{ width: `${GENDER.women}%` }} className="mk-g-women" />
+            </div>
+            <div className="mk-gender-nums">
+              <div>
+                <strong>{Math.round(GENDER.men)}%</strong>
+                <span>Men</span>
+              </div>
+              <div className="mk-gender-w">
+                <strong>{Math.round(GENDER.women)}%</strong>
+                <span>Women</span>
+              </div>
+            </div>
+          </div>
           <div className="mk-demos">
             {DEMOS.map((d) => (
               <div key={d.title} className="mk-demo">
@@ -202,8 +239,8 @@ export default function MediaKitPage() {
       {/* Top videos */}
       <section className="mk-section">
         <div className="mk-wrap">
-          <h2>Videos that did well</h2>
-          <p className="mk-sub">Recent Topline episodes, posted on both accounts.</p>
+          <h2>Top-Performing Videos</h2>
+          <p className="mk-sub">Topline episodes, posted as collabs on both accounts.</p>
           <div className="mk-videos">
             {TOP_VIDEOS.map((v) => (
               <a
@@ -259,10 +296,8 @@ export default function MediaKitPage() {
                 Short breakdowns of real brick-and-mortar businesses and franchises: what
                 they make, what they spend, and what they keep.
               </p>
-              <div className="mk-pill">Audience</div>
-              <p>Small business owners, franchise owners and buyers, operators, and the finance-curious.</p>
-              <div className="mk-pill">Best for</div>
-              <p>Franchise brands and B2B software that serves brick-and-mortar businesses.</p>
+              <Segments label="Audience" items={SEGMENTS.topline.audience} />
+              <Segments label="Best for" items={SEGMENTS.topline.bestFor} />
               <RateList rows={RATES.topline} />
             </div>
             <div className="mk-card">
@@ -276,10 +311,8 @@ export default function MediaKitPage() {
                 My personal page: running, New York City lifestyle, business breakdowns,
                 and the art and marketing world.
               </p>
-              <div className="mk-pill">Audience</div>
-              <p>Runners, New Yorkers, founders, and creatives.</p>
-              <div className="mk-pill">Best for</div>
-              <p>Running and fitness brands, NYC lifestyle, creative and marketing tools.</p>
+              <Segments label="Audience" items={SEGMENTS.flickman.audience} />
+              <Segments label="Best for" items={SEGMENTS.flickman.bestFor} />
               <RateList rows={RATES.flickman} />
             </div>
           </div>
@@ -310,36 +343,27 @@ export default function MediaKitPage() {
         </div>
       </section>
 
-      {/* Brands */}
-      <section className="mk-section">
-        <div className="mk-wrap">
-          {PAST_PARTNERS.length > 0 && (
-            <div className="mk-brands">
-              <h2>Brands I&apos;ve worked with</h2>
-              <ul className="mk-chips mk-chips-strong">
-                {PAST_PARTNERS.map((p) => (
-                  <li key={p.name}>
-                    {p.url ? (
-                      <a href={p.url} target="_blank" rel="noopener noreferrer">
-                        {p.name}
-                      </a>
-                    ) : (
-                      p.name
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-          <h2>Featured on Topline</h2>
-          <p className="mk-sub">Businesses we&apos;ve broken down. Editorial, not sponsored.</p>
-          <ul className="mk-chips">
-            {FEATURED.map((f) => (
-              <li key={f}>{f}</li>
-            ))}
-          </ul>
-        </div>
-      </section>
+      {/* Past partners. Hidden while the list is empty. */}
+      {PAST_PARTNERS.length > 0 && (
+        <section className="mk-section">
+          <div className="mk-wrap">
+            <h2>Brands I&apos;ve worked with</h2>
+            <ul className="mk-chips mk-chips-strong">
+              {PAST_PARTNERS.map((p) => (
+                <li key={p.name}>
+                  {p.url ? (
+                    <a href={p.url} target="_blank" rel="noopener noreferrer">
+                      {p.name}
+                    </a>
+                  ) : (
+                    p.name
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )}
 
       {/* Contact */}
       <section className="mk-section mk-alt">
@@ -401,11 +425,24 @@ const CSS = `
 .mk-rate:last-child, .mk-demo-row:last-child { border-bottom: 0; }
 .mk-rate strong, .mk-demo-row strong { font-weight: 800; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .mk-reach { margin-top: 8px; }
-.mk-demos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 28px; }
-@media (min-width: 760px) { .mk-demos { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.mk-demos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
+@media (min-width: 760px) { .mk-demos { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.mk-gender { background: #fff; border: 1px solid var(--hair); border-radius: 18px; padding: 16px 18px; margin-top: 28px; }
+.mk .mk-gender h3 { font-size: 13px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: var(--label); margin: 0 0 12px; }
+.mk-gender-bar { display: flex; height: 16px; border-radius: 999px; overflow: hidden; gap: 3px; }
+.mk-g-men { background: #A9D3F5; }
+.mk-g-women { background: #F7B9CF; }
+.mk-gender-nums { display: flex; justify-content: space-between; margin-top: 12px; }
+.mk-gender-nums strong { display: block; font-size: clamp(30px, 5vw, 42px); font-weight: 800; letter-spacing: -1.2px; line-height: 1; }
+.mk-gender-nums span { font-size: 14px; font-weight: 600; color: var(--muted); }
+.mk-gender-w { text-align: right; }
 .mk-demo { background: #fff; border: 1px solid var(--hair); border-radius: 18px; padding: 14px; min-width: 0; }
 .mk .mk-demo h3 { font-size: 13px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: var(--label); margin: 0 0 4px; }
 .mk .mk-card-top h3 { font-size: clamp(24px, 3.4vw, 30px); font-weight: 800; letter-spacing: -0.8px; margin: 0; }
+.mk-seg { margin: 0 0 14px; }
+.mk-seg-label { font-size: 11px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase; color: var(--label); margin-bottom: 8px; }
+.mk-seg ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.mk-seg li { font-size: 13.5px; font-weight: 600; background: #F2EEE7; border: 1px solid var(--hair); border-radius: 999px; padding: 5px 11px; }
 .mk-pill { display: inline-block; font-size: 11px; font-weight: 800; letter-spacing: 1.4px; text-transform: uppercase;
   background: var(--ink); color: #fff; border-radius: 999px; padding: 5px 11px; margin: 4px 0 8px; }
 .mk-rate span em { display: block; font-style: normal; font-size: 13px; color: var(--muted); font-weight: 500; line-height: 1.4; margin-top: 2px; }
@@ -472,7 +509,7 @@ const CSS = `
 .mk-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 .mk-videos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-@media (min-width: 760px) { .mk-videos { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; } }
+@media (min-width: 760px) { .mk-videos { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; } }
 .mk-video { display: block; text-decoration: none; background: #fff; border: 1px solid var(--hair);
   border-radius: 18px; overflow: hidden; transition: transform 120ms ease; }
 .mk-video:hover { transform: translateY(-3px); }
