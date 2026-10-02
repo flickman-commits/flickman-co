@@ -315,10 +315,10 @@ export default async function MediaKitPage() {
         </div>
       </section>
 
-      {/* Rates */}
+      {/* Packages */}
       <section className="mk-section mk-alt">
         <div className="mk-wrap">
-          <h2>Rates</h2>
+          <h2>Packages</h2>
           <div className="mk-packages">
             {PACKAGES.map((p, i) => (
               <div key={p.name} className="mk-package">
