@@ -18,8 +18,6 @@ export const revalidate = 21600;
 const EMAIL = "matt@flickmanmedia.com";
 const IG_FLICKMAN = "https://www.instagram.com/flickman/";
 const IG_TOPLINE = "https://www.instagram.com/topline_________/";
-const TRACKSTAR = "https://www.trackstar.art";
-const IG_TRACKSTAR = "https://www.instagram.com/trackstar_art/";
 const STATS_AS_OF = "October 2026";
 
 const STATS = [
@@ -54,16 +52,16 @@ const SEGMENTS = {
 // Line-item rates per channel. Placeholders; edit freely.
 const RATES = {
   topline: [
-    { item: "Sponsored episode", note: "A full breakdown of your franchise or a business that runs on your product. Always posted as a collab with @flickman.", price: "$4,000" },
-    { item: "Whitelisting, per month", price: "25% of fee" },
+    { item: "1x Instagram Reel, syndicated to TikTok", note: "A full Topline breakdown of your franchise or a business that runs on your product. Always posted as a collab with @flickman.", price: "$4,000" },
+    { item: "Paid usage (whitelisting), per month", price: "25% of fee" },
   ],
   flickman: [
-    { item: "Reel", note: "On @flickman: running, New York City, business, or art and marketing.", price: "$1,000" },
+    { item: "1x Instagram Reel", note: "On @flickman: running, New York City, business, or art and marketing.", price: "$1,000" },
     { item: "Story set", note: "Three Stories with a link sticker.", price: "$500" },
-    { item: "Whitelisting, per month", price: "25% of fee" },
+    { item: "Paid usage (whitelisting), per month", price: "25% of fee" },
   ],
 };
-const RATES_NOTE = "Whitelisting is billed each month at 25% of the upfront fee.";
+const RATES_NOTE = "Paid usage (whitelisting) is billed each month at 25% of the upfront fee.";
 
 // @flickman Instagram insights. Fallbacks for when the live API (src/lib/instagram.ts) is not set up or fails.
 const AUDIENCE_AS_OF = "October 2, 2026";
@@ -80,14 +78,6 @@ const DEMOS = [
   { title: "Top cities", rows: [["New York", "9.6%"], ["Los Angeles", "2.6%"], ["San Diego", "1.4%"], ["Toronto", "1.4%"]] },
 ];
 
-
-// Trackstar co-branded print examples.
-const PRINTS = [
-  { name: "Brooks Running", img: "/media-kit/posters/brooks.jpg" },
-  { name: "New Balance", img: "/media-kit/posters/new-balance.jpg" },
-  { name: "Ulman Foundation", img: "/media-kit/posters/ulman.jpg" },
-  { name: "Release Foundation", img: "/media-kit/posters/release-foundation.jpg" },
-];
 
 // Paid brand partners. The section is hidden while this list is empty.
 const PAST_PARTNERS: { name: string; url?: string }[] = [];
@@ -218,7 +208,6 @@ export default async function MediaKitPage() {
             <div className="mk-handles">
               <a href={IG_FLICKMAN} target="_blank" rel="noopener noreferrer">@flickman</a>
               <a href={IG_TOPLINE} target="_blank" rel="noopener noreferrer"><ToplineHandle /></a>
-              <a href={IG_TRACKSTAR} target="_blank" rel="noopener noreferrer">@trackstar_art</a>
             </div>
             <div className="mk-title-row">
               <a className="mk-avatar-m" href={IG_FLICKMAN} target="_blank" rel="noopener noreferrer">
@@ -386,29 +375,6 @@ export default async function MediaKitPage() {
         </div>
       </section>
 
-      {/* Trackstar */}
-      <section className="mk-ts">
-        <div className="mk-wrap">
-          <div className="mk-ts-kicker">Additional collaboration opportunity</div>
-          <h2>Co-branded race prints with Trackstar</h2>
-          <p className="mk-ts-body">
-            <a href={TRACKSTAR} target="_blank" rel="noopener noreferrer">Trackstar</a> creates
-            personalized race prints: each runner&apos;s name, finish time, pace, and course. We partner
-            with brands and foundations to give them to their runners at any marathon, co-branded with
-            your logo. Here are a few examples:
-          </p>
-          <div className="mk-prints">
-            {PRINTS.map((p) => (
-              <figure key={p.name}>
-                <Image src={p.img} alt={`Co-branded Trackstar print example for ${p.name}`} width={900} height={900} />
-                <figcaption>{p.name}</figcaption>
-              </figure>
-            ))}
-          </div>
-          <p className="mk-ts-fine">Examples made for this kit. Pricing is custom, based on the number of runners.</p>
-        </div>
-      </section>
-
       {/* Past partners. Hidden while the list is empty. */}
       {PAST_PARTNERS.length > 0 && (
         <section className="mk-section">
@@ -432,7 +398,7 @@ export default async function MediaKitPage() {
       )}
 
       {/* Contact */}
-      <section className="mk-section mk-alt">
+      <section className="mk-section">
         <div className="mk-wrap mk-contact">
           <h2>Let&apos;s work together</h2>
           <p className="mk-body">Tell me about your brand and what you have in mind.</p>
@@ -442,7 +408,7 @@ export default async function MediaKitPage() {
         </div>
       </section>
 
-      <footer className="mk-foot">Flickman · Topline · Trackstar</footer>
+      <footer className="mk-foot">Flickman · Topline</footer>
     </main>
   );
 }
@@ -472,17 +438,7 @@ const CSS = `
 .mk-handles a { font-size: 13px; font-weight: 700; text-decoration: none; background: #fff; border: 1px solid var(--hair);
   border-radius: 999px; padding: 6px 12px; color: var(--ink2) !important; }
 .mk-handles a:hover { color: var(--ink) !important; border-color: var(--ink2); }
-.mk-posters { display: grid; gap: 16px; margin-top: 22px; }
-@media (min-width: 760px) { .mk-posters { grid-template-columns: repeat(3, minmax(0, 1fr)); } .mk-poster { max-width: none; } }
-.mk-poster-card h3 { font-size: 18px; font-weight: 800; margin: 14px 0 4px; }
-.mk-poster-card p { margin: 0; color: var(--ink2); font-weight: 500; font-size: 15px; line-height: 1.45; }
-.mk-poster { max-width: 260px; aspect-ratio: 3 / 4; border-radius: 14px; padding: 18px; display: flex; flex-direction: column;
   box-shadow: 0 12px 30px rgba(26,26,26,0.16); border: 6px solid #fff; }
-.mk-poster-race { font-size: 13px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; }
-.mk-poster-route { width: 100%; flex: 1; min-height: 0; margin: 10px 0; }
-.mk-poster-name { color: #fff; font-size: 22px; font-weight: 800; letter-spacing: -0.5px; line-height: 1.1; }
-.mk-poster-time { color: #fff; font-size: 30px; font-weight: 800; letter-spacing: -1px; font-variant-numeric: tabular-nums; }
-.mk-poster-foot { font-size: 11px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; margin-top: 10px; opacity: 0.9; }
 .mk-fine { font-size: 12.5px; color: var(--label); font-weight: 500; margin: 18px 0 0; }
 .mk-rates { margin-top: 18px; border-top: 1px solid var(--hair); padding-top: 12px; }
 .mk-rates-title { font-size: 11px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase; color: var(--label); margin-bottom: 4px; }
@@ -512,18 +468,7 @@ const CSS = `
 .mk-pill { display: inline-block; font-size: 11px; font-weight: 800; letter-spacing: 1.4px; text-transform: uppercase;
   background: var(--ink); color: #fff; border-radius: 999px; padding: 5px 11px; margin: 4px 0 8px; }
 .mk-rate span em { display: block; font-style: normal; font-size: 13px; color: var(--muted); font-weight: 500; line-height: 1.4; margin-top: 2px; }
-.mk-ts { background: #161616; color: #F1E9D6; border-radius: 24px; margin: 12px 8px; padding: clamp(44px, 7vw, 80px) 0; }
-.mk-ts-kicker { display: inline-block; font-size: 11px; font-weight: 800; letter-spacing: 1.8px; text-transform: uppercase;
   color: #161616; background: #F1E9D6; border-radius: 999px; padding: 6px 12px; margin-bottom: 16px; }
-.mk .mk-ts h2 { color: #F1E9D6; }
-.mk-ts-body { font-size: 16.5px; line-height: 1.55; font-weight: 500; color: rgba(241,233,214,0.82); max-width: 640px; margin: 0 0 26px; }
-.mk-ts-body a { color: #F1E9D6 !important; font-weight: 700; }
-.mk-prints { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-@media (min-width: 760px) { .mk-prints { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; } }
-.mk-prints figure { margin: 0; }
-.mk-prints img { display: block; width: 100%; height: auto; border-radius: 14px; }
-.mk-prints figcaption { font-size: 14px; font-weight: 700; margin-top: 8px; color: #F1E9D6; }
-.mk-ts-fine { font-size: 12.5px; color: rgba(241,233,214,0.6); font-weight: 500; margin: 20px 0 0; }
 .mk-kicker { font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--orange-text); margin-bottom: 10px; }
 .mk h1 { font-size: clamp(36px, 6vw, 64px); font-weight: 800; line-height: 1.02; letter-spacing: -1.8px; margin: 0; }
 .mk-lede { font-size: clamp(16.5px, 2vw, 19px); font-weight: 500; line-height: 1.5; color: var(--ink2); margin: 16px 0 22px; max-width: 560px; }
