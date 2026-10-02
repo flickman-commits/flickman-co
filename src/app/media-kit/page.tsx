@@ -38,30 +38,12 @@ const TOP_VIDEOS = [
 // Paid partnership example. Add the reel ID (instagram.com/reel/<id>/) to link it.
 const FUNBOX = { id: "DcWyuhZIzN-", img: "/media-kit/funbox.jpg", views: "160K" };
 
-const SEGMENTS = {
-  topline: {
-    audience: ["Small business owners", "Franchise owners & buyers", "Operators", "The finance-curious"],
-    bestFor: ["Franchise brands", "B2B software for brick-and-mortar"],
-  },
-  flickman: {
-    audience: ["Runners", "New Yorkers", "Founders", "Creatives"],
-    bestFor: ["Running & fitness brands", "NYC lifestyle", "Creative & marketing tools"],
-  },
-};
-
-// Line-item rates per channel. Placeholders; edit freely.
-const RATES = {
-  topline: [
-    { item: "1x Instagram Reel, syndicated to TikTok", note: "A full Topline breakdown of your franchise or a business that runs on your product. Always posted as a collab with @flickman.", price: "$4,000" },
-    { item: "Paid usage (whitelisting), per month", price: "25% of fee" },
-  ],
-  flickman: [
-    { item: "1x Instagram Reel", note: "On @flickman: running, New York City, business, or art and marketing.", price: "$1,000" },
-    { item: "Story set", note: "Three Stories with a link sticker.", price: "$500" },
-    { item: "Paid usage (whitelisting), per month", price: "25% of fee" },
-  ],
-};
-const RATES_NOTE = "Paid usage (whitelisting) is billed each month at 25% of the upfront fee.";
+// Rates. Edit freely.
+const RATES = [
+  { item: <>Dedicated Instagram post (@flickman &amp; <ToplineHandle />) &amp; TikTok</>, price: "$4,000" },
+  { item: "IG post collabed with your brand", price: "+$1,000" },
+  { item: "Paid usage (whitelisting), monthly", note: "25% of the fee, per month", price: "+$1,000/mo" },
+];
 
 // @flickman Instagram insights. Fallbacks for when the live API (src/lib/instagram.ts) is not set up or fails.
 const AUDIENCE_AS_OF = "October 2, 2026";
@@ -153,36 +135,6 @@ function ToplineHandle() {
         <i className="mk-us" />
       </span>
     </span>
-  );
-}
-
-function Segments({ label, items }: { label: string; items: string[] }) {
-  return (
-    <div className="mk-seg">
-      <div className="mk-seg-label">{label}</div>
-      <ul>
-        {items.map((i) => (
-          <li key={i}>{i}</li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-function RateList({ rows }: { rows: { item: string; note?: string; price: string }[] }) {
-  return (
-    <div className="mk-rates">
-      <div className="mk-rates-title">Ways to work together</div>
-      {rows.map((r) => (
-        <div key={r.item} className="mk-rate">
-          <span>
-            {r.item}
-            {r.note && <em>{r.note}</em>}
-          </span>
-          <strong>{r.price}</strong>
-        </div>
-      ))}
-    </div>
   );
 }
 
@@ -335,43 +287,21 @@ export default async function MediaKitPage() {
         </div>
       </section>
 
-      {/* Work together */}
+      {/* Rates */}
       <section className="mk-section mk-alt">
         <div className="mk-wrap">
-          <h2>Ways to work together</h2>
-          <div className="mk-cols">
-            <div className="mk-card">
-              <div className="mk-card-top">
-                <h3><span className="mk-num">1</span>Topline Account</h3>
-                <a href={IG_TOPLINE} target="_blank" rel="noopener noreferrer">
-                  <ToplineHandle />
-                </a>
+          <h2>Rates</h2>
+          <div className="mk-ratecard">
+            {RATES.map((r) => (
+              <div key={r.price} className="mk-rate">
+                <span>
+                  {r.item}
+                  {r.note && <em>{r.note}</em>}
+                </span>
+                <strong>{r.price}</strong>
               </div>
-              <p>
-                Short breakdowns of real brick-and-mortar businesses and franchises: what
-                they make, what they spend, and what they keep.
-              </p>
-              <Segments label="Audience" items={SEGMENTS.topline.audience} />
-              <Segments label="Best for" items={SEGMENTS.topline.bestFor} />
-              <RateList rows={RATES.topline} />
-            </div>
-            <div className="mk-card">
-              <div className="mk-card-top">
-                <h3><span className="mk-num">2</span>Flickman Account</h3>
-                <a href={IG_FLICKMAN} target="_blank" rel="noopener noreferrer">
-                  @flickman
-                </a>
-              </div>
-              <p>
-                My personal page: running, New York City lifestyle, business breakdowns,
-                and the art and marketing world.
-              </p>
-              <Segments label="Audience" items={SEGMENTS.flickman.audience} />
-              <Segments label="Best for" items={SEGMENTS.flickman.bestFor} />
-              <RateList rows={RATES.flickman} />
-            </div>
+            ))}
           </div>
-          <p className="mk-fine">{RATES_NOTE}</p>
         </div>
       </section>
 
@@ -440,6 +370,9 @@ const CSS = `
 .mk-handles a:hover { color: var(--ink) !important; border-color: var(--ink2); }
   box-shadow: 0 12px 30px rgba(26,26,26,0.16); border: 6px solid #fff; }
 .mk-fine { font-size: 12.5px; color: var(--label); font-weight: 500; margin: 18px 0 0; }
+.mk-ratecard { background: #fff; border: 1px solid var(--hair); border-radius: 20px; padding: 8px 22px; max-width: 720px; }
+.mk-ratecard .mk-rate { padding: 16px 0; font-size: 16.5px; font-weight: 600; align-items: center; }
+.mk-ratecard .mk-rate strong { font-size: 20px; }
 .mk-rates { margin-top: 18px; border-top: 1px solid var(--hair); padding-top: 12px; }
 .mk-rates-title { font-size: 11px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase; color: var(--label); margin-bottom: 4px; }
 .mk-rate, .mk-demo-row { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; font-size: 15px; font-weight: 500;
