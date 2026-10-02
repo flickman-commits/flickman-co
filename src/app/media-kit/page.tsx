@@ -221,7 +221,12 @@ export default function MediaKitPage() {
               <a href={IG_TOPLINE} target="_blank" rel="noopener noreferrer"><ToplineHandle /></a>
               <a href={IG_TRACKSTAR} target="_blank" rel="noopener noreferrer">@trackstar_art</a>
             </div>
-            <h1>Media Kit</h1>
+            <div className="mk-title-row">
+              <a className="mk-avatar-m" href={IG_FLICKMAN} target="_blank" rel="noopener noreferrer">
+                <Image src="/media-kit/flickman.jpg" alt="Matt Hickman (@flickman)" width={150} height={150} priority />
+              </a>
+              <h1>Media Kit</h1>
+            </div>
             <p className="mk-lede">
               I&apos;m Matt Hickman. I make Topline, a show that breaks down the P&amp;Ls
               of real local businesses, plus content on running and life in New York
@@ -560,10 +565,15 @@ const CSS = `
 .mk-hero-img { display: flex; flex-direction: column; align-items: center; gap: 10px; text-decoration: none; justify-self: start; order: -1; flex-direction: row; }
 .mk-hero-img img { display: block; width: 72px; height: 72px; border-radius: 50%; object-fit: cover;
   border: 3px solid #fff; box-shadow: 0 10px 28px rgba(26,26,26,0.18); }
+.mk-title-row { display: flex; align-items: center; gap: 16px; }
+.mk-avatar-m img { display: block; width: 94px; height: 94px; border-radius: 50%; object-fit: cover;
+  border: 3px solid #fff; box-shadow: 0 8px 22px rgba(26,26,26,0.16); }
+.mk-hero-img { display: none !important; }
 .mk-hero-img span { display: none; font-size: 14px; font-weight: 700; color: var(--ink2); }
 @media (min-width: 760px) {
   .mk-hero-grid { grid-template-columns: 1fr 200px; gap: 56px; }
-  .mk-hero-img { justify-self: center; order: 0; flex-direction: column; }
+  .mk-hero-img { display: flex !important; justify-self: center; order: 0; flex-direction: column; }
+  .mk-avatar-m { display: none; }
   .mk-hero-img img { width: 150px; height: 150px; }
   .mk-hero-img span { display: block; }
 }
