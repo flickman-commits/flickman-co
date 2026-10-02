@@ -34,7 +34,7 @@ const TOP_VIDEOS = [
 ];
 
 // Paid partnership example. Add the reel ID (instagram.com/reel/<id>/) to link it.
-const FUNBOX = { id: "", views: "160K" };
+const FUNBOX = { id: "DcWyuhZIzN-", img: "/media-kit/funbox.jpg", views: "160K" };
 
 const SEGMENTS = {
   topline: {
@@ -260,20 +260,23 @@ export default function MediaKitPage() {
           </div>
 
           <div className="mk-partner">
-            <div className="mk-partner-tag">Paid partnership</div>
-            <h3>FunBox</h3>
-            <p>
-              FunBox, the world&apos;s biggest bounce park, sponsored a Topline breakdown of
-              their own business: how a giant indoor bounce house pays New York rent. Franchise
-              brands get a real look at their unit economics in front of people who want to own one.
-            </p>
-            <div className="mk-partner-row">
-              <span className="mk-views">{FUNBOX.views} views</span>
-              {FUNBOX.id && (
-                <a href={`https://www.instagram.com/reel/${FUNBOX.id}/`} target="_blank" rel="noopener noreferrer">
+            <a className="mk-partner-thumb" href={`https://www.instagram.com/reel/${FUNBOX.id}/`} target="_blank" rel="noopener noreferrer">
+              <Image src={FUNBOX.img} alt="Topline episode on FunBox" width={360} height={640} />
+            </a>
+            <div>
+              <div className="mk-partner-tag">Paid partnership</div>
+              <h3>FunBox</h3>
+              <p>
+                FunBox, the world&apos;s biggest bounce park, sponsored a Topline breakdown of
+                their own business: how a giant indoor bounce house pays New York rent. The caption
+                sent viewers straight to their franchising team.
+              </p>
+              <div className="mk-partner-row">
+                <span className="mk-views">{FUNBOX.views} views</span>
+                <a className="mk-partner-btn" href={`https://www.instagram.com/reel/${FUNBOX.id}/`} target="_blank" rel="noopener noreferrer">
                   Watch the episode &rarr;
                 </a>
-              )}
+              </div>
             </div>
           </div>
         </div>
@@ -283,11 +286,10 @@ export default function MediaKitPage() {
       <section className="mk-section mk-alt">
         <div className="mk-wrap">
           <h2>Ways to work together</h2>
-          <p className="mk-sub">Starting rates. Bundles and custom ideas welcome.</p>
           <div className="mk-cols">
             <div className="mk-card">
               <div className="mk-card-top">
-                <h3>Topline Account</h3>
+                <h3><span className="mk-num">1</span>Topline Account</h3>
                 <a href={IG_TOPLINE} target="_blank" rel="noopener noreferrer">
                   <ToplineHandle />
                 </a>
@@ -302,7 +304,7 @@ export default function MediaKitPage() {
             </div>
             <div className="mk-card">
               <div className="mk-card-top">
-                <h3>Flickman Account</h3>
+                <h3><span className="mk-num">2</span>Flickman Account</h3>
                 <a href={IG_FLICKMAN} target="_blank" rel="noopener noreferrer">
                   @flickman
                 </a>
@@ -523,7 +525,13 @@ const CSS = `
 .mk-partner h3 { font-size: 24px; font-weight: 800; letter-spacing: -0.6px; margin: 4px 0 8px; }
 .mk-partner p { margin: 0 0 12px; color: var(--ink2); font-weight: 500; line-height: 1.5; font-size: 15.5px; max-width: 640px; }
 .mk-partner-row { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
-.mk-partner-row a { font-size: 14px; font-weight: 700; text-decoration: none; color: var(--ink) !important; }
+.mk-partner { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (min-width: 760px) { .mk-partner { grid-template-columns: 140px minmax(0, 1fr); gap: 24px; } }
+.mk-partner-thumb img { display: block; width: 100%; height: auto; aspect-ratio: 9 / 16; object-fit: cover; border-radius: 12px; }
+.mk-partner-btn { display: inline-block; background: var(--ink); color: #fff !important; font-size: 14px; font-weight: 700;
+  text-decoration: none; border-radius: 10px; padding: 9px 14px; }
+.mk-num { display: inline-flex; align-items: center; justify-content: center; width: 1.25em; height: 1.25em; border-radius: 50%;
+  background: var(--orange); color: #fff; font-size: 0.62em; font-weight: 800; letter-spacing: 0; margin-right: 10px; vertical-align: 0.18em; }
 .mk-eng { font-size: 12px; font-weight: 500; color: var(--muted); }
 
 .mk-offers { display: grid; gap: 12px; }
