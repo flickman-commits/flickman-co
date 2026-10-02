@@ -146,20 +146,6 @@ export default function Hero() {
             transition={{ duration: 0.6, ease: "easeOut" }}
             className="flex-1"
           >
-            {/* Pixel-style greeting */}
-            <div
-              className="inline-block px-4 py-2 mb-6 rounded-sm"
-              style={{
-                backgroundColor: "#5D9C30",
-                boxShadow: "inset 2px 2px 4px rgba(255,255,255,0.2), inset -2px -2px 4px rgba(0,0,0,0.2), 0 3px 10px rgba(0,0,0,0.15)",
-                border: "2px solid rgba(0,0,0,0.15)",
-              }}
-            >
-              <span className="font-[family-name:var(--font-pixel)] text-xs text-white drop-shadow-sm">
-                Hey, I&apos;m Matt
-              </span>
-            </div>
-
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-coal mb-6 leading-[1.1]" style={{ textShadow: "0 1px 2px rgba(0,0,0,0.05)" }}>
               Welcome to{" "}
               <span className="text-grass">Flickman&apos;s world</span>

@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 
 type Project = {
   icon: string;
+  tag: string;
   name: string;
   description: string;
   color: string;
@@ -13,6 +14,7 @@ type Project = {
 const projects: Project[] = [
   {
     icon: "🏁",
+    tag: "Race posters",
     name: "Trackstar",
     description: "Custom race posters that commemorate every finish line.",
     color: "#6AAF35",
@@ -23,6 +25,7 @@ const projects: Project[] = [
   },
   {
     icon: "📊",
+    tag: "The show",
     name: "Topline",
     description:
       "A show that breaks down the P&Ls of real local businesses. 1M+ views in its first month.",
@@ -60,31 +63,54 @@ export default function CurrentWork() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: i * 0.08 }}
-              className="p-6 rounded-sm bg-white"
-              style={{
-                border: "2px solid rgba(0,0,0,0.08)",
-                borderTop: `4px solid ${p.color}`,
-                boxShadow: "0 4px 16px rgba(0,0,0,0.06)",
-              }}
             >
-              <div className="flex items-center gap-3 mb-3">
-                <span className="text-3xl" aria-hidden="true">
-                  {p.icon}
-                </span>
-                <h3 className="text-2xl font-bold text-coal">{p.name}</h3>
-              </div>
-              <p className="text-coal/60 leading-relaxed mb-5">{p.description}</p>
-              <div className="flex flex-wrap gap-x-5 gap-y-2">
-                {p.links.map((l) => (
-                  <a
-                    key={l.label}
-                    href={l.href}
-                    {...(l.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                    className="text-sm font-semibold text-coal hover:text-grass transition-colors"
-                  >
-                    {l.label} &rarr;
-                  </a>
-                ))}
+              <div
+                className="h-full overflow-hidden rounded-sm transition-all duration-200 hover:-translate-y-1"
+                style={{
+                  backgroundColor: "#FFF8F0",
+                  border: "2px solid rgba(0,0,0,0.08)",
+                  boxShadow:
+                    "inset 2px 2px 4px rgba(255,255,255,0.5), inset -1px -1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06)",
+                }}
+              >
+                {/* Header */}
+                <div
+                  className="p-5"
+                  style={{
+                    backgroundColor: p.color,
+                    boxShadow: "inset 2px 2px 4px rgba(255,255,255,0.2), inset -2px -2px 4px rgba(0,0,0,0.15)",
+                  }}
+                >
+                  <span className="font-[family-name:var(--font-pixel)] text-[9px] text-white/80 block mb-1.5 uppercase">
+                    {p.tag}
+                  </span>
+                  <h3 className="font-[family-name:var(--font-pixel)] text-sm text-white drop-shadow-sm flex items-center gap-2">
+                    <span aria-hidden="true">{p.icon}</span>
+                    {p.name}
+                  </h3>
+                </div>
+
+                {/* Body */}
+                <div className="p-5">
+                  <p className="text-coal/70 text-sm leading-relaxed mb-5">{p.description}</p>
+                  <div className="flex flex-wrap items-center gap-3">
+                    {p.links.map((l, j) => (
+                      <a
+                        key={l.label}
+                        href={l.href}
+                        {...(l.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                        className={
+                          j === 0
+                            ? "inline-block bg-coal text-cream px-3 py-1.5 text-xs font-semibold rounded-sm hover:-translate-y-0.5 transition-transform"
+                            : "text-xs font-semibold text-coal/60 hover:text-coal transition-colors"
+                        }
+                        style={j === 0 ? { boxShadow: "0 2px 6px rgba(0,0,0,0.15)" } : undefined}
+                      >
+                        {l.label} &rarr;
+                      </a>
+                    ))}
+                  </div>
+                </div>
               </div>
             </motion.div>
           ))}
