@@ -55,7 +55,7 @@ const RATES = {
   ],
   flickman: [
     { item: "Reel", note: "On @flickman: running, New York City, business, or art and marketing.", price: "$1,000" },
-    { item: "Story set", note: "Three Stories with a link sticker.", price: "$400" },
+    { item: "Story set", note: "Three Stories with a link sticker.", price: "$500" },
     { item: "Whitelisting, per month", price: "25% of fee" },
   ],
 };
