@@ -158,7 +158,7 @@ export default function MediaKitPage() {
             </div>
             <div className="mk-title-row">
               <a className="mk-avatar-m" href={IG_FLICKMAN} target="_blank" rel="noopener noreferrer">
-                <Image src="/media-kit/flickman.jpg" alt="Matt Hickman (@flickman)" width={150} height={150} priority />
+                <Image src="/media-kit/flickman.jpg" alt="Matt Hickman (@flickman)" width={600} height={600} priority />
               </a>
               <h1>Media Kit</h1>
             </div>
@@ -173,7 +173,7 @@ export default function MediaKitPage() {
             </a>
           </div>
           <a className="mk-hero-img" href={IG_FLICKMAN} target="_blank" rel="noopener noreferrer">
-            <Image src="/media-kit/flickman.jpg" alt="Matt Hickman (@flickman)" width={150} height={150} priority />
+            <Image src="/media-kit/flickman.jpg" alt="Matt Hickman (@flickman)" width={600} height={600} priority />
             <span>@flickman</span>
           </a>
         </div>
@@ -475,10 +475,10 @@ const CSS = `
 .mk-hero-img { display: none !important; }
 .mk-hero-img span { display: none; font-size: 14px; font-weight: 700; color: var(--ink2); }
 @media (min-width: 760px) {
-  .mk-hero-grid { grid-template-columns: 1fr 200px; gap: 56px; }
+  .mk-hero-grid { grid-template-columns: 1fr 280px; gap: 56px; }
   .mk-hero-img { display: flex !important; justify-self: center; order: 0; flex-direction: column; }
   .mk-avatar-m { display: none; }
-  .mk-hero-img img { width: 150px; height: 150px; }
+  .mk-hero-img img { width: 240px; height: 240px; }
   .mk-hero-img span { display: block; }
 }
 .mk-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 14px; margin-top: 36px; }
