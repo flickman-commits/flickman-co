@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import { compact, getLiveStats, type LiveStats } from "@/lib/instagram";
 
 export const metadata: Metadata = {
   title: "Media Kit | Flickman & Topline",
@@ -8,6 +9,9 @@ export const metadata: Metadata = {
   // Shared directly with brands; keep rates out of search results.
   robots: { index: false, follow: false },
 };
+
+// Re-fetch live Instagram stats at most every 6 hours.
+export const revalidate = 21600;
 
 /* ── Everything editable lives here ─────────────────────────────── */
 
@@ -61,7 +65,7 @@ const RATES = {
 };
 const RATES_NOTE = "Whitelisting is billed each month at 25% of the upfront fee.";
 
-// @flickman Instagram insights. Reach is the last 90 days; demographics the last 30.
+// @flickman Instagram insights. Fallbacks for when the live API (src/lib/instagram.ts) is not set up or fails.
 const AUDIENCE_AS_OF = "October 2, 2026";
 const REACH = [
   { value: "8.3M", label: "views in the last 90 days (6.2M Instagram, 2.1M Facebook)" },
@@ -88,6 +92,65 @@ const PRINTS = [
 // Paid brand partners. The section is hidden while this list is empty.
 const PAST_PARTNERS: { name: string; url?: string }[] = [];
 
+
+/* ── Live data ──────────────────────────────────────────────────── */
+
+const pct = (n: number) => (n >= 10 ? `${Math.round(n)}%` : `${n.toFixed(1)}%`);
+const today = () =>
+  new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "America/New_York" });
+
+/** Layer whatever the Instagram API returned over the hard-coded numbers. */
+function withLive(live: LiveStats | null) {
+  const stats = STATS.map((s, i) =>
+    i === 0 && live?.followersTotal ? { ...s, value: compact(live.followersTotal) } : s,
+  );
+
+  const reach = live
+    ? [
+        live.views90 !== null
+          ? { value: compact(live.views90), label: "Instagram views in the last 90 days" }
+          : REACH[0],
+        live.reach30 !== null ? { value: compact(live.reach30), label: "accounts reached in the last 30 days" } : REACH[1],
+        live.nonFollowerPct30 !== null
+          ? { value: pct(live.nonFollowerPct30), label: "of views from people who don't follow yet" }
+          : REACH[2],
+        live.accountsEngaged30 !== null
+          ? { value: compact(live.accountsEngaged30), label: "accounts engaged in the last 30 days" }
+          : REACH[3],
+      ]
+    : REACH;
+
+  const top = (rows: [string, number][] | null, n: number, other = false) => {
+    if (!rows) return null;
+    const out = rows.slice(0, n).map(([k, v]) => [k.split(",")[0], pct(v)]);
+    if (other) {
+      const rest = rows.slice(n).reduce((s, [, v]) => s + v, 0);
+      if (rest >= 0.5) out.push(["Other", pct(rest)]);
+    }
+    return out;
+  };
+  const demos = [
+    { title: "Age", rows: top(live?.age ?? null, 3, true) ?? DEMOS[0].rows },
+    { title: "Top countries", rows: top(live?.countries ?? null, 3) ?? DEMOS[1].rows },
+    { title: "Top cities", rows: top(live?.cities ?? null, 4) ?? DEMOS[2].rows },
+  ];
+
+  const videos = TOP_VIDEOS.map((v) =>
+    live?.reelViews[v.id] ? { ...v, views: compact(live.reelViews[v.id]) } : v,
+  );
+
+  return {
+    stats,
+    statsAsOf: live ? today() : STATS_AS_OF,
+    audienceNote: live
+      ? `@flickman Instagram insights, updated ${today()}. Audience breakdown is current followers.`
+      : `@flickman Instagram insights as of ${AUDIENCE_AS_OF}. Audience breakdown is from the last 30 days.`,
+    reach,
+    gender: live?.gender ?? GENDER,
+    demos,
+    videos,
+  };
+}
 
 /* ── Pieces ─────────────────────────────────────────────────────── */
 
@@ -135,7 +198,8 @@ function RateList({ rows }: { rows: { item: string; note?: string; price: string
 
 /* ── Page ───────────────────────────────────────────────────────── */
 
-export default function MediaKitPage() {
+export default async function MediaKitPage() {
+  const d = withLive(await getLiveStats(TOP_VIDEOS.map((v) => v.id)));
   return (
     <main className="mk">
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
@@ -178,7 +242,7 @@ export default function MediaKitPage() {
           </a>
         </div>
         <div className="mk-stats">
-          {STATS.map((s) => (
+          {d.stats.map((s) => (
             <div key={s.value}>
               <strong>
                 {s.value} <small>{s.unit}</small>
@@ -187,16 +251,16 @@ export default function MediaKitPage() {
             </div>
           ))}
         </div>
-        <div className="mk-asof">Stats as of {STATS_AS_OF}.</div>
+        <div className="mk-asof">Stats as of {d.statsAsOf}.</div>
       </section>
 
       {/* Audience */}
       <section className="mk-section mk-alt">
         <div className="mk-wrap">
           <h2>Audience Metrics</h2>
-          <p className="mk-sub">@flickman Instagram insights as of {AUDIENCE_AS_OF}. Audience breakdown is from the last 30 days.</p>
+          <p className="mk-sub">{d.audienceNote}</p>
           <div className="mk-stats mk-reach">
-            {REACH.map((r) => (
+            {d.reach.map((r) => (
               <div key={r.label}>
                 <strong>{r.value}</strong>
                 <span>{r.label}</span>
@@ -205,26 +269,26 @@ export default function MediaKitPage() {
           </div>
           <div className="mk-gender">
             <h3>Gender</h3>
-            <div className="mk-gender-bar" role="img" aria-label={`${GENDER.men}% men, ${GENDER.women}% women`}>
-              <span style={{ width: `${GENDER.men}%` }} className="mk-g-men" />
-              <span style={{ width: `${GENDER.women}%` }} className="mk-g-women" />
+            <div className="mk-gender-bar" role="img" aria-label={`${Math.round(d.gender.men)}% men, ${Math.round(d.gender.women)}% women`}>
+              <span style={{ width: `${d.gender.men}%` }} className="mk-g-men" />
+              <span style={{ width: `${d.gender.women}%` }} className="mk-g-women" />
             </div>
             <div className="mk-gender-nums">
               <div>
-                <strong>{Math.round(GENDER.men)}%</strong>
+                <strong>{Math.round(d.gender.men)}%</strong>
                 <span>Men</span>
               </div>
               <div className="mk-gender-w">
-                <strong>{Math.round(GENDER.women)}%</strong>
+                <strong>{Math.round(d.gender.women)}%</strong>
                 <span>Women</span>
               </div>
             </div>
           </div>
           <div className="mk-demos">
-            {DEMOS.map((d) => (
-              <div key={d.title} className="mk-demo">
-                <h3>{d.title}</h3>
-                {d.rows.map(([k, v]) => (
+            {d.demos.map((demo) => (
+              <div key={demo.title} className="mk-demo">
+                <h3>{demo.title}</h3>
+                {demo.rows.map(([k, v]) => (
                   <div key={k} className="mk-demo-row">
                     <span>{k}</span>
                     <strong>{v}</strong>
@@ -242,7 +306,7 @@ export default function MediaKitPage() {
           <h2>Top-Performing Videos</h2>
           <p className="mk-sub">Topline episodes, posted as collabs on both accounts.</p>
           <div className="mk-videos">
-            {TOP_VIDEOS.map((v) => (
+            {d.videos.map((v) => (
               <a
                 key={v.id}
                 className="mk-video"
