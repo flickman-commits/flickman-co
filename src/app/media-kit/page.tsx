@@ -38,53 +38,20 @@ const TOP_VIDEOS = [
 // Paid partnership example. Add the reel ID (instagram.com/reel/<id>/) to link it.
 const FUNBOX = { id: "", views: "160K" };
 
-// Starting rates. Confirm before sharing.
-const OFFERS = [
-  {
-    channel: "Topline",
-    title: "P&L line item",
-    price: "From $2,500",
-    body: "Your product shows up as a line item in a real business breakdown. A payroll company becomes the payroll line, a POS becomes the card fees line. Viewers see exactly where you fit in a business like theirs.",
-    best: "B2B software for brick-and-mortar: payroll, POS, scheduling, bookkeeping, lending, insurance.",
-  },
-  {
-    channel: "Topline",
-    title: "Sponsored episode",
-    price: "From $5,000",
-    body: "A full breakdown built around your brand: your franchise, or a business that runs on your product.",
-    best: "Franchise brands and B2B companies with a customer story to tell.",
-  },
-  {
-    channel: "Flickman",
-    title: "Dedicated Reel",
-    price: "From $1,000",
-    body: "A Reel on @flickman about running, New York City, business, or art and marketing. Whatever fits your brand best.",
-    best: "Running and fitness brands, NYC lifestyle, creative and marketing tools.",
-  },
-  {
-    channel: "Flickman",
-    title: "Story set",
-    price: "From $400",
-    body: "Three Instagram Stories with a link sticker, straight to your site.",
-    best: "Launches, promo codes, and events.",
-  },
-];
-
 // Line-item rates per channel. Placeholders; edit freely.
 const RATES = {
   topline: [
-    { item: "Sponsored episode", price: "$5,000" },
-    { item: "P&L line item in an episode", price: "$2,500" },
+    { item: "Sponsored episode", note: "A full breakdown of your franchise or a business that runs on your product.", price: "$5,000" },
+    { item: "P&L line item", note: "Your product appears as a real line in an episode, like payroll or POS.", price: "$2,500" },
     { item: "Collab Reel on Topline + @flickman", price: "$3,500" },
     { item: "Whitelisting, per month", price: "50% of fee" },
   ],
   flickman: [
-    { item: "Reel", price: "$1,000" },
-    { item: "Story set (3, with link sticker)", price: "$400" },
+    { item: "Reel", note: "Running, New York City, business, or art and marketing.", price: "$1,000" },
+    { item: "Story set", note: "Three Stories with a link sticker.", price: "$400" },
     { item: "Whitelisting, per month", price: "50% of fee" },
   ],
-};
-const RATES_NOTE = "Whitelisting is billed each month at 50% of the upfront fee.";
+};const RATES_NOTE = "Whitelisting is billed each month at 50% of the upfront fee.";
 
 // @flickman Instagram insights. Reach is the last 90 days; demographics the last 30.
 const AUDIENCE_AS_OF = "October 2, 2026";
@@ -102,35 +69,12 @@ const DEMOS = [
 ];
 
 
-// Trackstar poster collab concepts. Ideas to pitch, not past partnerships.
-const POSTER_IDEAS = [
-  {
-    brand: "Brooks",
-    race: "Brooklyn Half",
-    runner: "Jordan Lee",
-    time: "1:48:22",
-    color: "#14315C",
-    accent: "#7FC6F0",
-    pitch: "A finisher poster for every runner at a race you sponsor, with their name, time, and course.",
-  },
-  {
-    brand: "New Balance",
-    race: "NYC Marathon",
-    runner: "Sam Rivera",
-    time: "3:41:07",
-    color: "#B4122B",
-    accent: "#FFD2D8",
-    pitch: "A run club or store drop: members get a poster of their own race, co-branded with you.",
-  },
-  {
-    brand: "Your company",
-    race: "Corporate Challenge",
-    runner: "Alex Chen",
-    time: "24:16",
-    color: "#1F5F3F",
-    accent: "#B9E6A1",
-    pitch: "Every employee on your company's running team gets a poster of their race.",
-  },
+// Trackstar co-branded print examples.
+const PRINTS = [
+  { name: "Brooks Running", img: "/media-kit/posters/brooks.jpg" },
+  { name: "New Balance", img: "/media-kit/posters/new-balance.jpg" },
+  { name: "Ulman Foundation", img: "/media-kit/posters/ulman.jpg" },
+  { name: "Release Foundation", img: "/media-kit/posters/release-foundation.jpg" },
 ];
 
 // Paid brand partners. The section is hidden while this list is empty.
@@ -152,48 +96,19 @@ function ToplineHandle() {
   );
 }
 
-function RateList({ rows }: { rows: { item: string; price: string }[] }) {
+function RateList({ rows }: { rows: { item: string; note?: string; price: string }[] }) {
   return (
     <div className="mk-rates">
-      <div className="mk-rates-title">Rates</div>
+      <div className="mk-rates-title">Ways to work together</div>
       {rows.map((r) => (
         <div key={r.item} className="mk-rate">
-          <span>{r.item}</span>
+          <span>
+            {r.item}
+            {r.note && <em>{r.note}</em>}
+          </span>
           <strong>{r.price}</strong>
         </div>
       ))}
-    </div>
-  );
-}
-
-function LineItemExample() {
-  const rows = [
-    { label: "Cost of goods", amount: "$14,460" },
-    { label: "Payroll", amount: "$13,980", sponsor: "Your payroll app" },
-    { label: "Rent", amount: "$6,750" },
-    { label: "Card fees & other", amount: "$6,610" },
-  ];
-  return (
-    <div className="mk-pl">
-      <div className="mk-pl-title">Coffee shop P&amp;L</div>
-      <div className="mk-pl-sub">One month, from a Topline breakdown</div>
-      <div className="mk-pl-row mk-pl-rev">
-        <span>Revenue</span>
-        <strong>$48,200</strong>
-      </div>
-      {rows.map((r) => (
-        <div key={r.label} className={r.sponsor ? "mk-pl-row mk-pl-sponsor" : "mk-pl-row"}>
-          <span>
-            {r.label}
-            {r.sponsor && <em>{r.sponsor}</em>}
-          </span>
-          <strong>{r.amount}</strong>
-        </div>
-      ))}
-      <div className="mk-pl-kept">
-        <span>What they kept</span>
-        <strong>$6,400</strong>
-      </div>
     </div>
   );
 }
@@ -255,58 +170,10 @@ export default function MediaKitPage() {
         <div className="mk-asof">Stats as of {STATS_AS_OF}.</div>
       </section>
 
-      {/* Channels */}
+      {/* Audience */}
       <section className="mk-section mk-alt">
         <div className="mk-wrap">
-          <h2>Two ways to reach people</h2>
-          <div className="mk-cols">
-            <div className="mk-card">
-              <div className="mk-card-top">
-                <h3>Topline</h3>
-                <a href={IG_TOPLINE} target="_blank" rel="noopener noreferrer">
-                  <ToplineHandle />
-                </a>
-              </div>
-              <p>
-                Short breakdowns of real brick-and-mortar businesses and franchises: what
-                they make, what they spend, and what they keep.
-              </p>
-              <dl>
-                <dt>Audience</dt>
-                <dd>Small business owners, franchise owners and buyers, operators, and the finance-curious.</dd>
-                <dt>Best for</dt>
-                <dd>Franchise brands and B2B software that serves brick-and-mortar businesses.</dd>
-              </dl>
-              <RateList rows={RATES.topline} />
-            </div>
-            <div className="mk-card">
-              <div className="mk-card-top">
-                <h3>Flickman</h3>
-                <a href={IG_FLICKMAN} target="_blank" rel="noopener noreferrer">
-                  @flickman
-                </a>
-              </div>
-              <p>
-                My personal page: running, New York City lifestyle, business breakdowns,
-                and the art and marketing world.
-              </p>
-              <dl>
-                <dt>Audience</dt>
-                <dd>Runners, New Yorkers, founders, and creatives.</dd>
-                <dt>Best for</dt>
-                <dd>Running and fitness brands, NYC lifestyle, creative and marketing tools.</dd>
-              </dl>
-              <RateList rows={RATES.flickman} />
-            </div>
-          </div>
-          <p className="mk-fine">{RATES_NOTE}</p>
-        </div>
-      </section>
-
-      {/* Audience */}
-      <section className="mk-section">
-        <div className="mk-wrap">
-          <h2>Who&apos;s watching</h2>
+          <h2>Audience Metrics</h2>
           <p className="mk-sub">@flickman Instagram insights as of {AUDIENCE_AS_OF}. Audience breakdown is from the last 30 days.</p>
           <div className="mk-stats mk-reach">
             {REACH.map((r) => (
@@ -333,7 +200,7 @@ export default function MediaKitPage() {
       </section>
 
       {/* Top videos */}
-      <section className="mk-section mk-alt">
+      <section className="mk-section">
         <div className="mk-wrap">
           <h2>Videos that did well</h2>
           <p className="mk-sub">Recent Topline episodes, posted on both accounts.</p>
@@ -375,94 +242,76 @@ export default function MediaKitPage() {
         </div>
       </section>
 
-      {/* Offers */}
-      <section className="mk-section">
+      {/* Work together */}
+      <section className="mk-section mk-alt">
         <div className="mk-wrap">
           <h2>Ways to work together</h2>
           <p className="mk-sub">Starting rates. Bundles and custom ideas welcome.</p>
-          <div className="mk-offers">
-            {OFFERS.map((o) => (
-              <div key={o.title} className="mk-offer">
-                <div className="mk-offer-top">
-                  <span className="mk-tag">{o.channel}</span>
-                  <span className="mk-price">{o.price}</span>
-                </div>
-                <h3>{o.title}</h3>
-                <p>{o.body}</p>
-                <p className="mk-best">
-                  <strong>Best for:</strong> {o.best}
-                </p>
+          <div className="mk-cols">
+            <div className="mk-card">
+              <div className="mk-card-top">
+                <h3>Topline Account</h3>
+                <a href={IG_TOPLINE} target="_blank" rel="noopener noreferrer">
+                  <ToplineHandle />
+                </a>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Line item */}
-      <section className="mk-section mk-alt">
-        <div className="mk-wrap">
-          <div className="mk-split">
-            <div>
-              <h2>The most natural ad on the show</h2>
-              <p className="mk-body">
-                Every Topline episode walks through a real P&amp;L. If your product is a
-                cost every business has, like payroll, POS, insurance, or software, it can
-                be one of the lines.
+              <p>
+                Short breakdowns of real brick-and-mortar businesses and franchises: what
+                they make, what they spend, and what they keep.
               </p>
-              <p className="mk-body">
-                It doesn&apos;t interrupt the story. It&apos;s part of it, and viewers see
-                exactly where you fit in a business like theirs.
-              </p>
+              <div className="mk-pill">Audience</div>
+              <p>Small business owners, franchise owners and buyers, operators, and the finance-curious.</p>
+              <div className="mk-pill">Best for</div>
+              <p>Franchise brands and B2B software that serves brick-and-mortar businesses.</p>
+              <RateList rows={RATES.topline} />
             </div>
-            <LineItemExample />
+            <div className="mk-card">
+              <div className="mk-card-top">
+                <h3>Flickman Account</h3>
+                <a href={IG_FLICKMAN} target="_blank" rel="noopener noreferrer">
+                  @flickman
+                </a>
+              </div>
+              <p>
+                My personal page: running, New York City lifestyle, business breakdowns,
+                and the art and marketing world.
+              </p>
+              <div className="mk-pill">Audience</div>
+              <p>Runners, New Yorkers, founders, and creatives.</p>
+              <div className="mk-pill">Best for</div>
+              <p>Running and fitness brands, NYC lifestyle, creative and marketing tools.</p>
+              <RateList rows={RATES.flickman} />
+            </div>
           </div>
+          <p className="mk-fine">{RATES_NOTE}</p>
         </div>
       </section>
 
       {/* Trackstar */}
-      <section className="mk-section">
+      <section className="mk-ts">
         <div className="mk-wrap">
-          <h2>Poster collabs with Trackstar</h2>
-          <p className="mk-body">
-            <a href={TRACKSTAR} target="_blank" rel="noopener noreferrer">Trackstar</a> is my race poster
-            brand. Every poster is personalized: the runner&apos;s name, finish time, and course. It&apos;s
-            not an ad, it&apos;s a keepsake runners hang on the wall, with your brand on it.
+          <div className="mk-ts-kicker">Additional collaboration opportunity</div>
+          <h2>Co-branded race prints with Trackstar</h2>
+          <p className="mk-ts-body">
+            <a href={TRACKSTAR} target="_blank" rel="noopener noreferrer">Trackstar</a> creates
+            personalized race prints: each runner&apos;s name, finish time, pace, and course. We partner
+            with brands and foundations to give them to their runners at any marathon, co-branded with
+            your logo. Here are a few examples:
           </p>
-          <p className="mk-body">
-            We design, personalize, and fulfill everything, as a digital download or a printed poster.
-            A few ideas:
-          </p>
-          <div className="mk-posters">
-            {POSTER_IDEAS.map((p) => (
-              <div key={p.brand} className="mk-poster-card">
-                <div className="mk-poster" style={{ background: p.color, color: p.accent }} aria-hidden="true">
-                  <div className="mk-poster-race">{p.race}</div>
-                  <svg viewBox="0 0 120 80" className="mk-poster-route">
-                    <path
-                      d="M8 64 C 20 30, 34 70, 48 44 S 70 10, 84 30 S 104 66, 112 18"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="3"
-                      strokeLinecap="round"
-                    />
-                    <circle cx="8" cy="64" r="4" fill="#fff" />
-                    <circle cx="112" cy="18" r="4" fill="#fff" />
-                  </svg>
-                  <div className="mk-poster-name">{p.runner}</div>
-                  <div className="mk-poster-time">{p.time}</div>
-                  <div className="mk-poster-foot">{p.brand} &times; Trackstar</div>
-                </div>
-                <h3>{p.brand}</h3>
-                <p>{p.pitch}</p>
-              </div>
+          <div className="mk-prints">
+            {PRINTS.map((p) => (
+              <figure key={p.name}>
+                <Image src={p.img} alt={`Co-branded Trackstar print example for ${p.name}`} width={900} height={900} />
+                <figcaption>{p.name}</figcaption>
+              </figure>
             ))}
           </div>
-          <p className="mk-fine">Concepts, not past partnerships. Pricing is custom.</p>
+          <p className="mk-ts-fine">Examples made for this kit. Pricing is custom, based on the number of runners.</p>
         </div>
       </section>
 
       {/* Brands */}
-      <section className="mk-section mk-alt">
+      <section className="mk-section">
         <div className="mk-wrap">
           {PAST_PARTNERS.length > 0 && (
             <div className="mk-brands">
@@ -493,7 +342,7 @@ export default function MediaKitPage() {
       </section>
 
       {/* Contact */}
-      <section className="mk-section">
+      <section className="mk-section mk-alt">
         <div className="mk-wrap mk-contact">
           <h2>Let&apos;s work together</h2>
           <p className="mk-body">Tell me about your brand and what you have in mind.</p>
@@ -556,6 +405,22 @@ const CSS = `
 @media (min-width: 760px) { .mk-demos { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .mk-demo { background: #fff; border: 1px solid var(--hair); border-radius: 18px; padding: 14px; min-width: 0; }
 .mk .mk-demo h3 { font-size: 13px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: var(--label); margin: 0 0 4px; }
+.mk .mk-card-top h3 { font-size: clamp(24px, 3.4vw, 30px); font-weight: 800; letter-spacing: -0.8px; margin: 0; }
+.mk-pill { display: inline-block; font-size: 11px; font-weight: 800; letter-spacing: 1.4px; text-transform: uppercase;
+  background: var(--ink); color: #fff; border-radius: 999px; padding: 5px 11px; margin: 4px 0 8px; }
+.mk-rate span em { display: block; font-style: normal; font-size: 13px; color: var(--muted); font-weight: 500; line-height: 1.4; margin-top: 2px; }
+.mk-ts { background: #161616; color: #F1E9D6; border-radius: 24px; margin: 12px 8px; padding: clamp(44px, 7vw, 80px) 0; }
+.mk-ts-kicker { display: inline-block; font-size: 11px; font-weight: 800; letter-spacing: 1.8px; text-transform: uppercase;
+  color: #161616; background: #F1E9D6; border-radius: 999px; padding: 6px 12px; margin-bottom: 16px; }
+.mk .mk-ts h2 { color: #F1E9D6; }
+.mk-ts-body { font-size: 16.5px; line-height: 1.55; font-weight: 500; color: rgba(241,233,214,0.82); max-width: 640px; margin: 0 0 26px; }
+.mk-ts-body a { color: #F1E9D6 !important; font-weight: 700; }
+.mk-prints { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@media (min-width: 760px) { .mk-prints { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; } }
+.mk-prints figure { margin: 0; }
+.mk-prints img { display: block; width: 100%; height: auto; border-radius: 14px; }
+.mk-prints figcaption { font-size: 14px; font-weight: 700; margin-top: 8px; color: #F1E9D6; }
+.mk-ts-fine { font-size: 12.5px; color: rgba(241,233,214,0.6); font-weight: 500; margin: 20px 0 0; }
 .mk-kicker { font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--orange-text); margin-bottom: 10px; }
 .mk h1 { font-size: clamp(36px, 6vw, 64px); font-weight: 800; line-height: 1.02; letter-spacing: -1.8px; margin: 0; }
 .mk-lede { font-size: clamp(16.5px, 2vw, 19px); font-weight: 500; line-height: 1.5; color: var(--ink2); margin: 16px 0 22px; max-width: 560px; }
