@@ -15,24 +15,28 @@ const EMAIL = "matt@flickmanmedia.com";
 const IG_FLICKMAN = "https://www.instagram.com/flickman/";
 const IG_TOPLINE = "https://www.instagram.com/topline_________/";
 const TRACKSTAR = "https://www.trackstar.art";
+const IG_TRACKSTAR = "https://www.instagram.com/trackstar_art/";
 const STATS_AS_OF = "October 2026";
 
 const STATS = [
   { value: "43K", label: "followers across @flickman and Topline" },
-  { value: "245K", label: "average views per Topline episode" },
-  { value: "1M+", label: "views in Topline's first month" },
-  { value: "334K", label: "views on the top episode (Crunch Fitness)" },
+  { value: "290K", label: "average views per business breakdown" },
+  { value: "7M+", label: "total views on business breakdowns" },
+  { value: "853K", label: "views on the top breakdown" },
 ];
 
-// Top-performing Topline episodes (posted as collabs on both accounts).
+// Topline episodes, posted as collabs on both accounts. Views from the @flickman Reels tab.
 const TOP_VIDEOS = [
-  { name: "Crunch Fitness", img: "/media-kit/crunch.jpg", views: "334K", likes: "3,844", comments: "147", id: "DcjVsadI0S6" },
-  { name: "AMC Theatres", img: "/media-kit/amc.jpg", views: "227K", likes: "4,856", comments: "97", id: "DcwIqH5oUAT" },
-  { name: "Popeyes", img: "/media-kit/popeyes.jpg", views: "166K", likes: "2,376", comments: "54", id: "DdomcCdoZwX" },
-  { name: "Domino's", img: "/media-kit/dominos.jpg", views: "162K", likes: "1,664", comments: "74", id: "DdE4BXfIpY6" },
-  { name: "Potbelly", img: "/media-kit/potbelly.jpg", views: "154K", likes: "810", comments: "17", id: "DdPnFkXo9G5" },
-  { name: "CAVA", img: "/media-kit/cava.jpg", views: "148K", likes: "1,738", comments: "41", id: "DdXio0Oo91j" },
+  { name: "AMC Theatres", img: "/media-kit/amc.jpg", views: "356K", id: "DcwIqH5oUAT" },
+  { name: "Crunch Fitness", img: "/media-kit/crunch.jpg", views: "355K", id: "DcjVsadI0S6" },
+  { name: "Popeyes", img: "/media-kit/popeyes.jpg", views: "253K", id: "DdomcCdoZwX" },
+  { name: "Domino's", img: "/media-kit/dominos.jpg", views: "252K", id: "DdE4BXfIpY6" },
+  { name: "Potbelly", img: "/media-kit/potbelly.jpg", views: "235K", id: "DdPnFkXo9G5" },
+  { name: "CAVA", img: "/media-kit/cava.jpg", views: "223K", id: "DdXio0Oo91j" },
 ];
+
+// Paid partnership example. Add the reel ID (instagram.com/reel/<id>/) to link it.
+const FUNBOX = { id: "", views: "160K" };
 
 // Starting rates. Confirm before sharing.
 const OFFERS = [
@@ -64,13 +68,6 @@ const OFFERS = [
     body: "Three Instagram Stories with a link sticker, straight to your site.",
     best: "Launches, promo codes, and events.",
   },
-  {
-    channel: "Trackstar",
-    title: "Poster collab",
-    price: "Custom",
-    body: "Co-branded race posters through Trackstar, my running poster brand. A keepsake runners actually hang on the wall.",
-    best: "Race sponsors and running brands.",
-  },
 ];
 
 const FORMATS = [
@@ -80,7 +77,37 @@ const FORMATS = [
   "Carousels",
   "Link in bio",
   "Usage rights and whitelisting (add-on)",
-  "Race posters with Trackstar",
+];
+
+// Trackstar poster collab concepts. Ideas to pitch, not past partnerships.
+const POSTER_IDEAS = [
+  {
+    brand: "Brooks",
+    race: "Brooklyn Half",
+    runner: "Jordan Lee",
+    time: "1:48:22",
+    color: "#14315C",
+    accent: "#7FC6F0",
+    pitch: "A finisher poster for every runner at a race you sponsor, with their name, time, and course.",
+  },
+  {
+    brand: "New Balance",
+    race: "NYC Marathon",
+    runner: "Sam Rivera",
+    time: "3:41:07",
+    color: "#B4122B",
+    accent: "#FFD2D8",
+    pitch: "A run club or store drop: members get a poster of their own race, co-branded with you.",
+  },
+  {
+    brand: "Your company",
+    race: "Corporate Challenge",
+    runner: "Alex Chen",
+    time: "24:16",
+    color: "#1F5F3F",
+    accent: "#B9E6A1",
+    pitch: "Every employee on your company's running team gets a poster of their race.",
+  },
 ];
 
 // Paid brand partners. The section is hidden while this list is empty.
@@ -152,26 +179,25 @@ export default function MediaKitPage() {
       <section className="mk-wrap mk-hero">
         <div className="mk-hero-grid">
           <div>
-            <div className="mk-kicker">Media kit</div>
-            <h1>Partner with Flickman &amp; Topline</h1>
+            <div className="mk-handles">
+              <a href={IG_FLICKMAN} target="_blank" rel="noopener noreferrer">@flickman</a>
+              <a href={IG_TOPLINE} target="_blank" rel="noopener noreferrer"><ToplineHandle /></a>
+              <a href={IG_TRACKSTAR} target="_blank" rel="noopener noreferrer">@trackstar_art</a>
+            </div>
+            <h1>Media Kit</h1>
             <p className="mk-lede">
               I&apos;m Matt Hickman. I make Topline, a show that breaks down the P&amp;Ls
               of real local businesses, plus content on running and life in New York
-              City. My audience is business owners, operators, and people who want to
-              be one.
+              City. My audience is business owners, operators, people who want to be
+              one, and runners.
             </p>
             <a className="mk-btn" href={`mailto:${EMAIL}?subject=Partnership`}>
               Work with me
             </a>
           </div>
-          <a className="mk-hero-img" href={IG_TOPLINE} target="_blank" rel="noopener noreferrer">
-            <Image
-              src="/topline/episode.jpg"
-              alt="Matt filming a Topline episode on a New York street"
-              width={360}
-              height={640}
-              priority
-            />
+          <a className="mk-hero-img" href={IG_FLICKMAN} target="_blank" rel="noopener noreferrer">
+            <Image src="/media-kit/flickman.jpg" alt="Matt Hickman (@flickman)" width={150} height={150} priority />
+            <span>@flickman</span>
           </a>
         </div>
         <div className="mk-stats">
@@ -248,12 +274,27 @@ export default function MediaKitPage() {
                 <div className="mk-video-info">
                   <strong>{v.name}</strong>
                   <span className="mk-views">{v.views} views</span>
-                  <span className="mk-eng">
-                    {v.likes} likes · {v.comments} comments
-                  </span>
                 </div>
               </a>
             ))}
+          </div>
+
+          <div className="mk-partner">
+            <div className="mk-partner-tag">Paid partnership</div>
+            <h3>FunBox</h3>
+            <p>
+              FunBox, the world&apos;s biggest bounce park, sponsored a Topline breakdown of
+              their own business: how a giant indoor bounce house pays New York rent. Franchise
+              brands get a real look at their unit economics in front of people who want to own one.
+            </p>
+            <div className="mk-partner-row">
+              <span className="mk-views">{FUNBOX.views} views</span>
+              {FUNBOX.id && (
+                <a href={`https://www.instagram.com/reel/${FUNBOX.id}/`} target="_blank" rel="noopener noreferrer">
+                  Watch the episode &rarr;
+                </a>
+              )}
+            </div>
           </div>
         </div>
       </section>
@@ -302,8 +343,50 @@ export default function MediaKitPage() {
         </div>
       </section>
 
-      {/* Formats */}
+      {/* Trackstar */}
       <section className="mk-section mk-alt">
+        <div className="mk-wrap">
+          <h2>Poster collabs with Trackstar</h2>
+          <p className="mk-body">
+            <a href={TRACKSTAR} target="_blank" rel="noopener noreferrer">Trackstar</a> is my race poster
+            brand. Every poster is personalized: the runner&apos;s name, finish time, and course. It&apos;s
+            not an ad, it&apos;s a keepsake runners hang on the wall, with your brand on it.
+          </p>
+          <p className="mk-body">
+            We design, personalize, and fulfill everything, as a digital download or a printed poster.
+            A few ideas:
+          </p>
+          <div className="mk-posters">
+            {POSTER_IDEAS.map((p) => (
+              <div key={p.brand} className="mk-poster-card">
+                <div className="mk-poster" style={{ background: p.color, color: p.accent }} aria-hidden="true">
+                  <div className="mk-poster-race">{p.race}</div>
+                  <svg viewBox="0 0 120 80" className="mk-poster-route">
+                    <path
+                      d="M8 64 C 20 30, 34 70, 48 44 S 70 10, 84 30 S 104 66, 112 18"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                    />
+                    <circle cx="8" cy="64" r="4" fill="#fff" />
+                    <circle cx="112" cy="18" r="4" fill="#fff" />
+                  </svg>
+                  <div className="mk-poster-name">{p.runner}</div>
+                  <div className="mk-poster-time">{p.time}</div>
+                  <div className="mk-poster-foot">{p.brand} &times; Trackstar</div>
+                </div>
+                <h3>{p.brand}</h3>
+                <p>{p.pitch}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mk-fine">Concepts, not past partnerships. Pricing is custom.</p>
+        </div>
+      </section>
+
+      {/* Formats */}
+      <section className="mk-section">
         <div className="mk-wrap">
           <h2>Formats</h2>
           <ul className="mk-chips">
@@ -315,7 +398,7 @@ export default function MediaKitPage() {
       </section>
 
       {/* Brands */}
-      <section className="mk-section">
+      <section className="mk-section mk-alt">
         <div className="mk-wrap">
           {PAST_PARTNERS.length > 0 && (
             <div className="mk-brands">
@@ -342,18 +425,11 @@ export default function MediaKitPage() {
               <li key={f}>{f}</li>
             ))}
           </ul>
-          <p className="mk-note">
-            Running brands: ask about co-branded race posters with{" "}
-            <a href={TRACKSTAR} target="_blank" rel="noopener noreferrer">
-              Trackstar
-            </a>
-            .
-          </p>
         </div>
       </section>
 
       {/* Contact */}
-      <section className="mk-section mk-alt">
+      <section className="mk-section">
         <div className="mk-wrap mk-contact">
           <h2>Let&apos;s work together</h2>
           <p className="mk-body">Tell me about your brand and what you have in mind.</p>
@@ -389,17 +465,37 @@ const CSS = `
 
 .mk-hero { padding-top: clamp(20px, 5vw, 56px); padding-bottom: clamp(40px, 6vw, 64px); }
 .mk-hero-grid { display: grid; gap: 28px; align-items: center; }
+.mk-handles { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.mk-handles a { font-size: 13px; font-weight: 700; text-decoration: none; background: #fff; border: 1px solid var(--hair);
+  border-radius: 999px; padding: 6px 12px; color: var(--ink2) !important; }
+.mk-handles a:hover { color: var(--ink) !important; border-color: var(--ink2); }
+.mk-posters { display: grid; gap: 16px; margin-top: 22px; }
+@media (min-width: 760px) { .mk-posters { grid-template-columns: repeat(3, minmax(0, 1fr)); } .mk-poster { max-width: none; } }
+.mk-poster-card h3 { font-size: 18px; font-weight: 800; margin: 14px 0 4px; }
+.mk-poster-card p { margin: 0; color: var(--ink2); font-weight: 500; font-size: 15px; line-height: 1.45; }
+.mk-poster { max-width: 260px; aspect-ratio: 3 / 4; border-radius: 14px; padding: 18px; display: flex; flex-direction: column;
+  box-shadow: 0 12px 30px rgba(26,26,26,0.16); border: 6px solid #fff; }
+.mk-poster-race { font-size: 13px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; }
+.mk-poster-route { width: 100%; flex: 1; min-height: 0; margin: 10px 0; }
+.mk-poster-name { color: #fff; font-size: 22px; font-weight: 800; letter-spacing: -0.5px; line-height: 1.1; }
+.mk-poster-time { color: #fff; font-size: 30px; font-weight: 800; letter-spacing: -1px; font-variant-numeric: tabular-nums; }
+.mk-poster-foot { font-size: 11px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; margin-top: 10px; opacity: 0.9; }
+.mk-fine { font-size: 12.5px; color: var(--label); font-weight: 500; margin: 18px 0 0; }
 .mk-kicker { font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--orange-text); margin-bottom: 10px; }
 .mk h1 { font-size: clamp(36px, 6vw, 64px); font-weight: 800; line-height: 1.02; letter-spacing: -1.8px; margin: 0; }
 .mk-lede { font-size: clamp(16.5px, 2vw, 19px); font-weight: 500; line-height: 1.5; color: var(--ink2); margin: 16px 0 22px; max-width: 560px; }
 .mk-btn { display: inline-block; background: var(--ink); color: #fff !important; font-weight: 700; font-size: 16px;
   text-decoration: none; border-radius: 12px; padding: 14px 24px; transition: transform 120ms ease; }
 .mk-btn:hover { transform: translateY(-2px); }
-.mk-hero-img img { display: block; width: 100%; max-width: 170px; height: auto; margin: 0 auto;
-  border-radius: 22px; box-shadow: 0 16px 36px rgba(26,26,26,0.18); }
+.mk-hero-img { display: flex; flex-direction: column; align-items: center; gap: 10px; text-decoration: none; justify-self: start; order: -1; flex-direction: row; }
+.mk-hero-img img { display: block; width: 72px; height: 72px; border-radius: 50%; object-fit: cover;
+  border: 3px solid #fff; box-shadow: 0 10px 28px rgba(26,26,26,0.18); }
+.mk-hero-img span { display: none; font-size: 14px; font-weight: 700; color: var(--ink2); }
 @media (min-width: 760px) {
-  .mk-hero-grid { grid-template-columns: 1fr 260px; gap: 56px; }
-  .mk-hero-img img { max-width: none; }
+  .mk-hero-grid { grid-template-columns: 1fr 200px; gap: 56px; }
+  .mk-hero-img { justify-self: center; order: 0; flex-direction: column; }
+  .mk-hero-img img { width: 150px; height: 150px; }
+  .mk-hero-img span { display: block; }
 }
 .mk-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 14px; margin-top: 36px; }
 @media (min-width: 760px) { .mk-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
@@ -438,6 +534,13 @@ const CSS = `
 .mk-video-info { padding: 12px 14px 14px; display: grid; gap: 2px; }
 .mk-video-info strong { font-size: 15px; font-weight: 800; }
 .mk-views { font-size: 20px; font-weight: 800; color: var(--orange-text); letter-spacing: -0.5px; }
+.mk-partner { margin-top: 20px; background: #fff; border: 1px solid var(--hair); border-left: 5px solid var(--orange);
+  border-radius: 20px; padding: 22px; }
+.mk-partner-tag { font-size: 11px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase; color: var(--orange-text); }
+.mk-partner h3 { font-size: 24px; font-weight: 800; letter-spacing: -0.6px; margin: 4px 0 8px; }
+.mk-partner p { margin: 0 0 12px; color: var(--ink2); font-weight: 500; line-height: 1.5; font-size: 15.5px; max-width: 640px; }
+.mk-partner-row { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
+.mk-partner-row a { font-size: 14px; font-weight: 700; text-decoration: none; color: var(--ink) !important; }
 .mk-eng { font-size: 12px; font-weight: 500; color: var(--muted); }
 
 .mk-offers { display: grid; gap: 12px; }
