@@ -19,7 +19,7 @@ const IG_TRACKSTAR = "https://www.instagram.com/trackstar_art/";
 const STATS_AS_OF = "October 2026";
 
 const STATS = [
-  { value: "43K", label: "followers across @flickman and Topline" },
+  { value: "45K", label: "followers across @flickman and Topline" },
   { value: "290K", label: "average views per business breakdown" },
   { value: "7M+", label: "total views on business breakdowns" },
   { value: "853K", label: "views on the top breakdown" },
@@ -70,14 +70,38 @@ const OFFERS = [
   },
 ];
 
-const FORMATS = [
-  "Instagram Reels",
-  "Stories with link sticker",
-  "Collab posts on @flickman and Topline",
-  "Carousels",
-  "Link in bio",
-  "Usage rights and whitelisting (add-on)",
+// Line-item rates per channel. Placeholders; edit freely.
+const RATES = {
+  topline: [
+    { item: "Sponsored episode", price: "$5,000" },
+    { item: "P&L line item in an episode", price: "$2,500" },
+    { item: "Collab Reel on Topline + @flickman", price: "$3,500" },
+    { item: "Carousel", price: "$1,500" },
+  ],
+  flickman: [
+    { item: "Reel", price: "$1,000" },
+    { item: "Story set (3, with link sticker)", price: "$400" },
+    { item: "Carousel", price: "$750" },
+    { item: "Link in bio (30 days)", price: "$250" },
+  ],
+};
+const RATES_NOTE = "Usage rights and whitelisting: +30% per month.";
+
+// @flickman Instagram insights. Reach is the last 90 days; demographics the last 30.
+const AUDIENCE_AS_OF = "October 2, 2026";
+const REACH = [
+  { value: "8.3M", label: "views in the last 90 days (6.2M Instagram, 2.1M Facebook)" },
+  { value: "2.6M", label: "unique viewers in the last 90 days" },
+  { value: "96%", label: "of views from people who don't follow yet" },
+  { value: "31.8K", label: "accounts engaged in the last 30 days" },
 ];
+const DEMOS = [
+  { title: "Gender", rows: [["Men", "84%"], ["Women", "16%"]] },
+  { title: "Age", rows: [["25-34", "32%"], ["35-44", "36%"], ["45-54", "19%"], ["Other", "13%"]] },
+  { title: "Top countries", rows: [["United States", "66%"], ["Canada", "6%"], ["United Kingdom", "3%"]] },
+  { title: "Top cities", rows: [["New York", "9.6%"], ["Los Angeles", "2.6%"], ["San Diego", "1.4%"], ["Toronto", "1.4%"]] },
+];
+
 
 // Trackstar poster collab concepts. Ideas to pitch, not past partnerships.
 const POSTER_IDEAS = [
@@ -126,6 +150,20 @@ function ToplineHandle() {
         <i className="mk-us" />
       </span>
     </span>
+  );
+}
+
+function RateList({ rows }: { rows: { item: string; price: string }[] }) {
+  return (
+    <div className="mk-rates">
+      <div className="mk-rates-title">Rates</div>
+      {rows.map((r) => (
+        <div key={r.item} className="mk-rate">
+          <span>{r.item}</span>
+          <strong>{r.price}</strong>
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -233,6 +271,7 @@ export default function MediaKitPage() {
                 <dt>Best for</dt>
                 <dd>Franchise brands and B2B software that serves brick-and-mortar businesses.</dd>
               </dl>
+              <RateList rows={RATES.topline} />
             </div>
             <div className="mk-card">
               <div className="mk-card-top">
@@ -251,13 +290,44 @@ export default function MediaKitPage() {
                 <dt>Best for</dt>
                 <dd>Running and fitness brands, NYC lifestyle, creative and marketing tools.</dd>
               </dl>
+              <RateList rows={RATES.flickman} />
             </div>
+          </div>
+          <p className="mk-fine">{RATES_NOTE}</p>
+        </div>
+      </section>
+
+      {/* Audience */}
+      <section className="mk-section">
+        <div className="mk-wrap">
+          <h2>Who&apos;s watching</h2>
+          <p className="mk-sub">@flickman Instagram insights as of {AUDIENCE_AS_OF}. Audience breakdown is from the last 30 days.</p>
+          <div className="mk-stats mk-reach">
+            {REACH.map((r) => (
+              <div key={r.label}>
+                <strong>{r.value}</strong>
+                <span>{r.label}</span>
+              </div>
+            ))}
+          </div>
+          <div className="mk-demos">
+            {DEMOS.map((d) => (
+              <div key={d.title} className="mk-demo">
+                <h3>{d.title}</h3>
+                {d.rows.map(([k, v]) => (
+                  <div key={k} className="mk-demo-row">
+                    <span>{k}</span>
+                    <strong>{v}</strong>
+                  </div>
+                ))}
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Top videos */}
-      <section className="mk-section">
+      <section className="mk-section mk-alt">
         <div className="mk-wrap">
           <h2>Videos that did well</h2>
           <p className="mk-sub">Recent Topline episodes, posted on both accounts.</p>
@@ -300,7 +370,7 @@ export default function MediaKitPage() {
       </section>
 
       {/* Offers */}
-      <section className="mk-section mk-alt">
+      <section className="mk-section">
         <div className="mk-wrap">
           <h2>Ways to work together</h2>
           <p className="mk-sub">Starting rates. Bundles and custom ideas welcome.</p>
@@ -323,7 +393,7 @@ export default function MediaKitPage() {
       </section>
 
       {/* Line item */}
-      <section className="mk-section">
+      <section className="mk-section mk-alt">
         <div className="mk-wrap">
           <div className="mk-split">
             <div>
@@ -344,7 +414,7 @@ export default function MediaKitPage() {
       </section>
 
       {/* Trackstar */}
-      <section className="mk-section mk-alt">
+      <section className="mk-section">
         <div className="mk-wrap">
           <h2>Poster collabs with Trackstar</h2>
           <p className="mk-body">
@@ -382,18 +452,6 @@ export default function MediaKitPage() {
             ))}
           </div>
           <p className="mk-fine">Concepts, not past partnerships. Pricing is custom.</p>
-        </div>
-      </section>
-
-      {/* Formats */}
-      <section className="mk-section">
-        <div className="mk-wrap">
-          <h2>Formats</h2>
-          <ul className="mk-chips">
-            {FORMATS.map((f) => (
-              <li key={f}>{f}</li>
-            ))}
-          </ul>
         </div>
       </section>
 
@@ -481,6 +539,17 @@ const CSS = `
 .mk-poster-time { color: #fff; font-size: 30px; font-weight: 800; letter-spacing: -1px; font-variant-numeric: tabular-nums; }
 .mk-poster-foot { font-size: 11px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; margin-top: 10px; opacity: 0.9; }
 .mk-fine { font-size: 12.5px; color: var(--label); font-weight: 500; margin: 18px 0 0; }
+.mk-rates { margin-top: 18px; border-top: 1px solid var(--hair); padding-top: 12px; }
+.mk-rates-title { font-size: 11px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase; color: var(--label); margin-bottom: 4px; }
+.mk-rate, .mk-demo-row { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; font-size: 15px; font-weight: 500;
+  border-bottom: 1px solid var(--hair); }
+.mk-rate:last-child, .mk-demo-row:last-child { border-bottom: 0; }
+.mk-rate strong, .mk-demo-row strong { font-weight: 800; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.mk-reach { margin-top: 8px; }
+.mk-demos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 28px; }
+@media (min-width: 760px) { .mk-demos { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.mk-demo { background: #fff; border: 1px solid var(--hair); border-radius: 18px; padding: 14px; min-width: 0; }
+.mk .mk-demo h3 { font-size: 13px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: var(--label); margin: 0 0 4px; }
 .mk-kicker { font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--orange-text); margin-bottom: 10px; }
 .mk h1 { font-size: clamp(36px, 6vw, 64px); font-weight: 800; line-height: 1.02; letter-spacing: -1.8px; margin: 0; }
 .mk-lede { font-size: clamp(16.5px, 2vw, 19px); font-weight: 500; line-height: 1.5; color: var(--ink2); margin: 16px 0 22px; max-width: 560px; }
