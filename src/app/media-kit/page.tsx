@@ -50,16 +50,16 @@ const SEGMENTS = {
 // Line-item rates per channel. Placeholders; edit freely.
 const RATES = {
   topline: [
-    { item: "Sponsored episode", note: "A full breakdown of your franchise or a business that runs on your product, posted as a collab.", price: "$4,000" },
-    { item: "Whitelisting, per month", price: "50% of fee" },
+    { item: "Sponsored episode", note: "A full breakdown of your franchise or a business that runs on your product. Always posted as a collab with @flickman.", price: "$4,000" },
+    { item: "Whitelisting, per month", price: "25% of fee" },
   ],
   flickman: [
-    { item: "Collab Reel", note: "Running, New York City, business, or art and marketing.", price: "$1,000" },
+    { item: "Reel", note: "On @flickman: running, New York City, business, or art and marketing.", price: "$1,000" },
     { item: "Story set", note: "Three Stories with a link sticker.", price: "$400" },
-    { item: "Whitelisting, per month", price: "50% of fee" },
+    { item: "Whitelisting, per month", price: "25% of fee" },
   ],
 };
-const RATES_NOTE = "Whitelisting is billed each month at 50% of the upfront fee.";
+const RATES_NOTE = "Whitelisting is billed each month at 25% of the upfront fee.";
 
 // @flickman Instagram insights. Reach is the last 90 days; demographics the last 30.
 const AUDIENCE_AS_OF = "October 2, 2026";
