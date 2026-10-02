@@ -376,7 +376,7 @@ function renderWord(w: WordOfTheDay | null, smsTo: string | null): string {
   if (!w) return "";
   const { word, day } = w;
   const link = smsTo
-    ? `<a href="${smsLink(smsTo, `${word.hy} (${word.roman})`)}" style="font-family:${FONT}; font-size:13px; font-weight:700; color:${ACCENT}; text-decoration:none; white-space:nowrap;">Text Nat &rarr;</a>`
+    ? `<a href="${smsLink(smsTo, word.hy ? `${word.hy} (${word.roman})` : word.roman)}" style="font-family:${FONT}; font-size:13px; font-weight:700; color:${ACCENT}; text-decoration:none; white-space:nowrap;">Text Nat &rarr;</a>`
     : "";
   return `
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="${CARD_STYLE} margin:0 0 10px;">
@@ -388,9 +388,13 @@ function renderWord(w: WordOfTheDay | null, smsTo: string | null): string {
           )} <span style="font-size:15px; font-weight:400; color:${MUTED};">&middot; ${escapeHtml(
             word.en
           )}</span></div>
-          <div style="margin-top:2px; font-family:${FONT}; font-size:14px; line-height:1.4; color:${MUTED};">${escapeHtml(
+          ${
             word.hy
-          )}</div>
+              ? `<div style="margin-top:2px; font-family:${FONT}; font-size:14px; line-height:1.4; color:${MUTED};">${escapeHtml(
+                  word.hy
+                )}</div>`
+              : ""
+          }
           ${
             word.note
               ? `<div style="margin-top:3px; font-family:${FONT}; font-size:12px; line-height:1.4; color:${FAINT};">${escapeHtml(
@@ -594,9 +598,16 @@ export function renderText(
 
   if (panel.word) {
     const { word, day } = panel.word;
-    lines.push(`ARMENIAN — DAY ${day}`, `${word.roman} — ${word.en}  (${word.hy})`);
+    lines.push(
+      `ARMENIAN — DAY ${day}`,
+      `${word.roman} — ${word.en}${word.hy ? `  (${word.hy})` : ""}`
+    );
     if (word.note) lines.push(`  ${word.note}`);
-    if (panel.smsTo) lines.push(`  Text Nat: ${smsLink(panel.smsTo, `${word.hy} (${word.roman})`)}`);
+    if (panel.smsTo) {
+      lines.push(
+        `  Text Nat: ${smsLink(panel.smsTo, word.hy ? `${word.hy} (${word.roman})` : word.roman)}`
+      );
+    }
     lines.push("");
   }
 
