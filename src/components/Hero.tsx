@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Image from "next/image";
 
 function Cloud({ className, delay = 0, duration = 30 }: { className?: string; delay?: number; duration?: number }) {
   return (
@@ -162,19 +161,35 @@ export default function Hero() {
             </div>
 
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-coal mb-6 leading-[1.1]" style={{ textShadow: "0 1px 2px rgba(0,0,0,0.05)" }}>
-              Simple ideas,
-              <br />
-              <span className="text-grass">taken seriously.</span>
+              Welcome to{" "}
+              <span className="text-grass">Flickman&apos;s world</span>
             </h1>
 
             <p className="text-lg sm:text-xl text-coal/60 max-w-lg mb-10 leading-relaxed">
-              I&apos;m Matt Hickman — I work on businesses and projects, write letters,
-              and try to do new things I haven&apos;t done before. Welcome to my corner of the internet.
+              I&apos;m Matt Hickman (aka Flickman). I&apos;m a business owner, runner &amp;
+              motivator based in NYC. I&apos;ve got several businesses and projects that
+              I&apos;m working on (see below). If you wanna collaborate, hit me up via{" "}
+              <a
+                href="https://ig.me/m/flickman"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-coal font-semibold underline decoration-grass decoration-2 underline-offset-4 hover:text-grass"
+              >
+                DM
+              </a>{" "}
+              or{" "}
+              <a
+                href="mailto:matt@flickmanmedia.com"
+                className="text-coal font-semibold underline decoration-grass decoration-2 underline-offset-4 hover:text-grass"
+              >
+                email
+              </a>
+              .
             </p>
 
             <div className="flex flex-wrap gap-4">
               <a
-                href="#companies"
+                href="#current-work"
                 className="inline-block bg-coal text-cream px-6 py-3 font-semibold rounded-sm shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200"
                 style={{ boxShadow: "0 4px 14px rgba(0,0,0,0.2), inset 1px 1px 0 rgba(255,255,255,0.1)" }}
               >
@@ -204,14 +219,18 @@ export default function Hero() {
                 border: "3px solid rgba(0,0,0,0.12)",
               }}
             >
-              <Image
-                src="/matt.jpg"
-                alt="Matt Hickman"
-                width={256}
-                height={256}
-                className="w-full h-full object-cover object-top"
-                priority
-              />
+              {/* Placeholder until the new header image is ready (old photo: /matt.jpg). */}
+              <div
+                className="w-full h-full flex flex-col items-center justify-center gap-2 text-coal/40"
+                style={{ backgroundColor: "rgba(255,255,255,0.6)", border: "2px dashed rgba(0,0,0,0.15)" }}
+              >
+                <span className="text-3xl" aria-hidden="true">
+                  📷
+                </span>
+                <span className="font-[family-name:var(--font-pixel)] text-[9px] text-center px-4 leading-relaxed">
+                  New photo soon
+                </span>
+              </div>
             </div>
           </motion.div>
         </div>

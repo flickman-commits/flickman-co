@@ -53,32 +53,28 @@ export default function Footer() {
           <div className="grid md:grid-cols-2 gap-12">
             {/* Left: CTA */}
             <div>
-              <h2 className="font-[family-name:var(--font-pixel)] text-lg mb-4 text-grass-light">
+              <h2 className="font-[family-name:var(--font-pixel)] text-lg text-grass-light">
                 Let&apos;s connect
               </h2>
-              <p className="text-cream/60 mb-6 leading-relaxed max-w-md">
-                Subscribe for more letters on business &amp; life.
-              </p>
-
-              <a
-                href="https://flickman.substack.com/subscribe"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block bg-[#FF6719] text-white px-6 py-3 font-semibold rounded-sm shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200"
-              >
-                Subscribe on Substack &rarr;
-              </a>
             </div>
 
             {/* Right: Links */}
             <div className="flex flex-col items-start md:items-end gap-4">
               <a
-                href="https://instagram.com/flickman"
+                href="https://www.instagram.com/flickman/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-cream/60 hover:text-grass-light transition-colors text-sm"
               >
-                Instagram &rarr;
+                Flickman IG &rarr;
+              </a>
+              <a
+                href="https://www.instagram.com/trackstar_art/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-cream/60 hover:text-grass-light transition-colors text-sm"
+              >
+                Trackstar IG &rarr;
               </a>
               <a
                 href="https://flickman.substack.com"
@@ -98,10 +94,7 @@ export default function Footer() {
           </div>
 
           {/* Bottom bar */}
-          <div className="mt-16 pt-6 border-t border-cream/10 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <span className="font-[family-name:var(--font-pixel)] text-xs text-cream/40">
-              Flickman &amp; Co.
-            </span>
+          <div className="mt-16 pt-6 border-t border-cream/10 flex justify-center sm:justify-end">
             <span className="text-cream/30 text-xs">
               &copy;2026 Flickman LLC. All rights reserved.
             </span>

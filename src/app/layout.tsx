@@ -29,8 +29,8 @@ const displayFont = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Flickman | Simple ideas, taken seriously.",
-  description: "Matt Hickman — builder, creator, and explorer. Simple ideas, taken seriously.",
+  title: "Flickman | Welcome to Flickman's world",
+  description: "Matt Hickman (aka Flickman): business owner, runner & motivator based in NYC.",
 };
 
 export default function RootLayout({

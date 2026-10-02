@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 };
 
 export default function AppsPage() {
-  const sorted = [...apps].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  const sorted = apps.filter((a) => !a.unlisted).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
   return (
     <main className="min-h-screen bg-cream">

@@ -23,6 +23,8 @@ export type AppEntry = {
   private?: boolean;
   /** Hide from the homepage grid but still accessible via /apps. */
   hideFromHome?: boolean;
+  /** Live at its URL, but not linked from the homepage or /apps. */
+  unlisted?: boolean;
   /** When you built it — used for sort order on /apps. */
   createdAt: string; // YYYY-MM-DD
 };
@@ -42,6 +44,7 @@ export const apps: AppEntry[] = [
     icon: "🏠",
     description: "A quiet corner of the internet.",
     createdAt: "2025-09-01",
+    unlisted: true,
   },
   {
     slug: "handwriting",
@@ -58,6 +61,7 @@ export const apps: AppEntry[] = [
       "Book a seat at Matt & Nat's Sunday morning crepe bar.",
     url: "/crepes",
     createdAt: "2026-05-12",
+    unlisted: true,
   },
   {
     slug: "long-distance",

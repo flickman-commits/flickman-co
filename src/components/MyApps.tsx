@@ -16,7 +16,7 @@ function AppSlot({ app, index }: { app: AppEntry; index: number }) {
       transition={{ duration: 0.3, delay: index * 0.04 }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="relative group"
+      className="relative group flex flex-col items-center"
     >
       {/* Tooltip */}
       {hovered && (
@@ -67,7 +67,7 @@ function AppSlot({ app, index }: { app: AppEntry; index: number }) {
 }
 
 export default function MyApps() {
-  const visible = apps.filter((a) => !a.hideFromHome);
+  const visible = apps.filter((a) => !a.hideFromHome && !a.unlisted);
 
   // Fill out the row to keep grid visually balanced
   const slotsPerRow = 8;
@@ -126,7 +126,7 @@ export default function MyApps() {
 
           {/* Inventory grid */}
           <div
-            className="inline-grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3 p-4 rounded-sm"
+            className="inline-grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 justify-items-center gap-3 p-4 rounded-sm"
             style={{
               backgroundColor: "rgba(0,0,0,0.02)",
               border: "2px solid rgba(0,0,0,0.05)",

@@ -11,7 +11,7 @@ interface InventoryItem {
 }
 
 const items: InventoryItem[] = [
-  { icon: "🏢", label: "Companies", href: "#companies", color: "#FFD700" },
+  { icon: "🏢", label: "Current work", href: "#current-work", color: "#FFD700" },
   { icon: "📝", label: "Letters", href: "#letters", color: "#A0522D" },
   { icon: "📱", label: "Apps", href: "#apps", color: "#4FC3F7" },
   { icon: "🛒", label: "Shop", href: "https://flickman.gumroad.com", color: "#E91E63" },
