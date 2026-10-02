@@ -38,7 +38,7 @@ const TOP_VIDEOS = [
 // Paid partnership example. Add the reel ID (instagram.com/reel/<id>/) to link it.
 const FUNBOX = { id: "DcWyuhZIzN-", img: "/media-kit/funbox.jpg", views: "160K" };
 
-// Rate packages. Paid usage is 25% of the $4,000 post fee per month. Edit freely.
+// Packages. Paid usage is 25% of the total fee per month: ($4,000 post + $1,000 collab) × 25% = $1,250. Edit freely.
 const PACKAGES = [
   {
     name: "Dedicated Post",
@@ -50,17 +50,17 @@ const PACKAGES = [
   },
   {
     name: "Brand Partnership",
-    price: "$6,000",
+    price: "$6,250",
     includes: [
       "Everything in Dedicated Post",
       "Collabed with your brand's account",
-      "1 month of paid usage (whitelisting)",
+      "1 month of paid usage (whitelisting), at 25% of the total fee",
     ],
   },
   {
     name: "Multi-Post Series",
-    price: "$14,800",
-    was: "$18,500",
+    price: "$15,400",
+    was: "$19,250",
     badge: "20% off",
     includes: [
       "3 posts over 3 months",
@@ -70,7 +70,7 @@ const PACKAGES = [
     ],
   },
 ];
-const PACKAGES_NOTE = "Extra months of paid usage (whitelisting): $1,000/mo.";
+const PACKAGES_NOTE = "Paid usage (whitelisting) is 25% of the total fee, per month. Extra months can be added at the same rate.";
 
 
 // @flickman Instagram insights. Fallbacks for when the live API (src/lib/instagram.ts) is not set up or fails.
@@ -323,10 +323,12 @@ export default async function MediaKitPage() {
             {PACKAGES.map((p, i) => (
               <div key={p.name} className="mk-package">
                 <div className="mk-package-top">
-                  <span className="mk-num">{i + 1}</span>
+                  <h3>
+                    <span className="mk-num">{i + 1}</span>
+                    {p.name}
+                  </h3>
                   {p.badge && <span className="mk-badge">{p.badge}</span>}
                 </div>
-                <h3>{p.name}</h3>
                 <div className="mk-package-price">
                   <strong>{p.price}</strong>
                   {p.was && <s>{p.was}</s>}
@@ -412,11 +414,11 @@ const CSS = `
 @media (min-width: 860px) { .mk-packages { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .mk-package { background: #fff; border: 1px solid var(--hair); border-radius: 20px; padding: 22px; display: flex; flex-direction: column; }
 .mk-package:last-child { border: 2px solid var(--orange); }
-.mk-package-top { display: flex; justify-content: space-between; align-items: center; min-height: 28px; }
-.mk-package .mk-num { font-size: 16px; margin: 0; vertical-align: 0; }
+.mk-package-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 10px; }
+.mk-package .mk-num { font-size: 18px; margin: 0; vertical-align: 0; flex: none; }
 .mk-badge { font-size: 11px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; background: var(--orange); color: #fff;
   border-radius: 999px; padding: 5px 10px; }
-.mk .mk-package h3 { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; margin: 12px 0 4px; }
+.mk .mk-package h3 { display: flex; align-items: center; gap: 10px; font-size: 22px; font-weight: 800; letter-spacing: -0.5px; margin: 0; }
 .mk-package-price { display: flex; align-items: baseline; gap: 10px; margin-bottom: 14px; }
 .mk-package-price strong { font-size: 34px; font-weight: 800; letter-spacing: -1px; font-variant-numeric: tabular-nums; }
 .mk-package-price s { font-size: 16px; font-weight: 600; color: var(--muted); }
