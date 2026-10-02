@@ -76,14 +76,15 @@ const RATES = {
     { item: "Sponsored episode", price: "$5,000" },
     { item: "P&L line item in an episode", price: "$2,500" },
     { item: "Collab Reel on Topline + @flickman", price: "$3,500" },
+    { item: "Whitelisting, per month", price: "50% of fee" },
   ],
   flickman: [
     { item: "Reel", price: "$1,000" },
     { item: "Story set (3, with link sticker)", price: "$400" },
-    { item: "Link in bio (30 days)", price: "$250" },
+    { item: "Whitelisting, per month", price: "50% of fee" },
   ],
 };
-const RATES_NOTE = "Whitelisting: 50% of the upfront fee, for each month.";
+const RATES_NOTE = "Whitelisting is billed each month at 50% of the upfront fee.";
 
 // @flickman Instagram insights. Reach is the last 90 days; demographics the last 30.
 const AUDIENCE_AS_OF = "October 2, 2026";
